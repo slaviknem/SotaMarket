@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /shop/cart
+Disallow: /shop/compare
+Disallow: /shop/wishlist
+Disallow: /shop/track-order
+Host: https://floy.com.ua
+Sitemap: https://floy.com.ua/sitemap.xml

@@ -1,0 +1,145 @@
+<template>
+	<div class="container">
+		<Breadcrumbs :items="[{ title: t('other.comparison') }]" />
+
+		<h1>{{ t('other.comparison') }}</h1>
+
+		<div v-if="!compare.items.value.length" class="list-empty">
+			<AppIcon name="compare" :size="60" :stroke-width="1.2" />
+			<p>{{ t('other.compareListEmpty') }}</p>
+			<NuxtLink :to="localePath('/')" class="btn btn-primary">{{ t('cart.continueShopping') }}</NuxtLink>
+		</div>
+
+		<div v-else class="compare-table-wrap">
+			<table class="compare-table">
+				<tbody>
+					<tr>
+						<th>{{ t('product.product') }}</th>
+						<td v-for="p in compare.items.value" :key="p.id">
+							<button class="compare-remove" :title="t('other.remove')" @click="compare.remove(p.id)">
+								<AppIcon name="close" :size="13" />
+							</button>
+							<NuxtLink :to="url.product(p)" class="compare-product">
+								<AppImage :src="url.productThumb(p.image_file)" :alt="p.title" :width="110" :height="110" />
+								<span>{{ p.title }}</span>
+							</NuxtLink>
+						</td>
+					</tr>
+					<tr>
+						<th>{{ t('product.price') }}</th>
+						<td v-for="p in compare.items.value" :key="p.id" class="compare-price">
+							{{ formatPrice(p.price) }}
+						</td>
+					</tr>
+					<tr>
+						<th>{{ t('product.stock') }}</th>
+						<td v-for="p in compare.items.value" :key="p.id">
+							<span :class="p.available ? 'text-accent' : 'text-muted'">
+								{{ p.available ? t('product.inStock') : t('product.notStock') }}
+							</span>
+						</td>
+					</tr>
+					<tr>
+						<th>{{ t('product.description') }}</th>
+						<td v-for="p in compare.items.value" :key="p.id" class="compare-desc">
+							{{ p.description_short }}
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</template>
+
+<script setup lang="ts">
+const { t } = useI18n()
+const localePath = useLocalePath()
+const url = useUrl()
+const compare = useCompare()
+
+usePageSeo({ title: () => t('other.comparison'), noindex: true })
+</script>
+
+<style scoped>
+.list-empty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 16px;
+	padding: 60px 20px 80px;
+	color: var(--text-muted);
+}
+
+.compare-table-wrap {
+	overflow-x: auto;
+	padding-bottom: 40px;
+}
+
+.compare-table {
+	width: 100%;
+	border-collapse: collapse;
+	background: var(--bg-card);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+}
+
+.compare-table th,
+.compare-table td {
+	position: relative;
+	padding: 14px 16px;
+	border: 1px solid var(--border);
+	vertical-align: top;
+	min-width: 180px;
+	font-size: 13.5px;
+}
+
+.compare-table th {
+	text-align: left;
+	color: var(--text-muted);
+	font-weight: 600;
+	min-width: 130px;
+	background: var(--bg-soft);
+}
+
+.compare-product {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	font-weight: 600;
+}
+
+.compare-product img {
+	background: var(--img-bg);
+	border-radius: var(--radius-sm);
+	object-fit: contain;
+}
+
+.compare-product:hover span {
+	color: var(--accent);
+}
+
+.compare-price {
+	font-weight: 800;
+	color: var(--accent);
+	font-size: 15px;
+}
+
+.compare-desc {
+	color: var(--text-soft);
+}
+
+.compare-remove {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	display: flex;
+	padding: 6px;
+	color: var(--text-muted);
+	border-radius: 6px;
+}
+
+.compare-remove:hover {
+	background: rgba(255, 71, 87, 0.12);
+	color: var(--danger);
+}
+</style>
