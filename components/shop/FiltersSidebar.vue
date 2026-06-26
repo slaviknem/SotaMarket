@@ -88,20 +88,22 @@ const hasSelected = computed(() => Object.values(props.selected).some((v) => v.l
 .filters {
 	display: flex;
 	flex-direction: column;
-	max-height: calc(100vh - var(--header-h) - 28px);
+	/* top:5px у обгортці + 5px знизу = картка не впритул до країв вікна */
+	max-height: calc(100vh - 10px);
 	background: var(--bg-card);
 	border: 1px solid var(--border);
 	border-radius: var(--radius);
 	overflow: hidden;
 }
 
-/* Шапка — зафіксована зверху, не прокручується */
+/* Шапка — зафіксована зверху, не прокручується; трохи світліший фон, щоб не зливалась */
 .filters__head {
 	flex-shrink: 0;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	padding: 15px 18px;
+	background: var(--bg-elevated);
 	border-bottom: 1px solid var(--border);
 }
 
@@ -122,6 +124,21 @@ const hasSelected = computed(() => Object.values(props.selected).some((v) => v.l
 	flex: 1 1 auto;
 	min-height: 0;
 	overflow-y: auto;
+	scrollbar-width: thin;
+	scrollbar-color: var(--border-light) transparent;
+}
+
+.filters__body::-webkit-scrollbar {
+	width: 8px;
+}
+
+.filters__body::-webkit-scrollbar-thumb {
+	background: var(--border-light);
+	border-radius: var(--radius-pill);
+}
+
+.filters__body::-webkit-scrollbar-thumb:hover {
+	background: var(--text-muted);
 }
 
 /* Невеликий футер — зафіксований знизу */

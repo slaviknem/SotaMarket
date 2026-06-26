@@ -429,28 +429,12 @@ function changeSort(e: Event) {
 	align-self: stretch;
 }
 
-/* Sticky-фільтри: піднімаються зі сторінкою і фіксуються під шапкою,
-   висота — не більша за вікно, зайве прокручується всередині панелі */
+/* Sticky-обгортка: фіксує картку фільтрів майже на верху вікна (5px «повітря» зверху).
+   Шапка сайту при прокрутці не лишається прибитою (її sticky обмежений власним контейнером),
+   тож відступ під неї не потрібен. Висоту й скрол тримає сама картка (.filters). */
 .cat-layout__sidebar-panel {
 	position: sticky;
-	top: calc(var(--header-h) + 14px);
-	max-height: calc(100vh - var(--header-h) - 28px);
-	overflow-y: auto;
-	scrollbar-width: thin;
-	scrollbar-color: var(--border-light) transparent;
-}
-
-.cat-layout__sidebar-panel::-webkit-scrollbar {
-	width: 8px;
-}
-
-.cat-layout__sidebar-panel::-webkit-scrollbar-thumb {
-	background: var(--border-light);
-	border-radius: var(--radius-pill);
-}
-
-.cat-layout__sidebar-panel::-webkit-scrollbar-thumb:hover {
-	background: var(--text-muted);
+	top: 5px;
 }
 
 .cat-head {
