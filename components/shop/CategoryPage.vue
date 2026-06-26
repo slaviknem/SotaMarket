@@ -53,17 +53,48 @@
 
 				<!-- Товари (на лендінгу /chekhly — 6 у ряд) -->
 				<div v-if="pending" class="products-grid" :class="{ 'products-grid--six': brandsLanding }">
-					<div v-for="i in 12" :key="i" class="skeleton" style="aspect-ratio: 0.62" />
+					<div v-for="i in 24" :key="i" class="skeleton" style="aspect-ratio: 0.62" />
 				</div>
 
 				<template v-else-if="products.length">
-					<div class="products-grid" :class="{ 'products-grid--six': brandsLanding }">
+					<div class="products-grid" :class="gridModifier">
 						<!-- Конструктор чохлів — перший товар (як на старому сайті) -->
 						<ProductCardPrintcase v-if="showPrintcaseCard" :category="category" />
-						<ProductCard v-for="p in products" :key="p.id" :product="p" />
+						<ProductCard v-for="p in displayProducts" :key="p.id" :product="p" />
+
+						<!-- Контролі течуть у вільний простір справа від останнього товару;
+						     повний останній ряд → переносяться вниз на всю ширину -->
+						<div v-if="lastPage > 1" class="cat-controls">
+							<div v-if="hasMorePages" class="cat-controls__row">
+								<button
+									v-if="showButton"
+									class="btn btn-outline cat-controls__btn"
+									:disabled="isLoadingMore"
+									@click="loadMore"
+								>
+									<span v-if="isLoadingMore" class="cat-controls__spinner" />
+									{{ isLoadingMore ? t('category.loading') : t('category.showMore') }}
+								</button>
+								<span v-else-if="isLoadingMore" class="cat-controls__spinner cat-controls__spinner--lg" />
+
+								<label class="cat-controls__toggle">
+									<input v-model="autoOn" type="checkbox" class="cat-controls__switch" />
+									<span class="text-muted">{{ t('category.autoLoad') }}</span>
+								</label>
+							</div>
+
+							<!-- Пагінація справжніми посиланнями — для ботів і прямих переходів -->
+							<AppPagination
+								:current="currentPage"
+								:total-pages="lastPage"
+								:to="pageLink"
+								:loaded="loadedPages"
+							/>
+						</div>
 					</div>
 
-					<AppPagination :current="currentPage" :total-pages="lastPage" @change="changePage" />
+					<!-- Тригер авто-підвантаження по скролу -->
+					<div ref="scrollSentinel" class="cat-sentinel" aria-hidden="true" />
 				</template>
 
 				<div v-else class="cat-empty">
@@ -100,7 +131,7 @@ const mobileFiltersOpen = ref(false)
 // ---------- Параметри з URL ----------
 const options = computed(() => ({
 	page: Number(route.query.page) || 1,
-	limit: Number(route.query.limit) || 12,
+	limit: Number(route.query.limit) || 24,
 	sort: String(route.query.sort || 'default'),
 }))
 
@@ -242,6 +273,36 @@ const showPrintcaseCard = computed(
 		!props.filterAlias
 )
 
+// ---------- Підвантаження «Показати ще» / авто по скролу (логіка — у composable) ----------
+// 1 партія авто по скролу (плавний старт) → далі кнопка/ползунок. Кожна партія = одна сторінка (24).
+const { items: displayProducts, isLoadingMore, autoOn, hasMorePages, loadedPages, showButton, loadMore, scrollSentinel } =
+	useLoadMore({
+		baseItems: products,
+		currentPage,
+		lastPage,
+		fetchPage: (page: number) =>
+			shopApi.getProductsList({ ...options.value, page }, apiFilters.value).then((r) => r?.data || []),
+		autoBatches: 1,
+	})
+
+// Лендінг — 6 у ряд; багатосторінкова — flow (товари зліва + блок контролів у вільний простір
+// справа від останнього товару); одна сторінка (контролів нема) — центруємо неповний хвіст.
+const gridModifier = computed(() =>
+	props.brandsLanding
+		? 'products-grid--six'
+		: lastPage.value > 1
+			? 'products-grid--flow'
+			: 'products-grid--center'
+)
+
+// Посилання на сторінку для пагінації (дзеркалить updateQuery: page=1 прибираємо)
+function pageLink(page: number) {
+	const query: Record<string, any> = { ...route.query }
+	if (page > 1) query.page = String(page)
+	else delete query.page
+	return { path: route.path, query }
+}
+
 // ---------- Заголовки та SEO ----------
 const pageTitle = computed(() => {
 	if (filterPage.value) {
@@ -286,7 +347,7 @@ useJsonLd(() => ({
 	'@type': 'ItemList',
 	name: pageTitle.value,
 	numberOfItems: total.value,
-	itemListElement: products.value.slice(0, 12).map((p: any, i: number) => ({
+	itemListElement: products.value.slice(0, 24).map((p: any, i: number) => ({
 		'@type': 'ListItem',
 		position: (currentPage.value - 1) * options.value.limit + i + 1,
 		url: config.public.siteUrl + `/${p.alias_cat}/${p.alias}`,
@@ -337,11 +398,6 @@ function resetFilters() {
 
 function changeSort(e: Event) {
 	updateQuery({ sort: (e.target as HTMLSelectElement).value, page: undefined })
-}
-
-function changePage(page: number) {
-	updateQuery({ page: page > 1 ? page : undefined })
-	if (import.meta.client) window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 </script>
 
@@ -454,6 +510,106 @@ function changePage(page: number) {
 	width: auto;
 	padding: 8px 34px 8px 12px;
 	font-size: 13.5px;
+}
+
+/* Блок контролів: кнопка «Показати ще» + ползунок авто + пагінація.
+   У flow-сітці тече у вільний простір справа від останнього товару (flex: 1 1 340px),
+   або переноситься вниз на всю ширину. У grid-сітці (лендінг) — завжди на всю ширину. */
+.cat-controls {
+	flex: 1 1 340px;
+	grid-column: 1 / -1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	margin-top: 10px;
+	padding: 8px 14px;
+	min-width: 0;
+}
+
+.cat-controls__row {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-wrap: wrap;
+	gap: 16px;
+}
+
+.cat-controls__btn {
+	min-width: 200px;
+}
+
+.cat-controls__spinner {
+	display: inline-block;
+	width: 14px;
+	height: 14px;
+	margin-right: 6px;
+	border: 2px solid currentColor;
+	border-top-color: transparent;
+	border-radius: 50%;
+	animation: cat-spin 0.7s linear infinite;
+	vertical-align: -2px;
+}
+
+/* Спінер під час авто-підвантаження (без кнопки) */
+.cat-controls__spinner--lg {
+	width: 24px;
+	height: 24px;
+	margin-right: 0;
+	border-width: 3px;
+	color: var(--accent);
+}
+
+@keyframes cat-spin {
+	to { transform: rotate(360deg); }
+}
+
+/* Ползунок «Авто-підвантаження» */
+.cat-controls__toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 13px;
+	cursor: pointer;
+	user-select: none;
+}
+
+.cat-controls__switch {
+	position: relative;
+	width: 40px;
+	height: 22px;
+	border-radius: var(--radius-pill);
+	background: var(--border-light);
+	cursor: pointer;
+	transition: background 0.2s;
+	flex-shrink: 0;
+	appearance: none;
+	-webkit-appearance: none;
+}
+
+.cat-controls__switch:checked {
+	background: var(--accent);
+}
+
+.cat-controls__switch::after {
+	content: '';
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	background: var(--on-accent);
+	transition: transform 0.2s;
+}
+
+.cat-controls__switch:checked::after {
+	transform: translateX(18px);
+}
+
+.cat-sentinel {
+	height: 1px;
 }
 
 .cat-empty {

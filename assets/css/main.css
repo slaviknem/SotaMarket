@@ -786,6 +786,55 @@ textarea.form-control {
 	}
 }
 
+/* Стрічка з центруванням неповного останнього ряду — для категорій із «Показати ще»/конструктором.
+   Повні ряди заповнюють усю ширину (центрування непомітне), неповний останній ряд — по центру.
+   Ширини плиток дзеркалять колонки/відступи базової .products-grid (4/3/2 кол., gap 14/14/10). */
+.products-grid--center {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+
+.products-grid--center > * {
+	width: calc((100% - 3 * 14px) / 4);
+}
+
+@media (max-width: 1180px) {
+	.products-grid--center > * {
+		width: calc((100% - 2 * 14px) / 3);
+	}
+}
+
+@media (max-width: 760px) {
+	.products-grid--center > * {
+		width: calc((100% - 10px) / 2);
+	}
+}
+
+/* Flow-сітка: товари вирівняні зліва; службовий блок (.cat-controls) тече у вільний
+   простір справа від останнього товару, інакше переноситься вниз на всю ширину.
+   Розміри плиток дзеркалять колонки/відступи базової сітки (4/3/2 кол., gap 14/14/10). */
+.products-grid--flow {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.products-grid--flow > .p-card {
+	flex: 0 0 calc((100% - 3 * 14px) / 4);
+}
+
+@media (max-width: 1180px) {
+	.products-grid--flow > .p-card {
+		flex-basis: calc((100% - 2 * 14px) / 3);
+	}
+}
+
+@media (max-width: 760px) {
+	.products-grid--flow > .p-card {
+		flex-basis: calc((100% - 10px) / 2);
+	}
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 768px) {
 	h1 { font-size: 23px; }

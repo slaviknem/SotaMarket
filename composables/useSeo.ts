@@ -9,7 +9,12 @@ export function usePageSeo(opts: {
 	const route = useRoute()
 	const config = useRuntimeConfig()
 
-	const canonical = computed(() => config.public.siteUrl + route.path)
+	// Само-посилальний canonical. Для сторінок пагінації зберігаємо ?page=N —
+	// інакше сторінки 2+ виглядали б дублями 1-ї і товари з них випадали б з індексу.
+	const canonical = computed(() => {
+		const page = Number(route.query.page) || 1
+		return config.public.siteUrl + route.path + (page > 1 ? `?page=${page}` : '')
+	})
 
 	useHead(() => {
 		const title = toValue(opts.title)

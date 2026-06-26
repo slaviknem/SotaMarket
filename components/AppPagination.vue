@@ -1,27 +1,32 @@
 <template>
 	<nav v-if="totalPages > 1" class="pagination" aria-label="Pagination">
-		<button class="pagination__btn" :disabled="current <= 1" @click="go(current - 1)">
+		<!-- Назад -->
+		<NuxtLink v-if="current > 1" :to="to(current - 1)" class="pagination__btn" :rel="current - 1 === 1 ? undefined : 'prev'" @click="scrollTop">
 			<svg width="12" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1L2 6l5 5"/></svg>
-			{{ t('category.prev') }}
-		</button>
+			<span class="pagination__btn-text">{{ t('category.prev') }}</span>
+		</NuxtLink>
+		<span v-else class="pagination__btn is-disabled" aria-disabled="true">
+			<svg width="12" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1L2 6l5 5"/></svg>
+			<span class="pagination__btn-text">{{ t('category.prev') }}</span>
+		</span>
 
 		<div class="pagination__pages">
-			<button
-				v-for="p in pages"
-				:key="p.key"
-				class="pagination__page"
-				:class="{ 'is-current': p.num === current, 'is-dots': !p.num }"
-				:disabled="!p.num"
-				@click="p.num && go(p.num)"
-			>
-				{{ p.num || '…' }}
-			</button>
+			<template v-for="p in pages" :key="p.key">
+				<span v-if="!p.num" class="pagination__page is-dots">…</span>
+				<span v-else-if="p.num === current" class="pagination__page is-current" aria-current="page">{{ p.num }}</span>
+				<NuxtLink v-else :to="to(p.num)" class="pagination__page" :class="{ 'is-loaded': isLoaded(p.num) }" @click="scrollTop">{{ p.num }}</NuxtLink>
+			</template>
 		</div>
 
-		<button class="pagination__btn" :disabled="current >= totalPages" @click="go(current + 1)">
-			{{ t('category.next') }}
+		<!-- Вперед -->
+		<NuxtLink v-if="current < totalPages" :to="to(current + 1)" class="pagination__btn" rel="next" @click="scrollTop">
+			<span class="pagination__btn-text">{{ t('category.next') }}</span>
 			<svg width="12" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l5 5-5 5"/></svg>
-		</button>
+		</NuxtLink>
+		<span v-else class="pagination__btn is-disabled" aria-disabled="true">
+			<span class="pagination__btn-text">{{ t('category.next') }}</span>
+			<svg width="12" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l5 5-5 5"/></svg>
+		</span>
 	</nav>
 </template>
 
@@ -29,34 +34,54 @@
 const props = defineProps<{
 	current: number
 	totalPages: number
+	// Білдер посилання на сторінку — рендеримо crawlable <a> (пагінація завжди має бути для ботів)
+	to: (page: number) => any
+	// Номери вже підвантажених (видимих) сторінок — позначаємо їх крапкою
+	loaded?: number[]
 }>()
-
-const emit = defineEmits<{ change: [page: number] }>()
 
 const { t } = useI18n()
 
-const go = (page: number) => emit('change', page)
+const isLoaded = (page: number) => !!props.loaded?.includes(page)
 
-// Вікно сторінок: 1 … 4 5 [6] 7 8 … 20
+const scrollTop = () => {
+	if (import.meta.client) window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+// Розмір рухомого вікна номерів (на телефоні менше). Перша/остання + «…» додаються окремо.
+const windowSize = ref(5)
+let mq: MediaQueryList | null = null
+const applyMq = () => {
+	if (mq) windowSize.value = mq.matches ? 3 : 5
+}
+onMounted(() => {
+	mq = window.matchMedia('(max-width: 480px)')
+	applyMq()
+	mq.addEventListener('change', applyMq)
+})
+onBeforeUnmount(() => mq?.removeEventListener('change', applyMq))
+
+// Рухоме вікно навколо поточної, зсунуте від країв (тож на початку — «1 2 3 4 5 … N»);
+// перша/остання завжди видимі, проміжні ховаються за «…».
 const pages = computed(() => {
 	const result: { key: string; num: number | null }[] = []
 	const total = props.totalPages
 	const cur = props.current
+	const n = windowSize.value
+	const add = (num: number | null, key?: string) => result.push({ key: key ?? String(num), num })
 
-	const add = (num: number | null, key?: string) =>
-		result.push({ key: key || String(num), num })
-
-	if (total <= 9) {
+	if (total <= n + 2) {
 		for (let i = 1; i <= total; i++) add(i)
 		return result
 	}
 
+	const end = Math.min(total, Math.max(cur + Math.floor(n / 2), n))
+	const start = Math.max(1, end - n + 1)
+
 	add(1)
-	if (cur > 4) add(null, 'dots-l')
-
-	for (let i = Math.max(2, cur - 2); i <= Math.min(total - 1, cur + 2); i++) add(i)
-
-	if (cur < total - 3) add(null, 'dots-r')
+	if (start > 2) add(null, 'dots-l')
+	for (let i = Math.max(2, start); i <= Math.min(total - 1, end); i++) add(i)
+	if (end < total - 1) add(null, 'dots-r')
 	add(total)
 
 	return result
@@ -69,8 +94,7 @@ const pages = computed(() => {
 	align-items: center;
 	justify-content: center;
 	gap: 10px;
-	flex-wrap: wrap;
-	margin-top: 28px;
+	flex-wrap: nowrap;
 }
 
 .pagination__btn {
@@ -87,14 +111,15 @@ const pages = computed(() => {
 	transition: all 0.15s;
 }
 
-.pagination__btn:hover:not(:disabled) {
+.pagination__btn:hover:not(.is-disabled) {
 	border-color: var(--accent);
 	color: var(--accent);
 }
 
-.pagination__btn:disabled {
+.pagination__btn.is-disabled {
 	opacity: 0.4;
 	cursor: default;
+	pointer-events: none;
 }
 
 .pagination__pages {
@@ -103,6 +128,9 @@ const pages = computed(() => {
 }
 
 .pagination__page {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	min-width: 38px;
 	height: 38px;
 	padding: 0 6px;
@@ -123,8 +151,54 @@ const pages = computed(() => {
 	color: var(--on-accent);
 }
 
+/* Вже підвантажені (видимі) сторінки — акцентний текст + крапка знизу */
+.pagination__page.is-loaded {
+	position: relative;
+	color: var(--accent);
+}
+
+.pagination__page.is-loaded::after {
+	content: '';
+	position: absolute;
+	left: 50%;
+	bottom: 5px;
+	transform: translateX(-50%);
+	width: 4px;
+	height: 4px;
+	border-radius: 50%;
+	background: var(--accent);
+}
+
 .pagination__page.is-dots {
 	cursor: default;
 	color: var(--text-muted);
+}
+
+/* Планшет і вужче: стрілки без тексту — більше місця під номери сторінок */
+@media (max-width: 860px) {
+	.pagination__btn {
+		padding: 9px 11px;
+	}
+
+	.pagination__btn-text {
+		display: none;
+	}
+}
+
+/* Телефон: компактніші клітинки/відступи, щоб усе влізло в один рядок */
+@media (max-width: 480px) {
+	.pagination {
+		gap: 6px;
+	}
+
+	.pagination__pages {
+		gap: 3px;
+	}
+
+	.pagination__page {
+		min-width: 32px;
+		height: 34px;
+		font-size: 13px;
+	}
 }
 </style>
