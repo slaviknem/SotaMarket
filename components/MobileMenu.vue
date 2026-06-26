@@ -6,7 +6,9 @@
 
 				<div class="mobile-menu__panel">
 					<div class="mobile-menu__head">
-						<span class="mobile-menu__logo">FLOY<span class="text-accent">.</span></span>
+						<NuxtLink :to="localePath('/')" class="mobile-menu__logo" aria-label="FLOY" @click="open = false">
+							<LogoFloy />
+						</NuxtLink>
 						<LangSwitcher />
 						<button class="mobile-menu__close" aria-label="Close" @click="open = false">
 							<AppIcon name="close" :size="20" />
@@ -134,9 +136,12 @@ watch(open, (v: boolean) => {
 }
 
 .mobile-menu__logo {
-	font-size: 22px;
-	font-weight: 800;
+	display: flex;
 	margin-right: auto;
+}
+
+.mobile-menu__logo :deep(.logo-floy) {
+	height: 26px;
 }
 
 .mobile-menu__close {
@@ -198,12 +203,22 @@ watch(open, (v: boolean) => {
 	padding: 4px 0;
 }
 
+/* Заголовок серії — помаранчевий з нижнім роздільником (як у десктопному мегаменю),
+   щоб чітко відділяти групи моделей, а не зливатися зі списком. */
 .mobile-menu__serie {
-	padding: 9px 24px 3px;
-	font-size: 12px;
+	margin: 6px 16px 4px;
+	padding: 0 8px 6px;
+	font-size: 11.5px;
 	font-weight: 700;
-	color: var(--text-muted);
+	color: var(--accent);
 	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	border-bottom: 1px solid var(--border);
+}
+
+/* Перший заголовок у розкритому бренді — без зайвого відступу зверху */
+.mobile-menu__sub > .mobile-menu__serie:first-child {
+	margin-top: 2px;
 }
 
 .mobile-menu__sub-link {

@@ -249,6 +249,14 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* <header> не утворює власний бокс — топбар, панель і нав стають flex-дітьми .app.
+   Завдяки цьому sticky-панель (.header__main) прибивається відносно всієї сторінки, а не
+   висоти шапки: прибивається ЛИШЕ панель з логотипом, а верхня смуга й смуга навігації
+   (вона йде після панелі) спокійно йдуть під скрол. */
+.header {
+	display: contents;
+}
+
 .header__topbar {
 	background: var(--bg-deep);
 	border-bottom: 1px solid var(--border);
@@ -308,7 +316,7 @@ onMounted(() => {
 	color: var(--accent);
 }
 
-/* Main bar */
+/* Main bar — єдина прибита до верху панель (логотип + пошук + дії) */
 .header__main {
 	position: sticky;
 	top: 0;
@@ -784,20 +792,21 @@ onMounted(() => {
 	height: 42px;
 	padding: 8px;
 	border-radius: var(--radius-sm);
-	background: var(--bg-elevated);
+	background: var(--accent);
+	box-shadow: 0 4px 14px var(--accent-glow);
 	flex-shrink: 0;
+	transition: background 0.15s;
 }
 
 .burger span {
 	display: block;
 	height: 2px;
 	border-radius: 2px;
-	background: var(--text);
-	transition: background 0.15s;
+	background: var(--on-accent);
 }
 
-.burger:hover span {
-	background: var(--accent);
+.burger:hover {
+	background: var(--accent-hover);
 }
 
 @media (max-width: 1023px) {
@@ -817,6 +826,15 @@ onMounted(() => {
 
 	.burger {
 		display: flex;
+	}
+
+	/* Панель з логотипом — світло-сіра (як десктопна смуга навігації).
+	   Прибивання до верху працює глобально через sticky на .header (нав на мобільній прихована,
+	   тож лишається тільки ця панель). */
+	.header__main {
+		background: var(--bg-elevated);
+		backdrop-filter: none;
+		-webkit-backdrop-filter: none;
 	}
 
 	.header__main-inner {

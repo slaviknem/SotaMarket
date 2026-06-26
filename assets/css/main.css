@@ -47,6 +47,9 @@
 	--font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
 	--header-h: 72px;
+	/* Висота прибитої до верху панелі з логотипом (--header-h + 1px бордер).
+	   Орієнтир для sticky-елементів під шапкою (напр. сайдбар фільтрів). */
+	--header-stuck-h: 73px;
 }
 
 /* ---------- Reset ---------- */

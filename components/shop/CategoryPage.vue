@@ -413,12 +413,11 @@ function changeSort(e: Event) {
 	align-self: stretch;
 }
 
-/* Sticky-обгортка: фіксує картку фільтрів майже на верху вікна (5px «повітря» зверху).
-   Шапка сайту при прокрутці не лишається прибитою (її sticky обмежений власним контейнером),
-   тож відступ під неї не потрібен. Висоту й скрол тримає сама картка (.filters). */
+/* Sticky-обгортка фіксує картку фільтрів під прибитою шапкою (висота шапки + 5px «повітря»).
+   Висоту й скрол тримає сама картка (.filters). */
 .cat-layout__sidebar-panel {
 	position: sticky;
-	top: 5px;
+	top: calc(var(--header-stuck-h) + 5px);
 }
 
 .cat-head {
@@ -572,19 +571,24 @@ function changeSort(e: Event) {
 		margin-top: 2px;
 	}
 
+	/* Фільтри + сортування — рівно по половині ширини (basis 0, без впливу вмісту) */
 	.cat-head__filters-btn,
 	.cat-head__sort {
-		flex: 1;
+		flex: 1 1 0;
+		min-width: 0;
+		box-sizing: border-box;
+		height: 40px;
 	}
 
 	.cat-head__filters-btn {
-		padding: 9px 12px;
+		padding: 0 12px;
 		font-size: 13px;
 	}
 
 	.cat-head__sort select {
 		width: 100%;
-		padding: 9px 30px 9px 12px;
+		height: 40px;
+		padding: 0 30px 0 12px;
 		font-size: 13px;
 	}
 
