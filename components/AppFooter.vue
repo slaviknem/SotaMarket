@@ -50,13 +50,15 @@
 				</div>
 
 				<!-- Графік + соцмережі -->
-				<div class="footer__col">
-					<div class="footer__title">{{ t('footer.schedule') }}</div>
-					<ul class="footer__schedule">
-						<li><span>{{ t('footer.monFri') }}:</span> 9:00 – 19:00</li>
-						<li><span>{{ t('footer.saturday') }}:</span> 10:00 – 16:00</li>
-						<li><span>{{ t('footer.sunday') }}:</span> {{ t('footer.dayOff') }}</li>
-					</ul>
+				<div class="footer__col footer__col--last">
+					<div class="footer__schedule-block">
+						<div class="footer__title">{{ t('footer.schedule') }}</div>
+						<ul class="footer__schedule">
+							<li><span>{{ t('footer.monFri') }}:</span> 9:00 – 19:00</li>
+							<li><span>{{ t('footer.saturday') }}:</span> 10:00 – 16:00</li>
+							<li><span>{{ t('footer.sunday') }}:</span> {{ t('footer.dayOff') }}</li>
+						</ul>
+					</div>
 
 					<div class="footer__social">
 						<div class="footer__title">{{ t('footer.social') }}</div>
@@ -207,9 +209,39 @@ const config = useRuntimeConfig()
 		padding: 30px 0 24px;
 	}
 
-	/* Бренд + контакти — на всю ширину (довгий текст лишається читабельним) */
+	/* Бренд + контакти — на всю ширину, по центру; знизу тонкий розділювач */
 	.footer__col--about {
 		grid-column: 1 / -1;
+		text-align: center;
+		padding-bottom: 24px;
+		border-bottom: 1px solid var(--border);
+	}
+
+	.footer__about-text {
+		max-width: none;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	/* Контакти центруємо рядками (іконка + текст лишаються компактним блоком) */
+	.footer__contacts {
+		align-items: center;
+	}
+
+	/* Графік + соцмережі — на всю ширину двома колонками (графік ліворуч, соцмережі праворуч);
+	   зверху тонкий розділювач, симетричний до блоку бренду */
+	.footer__col--last {
+		grid-column: 1 / -1;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 24px 18px;
+		align-items: start;
+		padding-top: 24px;
+		border-top: 1px solid var(--border);
+	}
+
+	.footer__social {
+		margin-top: 0;
 	}
 }
 </style>
