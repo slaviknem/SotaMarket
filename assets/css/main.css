@@ -789,27 +789,27 @@ textarea.form-control {
 	}
 }
 
-/* Стрічка з центруванням неповного останнього ряду — для категорій із «Показати ще»/конструктором.
-   Повні ряди заповнюють усю ширину (центрування непомітне), неповний останній ряд — по центру.
+/* Стрічка з вирівнюванням по лівому краю — для одно­сторінкових категорій/пошуку.
+   Повні ряди заповнюють усю ширину, неповний останній ряд притиснутий зліва (без «дірок» по центру).
    Ширини плиток дзеркалять колонки/відступи базової .products-grid (4/3/2 кол., gap 14/14/10). */
-.products-grid--center {
+.products-grid--left {
 	display: flex;
 	flex-wrap: wrap;
-	justify-content: center;
+	justify-content: flex-start;
 }
 
-.products-grid--center > * {
+.products-grid--left > * {
 	width: calc((100% - 3 * 14px) / 4);
 }
 
 @media (max-width: 1180px) {
-	.products-grid--center > * {
+	.products-grid--left > * {
 		width: calc((100% - 2 * 14px) / 3);
 	}
 }
 
 @media (max-width: 760px) {
-	.products-grid--center > * {
+	.products-grid--left > * {
 		width: calc((100% - 10px) / 2);
 	}
 }

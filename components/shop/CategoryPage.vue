@@ -270,13 +270,13 @@ const { items: displayProducts, isLoadingMore, autoOn, hasMorePages, loadedPages
 	})
 
 // Лендінг — 6 у ряд; багатосторінкова — flow (товари зліва + блок контролів у вільний простір
-// справа від останнього товару); одна сторінка (контролів нема) — центруємо неповний хвіст.
+// справа від останнього товару); одна сторінка (контролів нема) — вирівнюємо неповний хвіст зліва.
 const gridModifier = computed(() =>
 	props.brandsLanding
 		? 'products-grid--six'
 		: lastPage.value > 1
 			? 'products-grid--flow'
-			: 'products-grid--center'
+			: 'products-grid--left'
 )
 
 // Посилання на сторінку для пагінації (дзеркалить updateQuery: page=1 прибираємо)
