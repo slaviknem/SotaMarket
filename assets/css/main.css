@@ -403,6 +403,8 @@ textarea.form-control {
 
 .p-card:hover {
 	transform: translateY(-3px);
+	border-color: var(--accent);
+	box-shadow: 0 8px 24px rgba(255, 122, 0, 0.16);
 }
 
 .p-card__media {

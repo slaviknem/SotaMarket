@@ -116,12 +116,7 @@ const toggleCompare = () => compare.toggle(props.product)
 </script>
 
 <style scoped>
-/* База .p-card винесена в assets/css/main.css — тут лише специфіка цієї картки */
-.p-card:hover {
-	border-color: var(--border-light);
-	box-shadow: var(--shadow-card);
-}
-
+/* База .p-card (+ hover-обводка) винесена в assets/css/main.css — тут лише специфіка цієї картки */
 .p-card__img-link {
 	padding: 16px 14px;
 }

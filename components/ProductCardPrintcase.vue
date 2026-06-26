@@ -49,16 +49,7 @@ const title = computed(() =>
 </script>
 
 <style scoped>
-/* База .p-card — у assets/css/main.css. Тут лише «преміум» оформлення картки конструктора */
-.p-card {
-	border-color: var(--accent);
-	box-shadow: 0 0 0 1px var(--accent-soft), 0 4px 18px rgba(255, 122, 0, 0.07);
-}
-
-.p-card:hover {
-	box-shadow: 0 6px 26px rgba(255, 122, 0, 0.18);
-}
-
+/* База .p-card (+ hover-обводка) — у assets/css/main.css. Тут лише акценти картки конструктора */
 .pc-card__badge {
 	background: var(--accent);
 	color: var(--on-accent);
