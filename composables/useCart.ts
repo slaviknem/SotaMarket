@@ -112,12 +112,18 @@ export function useCart() {
 }
 
 // Слайдер-кошик (mini-cart): глобальний стан відкриття.
-// Відкривається при додаванні товару — показує склад кошика без оформлення.
+// Відкривається при додаванні товару або кліку по іконці — показує склад кошика без оформлення.
+// justAdded=true → заголовок «Товар додано»; false → нейтральний «Кошик» (перегляд із шапки).
 export function useCartDrawer() {
 	const open = useState('cartDrawerOpen', () => false)
+	const justAdded = useState('cartDrawerAdded', () => true)
 	return {
 		open,
-		openCart: () => (open.value = true),
+		justAdded,
+		openCart: (added = true) => {
+			justAdded.value = added
+			open.value = true
+		},
 		closeCart: () => (open.value = false),
 	}
 }

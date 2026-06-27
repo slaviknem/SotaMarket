@@ -37,6 +37,11 @@
 						</div>
 					</div>
 
+					<div class="cart-item__unit">
+						{{ formatPrice(item.total / item.quantity) }}
+						<span class="cart-item__unit-x">×</span>
+					</div>
+
 					<div class="qty-stepper cart-item__qty">
 						<button :aria-label="'−'" @click="cart.updateQuantity(item.id, item.quantity - 1)">−</button>
 						<span>{{ item.quantity }}</span>
@@ -389,23 +394,32 @@ async function sendOrder() {
 
 .cart-layout {
 	display: grid;
-	grid-template-columns: 1fr 400px;
+	grid-template-columns: minmax(0, 1fr) 460px;
 	gap: 22px;
 	align-items: start;
 	padding-bottom: 36px;
 }
 
+/* Sticky-колонки: коротша лишається на місці, довша прокручується.
+   Мало товарів → стоїть лівий блок; багато → стоїть права форма (CSS перемикає сам). */
 .cart-items {
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
+	position: sticky;
+	top: calc(var(--header-h) + 16px);
+}
+
+.checkout-card {
+	position: sticky;
+	top: calc(var(--header-h) + 16px);
 }
 
 .cart-item {
 	display: grid;
-	grid-template-columns: 84px 1fr auto auto auto;
+	grid-template-columns: 84px minmax(0, 1fr) auto auto auto auto;
 	align-items: center;
-	gap: 16px;
+	gap: 18px;
 	padding: 14px;
 	background: var(--bg-card);
 	border: 1px solid var(--border);
@@ -442,6 +456,20 @@ async function sendOrder() {
 	color: var(--success);
 }
 
+/* Ціна за одиницю: «279 грн ×» перед степером — заповнює простір осмислено */
+.cart-item__unit {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 14px;
+	color: var(--text-soft);
+	white-space: nowrap;
+}
+
+.cart-item__unit-x {
+	color: var(--text-muted);
+}
+
 /* Візуал степера — глобальний .qty-stepper у main.css */
 
 .cart-item__total {
@@ -449,6 +477,8 @@ async function sendOrder() {
 	font-size: 15.5px;
 	color: var(--accent);
 	white-space: nowrap;
+	min-width: 84px;
+	text-align: right;
 }
 
 .cart-item__remove {
@@ -641,9 +671,15 @@ async function sendOrder() {
 	color: var(--accent);
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 900px) {
 	.cart-layout {
 		grid-template-columns: 1fr;
+	}
+
+	/* В один стовпчик sticky не потрібен — блоки стоять звичайно */
+	.cart-items,
+	.checkout-card {
+		position: static;
 	}
 }
 
@@ -669,6 +705,10 @@ async function sendOrder() {
 		grid-area: info;
 	}
 
+	.cart-item__unit {
+		display: none;
+	}
+
 	.cart-item__qty {
 		grid-area: qty;
 		justify-self: start;
@@ -677,6 +717,7 @@ async function sendOrder() {
 	.cart-item__total {
 		grid-area: total;
 		justify-self: end;
+		min-width: 0;
 	}
 
 	.cart-item__remove {

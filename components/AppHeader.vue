@@ -46,9 +46,13 @@
 						<span v-if="wishlist.items.value.length" class="action-btn__count">{{ wishlist.items.value.length }}</span>
 					</NuxtLink>
 
-					<NuxtLink :to="localePath('/shop/cart')" class="action-btn action-btn--cart" :title="$t('cart.cart')">
-						<AppIcon name="cart" />
-						<span v-if="cartQty" class="action-btn__count">{{ cartQty }}</span>
+					<NuxtLink :to="localePath('/shop/cart')" custom>
+						<template #default="{ href }">
+							<a :href="href" class="action-btn action-btn--cart" :title="$t('cart.cart')" @click="onCartClick">
+								<AppIcon name="cart" />
+								<span v-if="cartQty" class="action-btn__count">{{ cartQty }}</span>
+							</a>
+						</template>
 					</NuxtLink>
 				</div>
 			</div>
@@ -152,8 +156,22 @@ const config = useRuntimeConfig()
 
 const cart = useCart()
 const cartQty = cart.quantity
+const { openCart } = useCartDrawer()
 const wishlist = useWishlist()
 const compare = useCompare()
+const route = useRoute()
+
+// Чи ми вже на сторінці кошика — там слайдер зайвий, лишаємо звичайний перехід
+const onCartPage = computed(() => route.path === localePath('/shop/cart'))
+
+// Клік по іконці кошика: відкриваємо слайдер замість переходу на /shop/cart.
+// Модифікатори (Ctrl/⌘/Shift) чи не-ліва кнопка → лишаємо браузеру «відкрити в новій вкладці».
+function onCartClick(e: MouseEvent) {
+	if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
+	e.preventDefault()
+	if (onCartPage.value) return // вже на сторінці кошика — нічого не робимо
+	openCart(false)
+}
 
 const mobileOpen = useState('mobileMenuOpen', () => false)
 
@@ -274,7 +292,6 @@ function closeBrand() {
 }
 
 // Закриваємо все при зміні роута
-const route = useRoute()
 watch(
 	() => route.fullPath,
 	() => {

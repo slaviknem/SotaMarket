@@ -13,9 +13,14 @@
 				<aside class="cart-drawer__panel">
 					<!-- Шапка -->
 					<header class="cart-drawer__head">
-						<AppIcon name="check" :size="20" class="cart-drawer__head-icon" />
+						<AppIcon
+							:name="justAdded ? 'check' : 'cart'"
+							:size="20"
+							class="cart-drawer__head-icon"
+							:class="{ 'cart-drawer__head-icon--neutral': !justAdded }"
+						/>
 						<div class="cart-drawer__head-text">
-							<strong>{{ t('cart.added') }}</strong>
+							<strong>{{ justAdded ? t('cart.added') : t('cart.cart') }}</strong>
 							<span v-if="cart.quantity.value" class="text-muted">
 								{{ t('cart.inCart') }}: {{ cart.quantity.value }}
 							</span>
@@ -100,7 +105,7 @@ const { t } = useI18n()
 const localePath = useLocalePath()
 const url = useUrl()
 const cart = useCart()
-const { open, closeCart } = useCartDrawer()
+const { open, justAdded, closeCart } = useCartDrawer()
 const route = useRoute()
 
 const items = computed(() => cart.state.value.items)
@@ -169,6 +174,11 @@ onUnmounted(() => {
 .cart-drawer__head-icon {
 	color: var(--success);
 	flex-shrink: 0;
+}
+
+/* Перегляд із шапки (не «додано») — нейтральний акцентний колір */
+.cart-drawer__head-icon--neutral {
+	color: var(--accent);
 }
 
 .cart-drawer__head-text {
