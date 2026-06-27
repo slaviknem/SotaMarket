@@ -58,8 +58,8 @@
 		<nav class="header__nav">
 			<div ref="navInnerRef" class="container header__nav-inner" @mouseleave="closeBrand">
 				<!-- Категорії (departments) -->
-				<div class="departments" @mouseleave="depsOpen = false">
-					<button class="departments__toggle" :class="{ 'is-open': depsOpen }" @mouseenter="openDeps" @click="toggleDeps">
+				<div class="departments" @mouseleave="closeDeps">
+					<button class="departments__toggle" :class="{ 'is-open': depsOpen }" @mouseenter="openDepsDelayed" @click="toggleDeps">
 						<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
 						{{ t('other.catalog') }}
 						<svg class="departments__caret" width="10" height="10" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l5 5 5-5"/></svg>
@@ -86,6 +86,7 @@
 						:ref="(el) => setBrandRef(el, i)"
 						class="brands-nav__item"
 						@mouseenter="openBrand(i)"
+						@mouseleave="cancelOpen"
 					>
 						<NuxtLink
 							:to="brandLink(brand)"
@@ -170,6 +171,9 @@ const brands = computed(() => props.menu?.brends || [])
 const depsOpen = ref(false)
 const openedBrand = ref<number | null>(null)
 let brandTimer: ReturnType<typeof setTimeout> | null = null
+let openTimer: ReturnType<typeof setTimeout> | null = null
+let depsTimer: ReturnType<typeof setTimeout> | null = null
+const OPEN_DELAY = 160 // мс «hover intent» — щоб меню не відкривалося при випадковому проведенні мишкою
 
 const activeBrand = computed(() =>
 	openedBrand.value !== null ? brands.value[openedBrand.value] : null
@@ -198,7 +202,18 @@ function positionMenu(i: number) {
 	menuLeft.value = Math.max(0, Math.min(center - menu.offsetWidth / 2, navBox.width - menu.offsetWidth))
 }
 
-async function openBrand(i: number) {
+// Наведення на бренд: якщо меню вже відкрите — перемикаємось одразу;
+// інакше відкриваємо з невеликою затримкою (hover intent), щоб не спрацьовувало випадково
+function openBrand(i: number) {
+	if (brandTimer) clearTimeout(brandTimer)
+	cancelDeps()
+	if (openedBrand.value !== null) return showBrand(i)
+	cancelOpen()
+	openTimer = setTimeout(() => showBrand(i), OPEN_DELAY)
+}
+
+async function showBrand(i: number) {
+	cancelOpen()
 	if (brandTimer) clearTimeout(brandTimer)
 	depsOpen.value = false // закриваємо меню «Каталог», щоб не накладалися
 	openedBrand.value = i
@@ -206,11 +221,42 @@ async function openBrand(i: number) {
 	positionMenu(i)
 }
 
+// Скасувати відкладене відкриття (курсор пішов з бренда, не дочекавшись затримки)
+function cancelOpen() {
+	if (openTimer) {
+		clearTimeout(openTimer)
+		openTimer = null
+	}
+}
+
 // Меню «Каталог товарів» і меню брендів — взаємовиключні
 function openDeps() {
 	if (brandTimer) clearTimeout(brandTimer)
+	cancelOpen()
+	cancelDeps()
 	openedBrand.value = null
 	depsOpen.value = true
+}
+
+// Наведення на кнопку «Каталог»: відкриваємо з тією ж затримкою (hover intent).
+// Якщо вже відкрите меню бренда — перемикаємось одразу.
+function openDepsDelayed() {
+	if (openedBrand.value !== null) return openDeps()
+	cancelDeps()
+	depsTimer = setTimeout(openDeps, OPEN_DELAY)
+}
+
+function cancelDeps() {
+	if (depsTimer) {
+		clearTimeout(depsTimer)
+		depsTimer = null
+	}
+}
+
+// Курсор пішов із зони «Каталогу» — скасувати відкладене відкриття і закрити список
+function closeDeps() {
+	cancelDeps()
+	depsOpen.value = false
 }
 
 function toggleDeps() {
