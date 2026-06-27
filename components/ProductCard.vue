@@ -58,7 +58,7 @@
 
 			<div class="p-card__bottom">
 				<div class="p-card__prices">
-					<span v-if="product.price_old" class="p-card__price-old">{{ formatPrice(product.price_old) }}</span>
+					<span v-if="discount > 0" class="p-card__price-old">{{ formatPrice(product.price_old) }}</span>
 					<span class="p-card__price">{{ formatPrice(product.price) }}</span>
 				</div>
 

@@ -58,7 +58,7 @@
 				<div class="product__buy card">
 					<div class="card-body">
 						<div class="product__prices">
-							<span v-if="product.price_old" class="product__price-old">{{ formatPrice(product.price_old) }}</span>
+							<span v-if="discount" class="product__price-old">{{ formatPrice(product.price_old) }}</span>
 							<span class="product__price">{{ formatPrice(product.price) }}</span>
 							<span v-if="discount" class="badge badge-sale">-{{ discount }}%</span>
 						</div>

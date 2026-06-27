@@ -466,7 +466,9 @@ textarea.form-control {
 	align-items: center;
 	justify-content: space-between;
 	gap: 8px;
-	margin-top: 10px;
+	/* притискаємо ціну+кнопку до низу картки — рівняння в усіх картках */
+	margin-top: auto;
+	padding-top: 10px;
 }
 
 .p-card__prices {
@@ -492,7 +494,9 @@ textarea.form-control {
 .badge {
 	display: inline-flex;
 	align-items: center;
-	padding: 4px 10px;
+	line-height: 1;
+	/* верхній паддинг більший — оптичне центрування великих літер Inter (велика метрика виносних) */
+	padding: 7px 10px 4px;
 	border-radius: var(--radius-pill);
 	font-size: 11.5px;
 	font-weight: 700;

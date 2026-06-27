@@ -61,11 +61,6 @@ const title = computed(() =>
 	color: var(--text);
 }
 
-.p-card__bottom {
-	margin-top: auto;
-	padding-top: 10px;
-}
-
 .pc-card__go {
 	display: flex;
 	align-items: center;
