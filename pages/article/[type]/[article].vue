@@ -8,35 +8,44 @@
 			]"
 		/>
 
-		<article class="post">
-			<header class="post__header">
-				<h1>{{ article.title }}</h1>
-				<div class="post__meta">
-					<span class="post__type">{{ t('blogCategory.' + article.type) }}</span>
-					<time class="text-muted">{{ article.date }}</time>
+		<div class="article-layout">
+			<!-- Меню категорій блогу збоку (як фільтри) -->
+			<aside class="article-layout__sidebar">
+				<div class="article-layout__sidebar-panel">
+					<BlocksBlogTypesNav vertical :active-type="article.type" />
 				</div>
-			</header>
+			</aside>
 
-			<AppImage
-				v-if="article.image_file"
-				:src="url.articleImg(article.image_file)"
-				:alt="article.title"
-				class="post__image"
-				fetchpriority="high"
-				loading="eager"
-				preload
-				:width="900"
-				:height="430"
-			/>
+			<article class="post">
+				<header class="post__header">
+					<h1>{{ article.title }}</h1>
+					<div class="post__meta">
+						<span class="post__type">{{ t('blogCategory.' + article.type) }}</span>
+						<time class="text-muted">{{ article.date }}</time>
+					</div>
+				</header>
 
-			<div class="post__content typography" v-html="article.text" />
+				<AppImage
+					v-if="article.image_file"
+					:src="url.articleImg(article.image_file)"
+					:alt="article.title"
+					class="post__image"
+					fetchpriority="high"
+					loading="eager"
+					preload
+					:width="900"
+					:height="430"
+				/>
 
-			<!-- Коментарі -->
-			<section class="post__reviews">
-				<h2>{{ t('product.reviews') }}</h2>
-				<ShopReviewsBlock :reviews="article.reviews || []" :article-id="article.id" />
-			</section>
-		</article>
+				<div class="post__content typography" v-html="article.text" />
+
+				<!-- Коментарі -->
+				<section class="post__reviews">
+					<h2>{{ t('product.reviews') }}</h2>
+					<ShopReviewsBlock :reviews="article.reviews || []" :article-id="article.id" />
+				</section>
+			</article>
+		</div>
 	</div>
 </template>
 
@@ -81,10 +90,29 @@ useJsonLd(() => ({
 </script>
 
 <style scoped>
+/* Сайдбар з меню категорій зліва + стаття справа — разом на всю ширину */
+.article-layout {
+	display: grid;
+	grid-template-columns: 250px 1fr;
+	gap: 22px;
+	align-items: start;
+	padding-bottom: 30px;
+}
+
+/* Колонка тягнеться на висоту ряду — інакше sticky-панелі немає куди рухатись */
+.article-layout__sidebar {
+	align-self: stretch;
+}
+
+/* Sticky-панель меню під прибитою шапкою (як у сайдбарі фільтрів категорії) */
+.article-layout__sidebar-panel {
+	position: sticky;
+	top: calc(var(--header-stuck-h) + 5px);
+}
+
 .post {
-	max-width: 900px;
-	margin: 0 auto;
-	padding-bottom: 50px;
+	min-width: 0;
+	padding-bottom: 20px;
 }
 
 .post__header h1 {
@@ -122,6 +150,18 @@ useJsonLd(() => ({
 .post__reviews h2 {
 	font-size: 20px;
 	margin-bottom: 16px;
+}
+
+/* Планшет/мобайл — меню зверху стрічкою, стаття під ним на всю ширину */
+@media (max-width: 1023px) {
+	.article-layout {
+		grid-template-columns: 1fr;
+		gap: 14px;
+	}
+
+	.article-layout__sidebar-panel {
+		position: static;
+	}
 }
 
 @media (max-width: 768px) {
