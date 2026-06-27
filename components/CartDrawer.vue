@@ -1,24 +1,14 @@
 <template>
 	<Teleport to="body">
 		<Transition name="cart-drawer">
-			<div
-				v-if="open"
-				class="cart-drawer"
-				role="dialog"
-				aria-modal="true"
-				:aria-label="t('cart.cart')"
-			>
+			<div v-if="open" class="cart-drawer" role="dialog" aria-modal="true" :aria-label="t('cart.cart')">
 				<div class="cart-drawer__backdrop" @click="close" />
 
 				<aside class="cart-drawer__panel">
 					<!-- Шапка -->
 					<header class="cart-drawer__head">
-						<AppIcon
-							:name="justAdded ? 'check' : 'cart'"
-							:size="20"
-							class="cart-drawer__head-icon"
-							:class="{ 'cart-drawer__head-icon--neutral': !justAdded }"
-						/>
+						<AppIcon :name="justAdded ? 'check' : 'cart'" :size="20" class="cart-drawer__head-icon"
+							:class="{ 'cart-drawer__head-icon--neutral': !justAdded }" />
 						<div class="cart-drawer__head-text">
 							<strong>{{ justAdded ? t('cart.added') : t('cart.cart') }}</strong>
 							<span v-if="cart.quantity.value" class="text-muted">
@@ -42,13 +32,8 @@
 						<div class="cart-drawer__body">
 							<div v-for="item in items" :key="item.id" class="cart-drawer__item">
 								<NuxtLink :to="url.product(item.product)" class="cart-drawer__item-img" @click="close">
-									<img
-										:src="itemImage(item)"
-										:alt="item.product.title"
-										width="64"
-										height="64"
-										loading="lazy"
-									/>
+									<img :src="itemImage(item)" :alt="item.product.title" width="64" height="64"
+										loading="lazy" />
 								</NuxtLink>
 
 								<div class="cart-drawer__item-main">
@@ -61,15 +46,18 @@
 
 									<div class="cart-drawer__item-row">
 										<div class="qty-stepper">
-											<button :aria-label="t('cart.delete')" @click="cart.updateQuantity(item.id, item.quantity - 1)">−</button>
+											<button :aria-label="t('cart.delete')"
+												@click="cart.updateQuantity(item.id, item.quantity - 1)">−</button>
 											<span>{{ item.quantity }}</span>
-											<button aria-label="+" @click="cart.updateQuantity(item.id, item.quantity + 1)">+</button>
+											<button aria-label="+"
+												@click="cart.updateQuantity(item.id, item.quantity + 1)">+</button>
 										</div>
 										<span class="cart-drawer__item-total">{{ formatPrice(item.total) }}</span>
 									</div>
 								</div>
 
-								<button class="cart-drawer__item-remove" :title="t('cart.delete')" @click="cart.remove(item.id)">
+								<button class="cart-drawer__item-remove" :title="t('cart.delete')"
+									@click="cart.remove(item.id)">
 									<AppIcon name="close" :size="15" />
 								</button>
 							</div>
