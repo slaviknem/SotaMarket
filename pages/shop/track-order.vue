@@ -2,26 +2,36 @@
 	<div class="container">
 		<Breadcrumbs :items="[{ title: t('header.topbar.trackOrder') }]" />
 
-		<div class="track">
-			<h1>{{ t('header.topbar.trackOrder') }}</h1>
-			<p class="text-muted">{{ t('trackOrder.message') }}</p>
+		<div class="side-layout">
+			<!-- Меню інфо-сторінок зліва (на мобільному ховається — є в шапці) -->
+			<aside class="side-layout__aside">
+				<div class="side-layout__aside-panel">
+					<BlocksSideMenu :menu="infoMenu" />
+				</div>
+			</aside>
 
-			<form class="track__form" @submit.prevent="track">
-				<input
-					v-model="ttn"
-					class="form-control"
-					type="text"
-					placeholder="20400000000000"
-					inputmode="numeric"
-				/>
-				<button class="btn btn-primary" type="submit">{{ t('trackOrder.track') }}</button>
-			</form>
+			<div class="side-layout__content track">
+				<h1>{{ t('header.topbar.trackOrder') }}</h1>
+				<p class="text-muted">{{ t('trackOrder.message') }}</p>
+
+				<form class="track__form" @submit.prevent="track">
+					<input
+						v-model="ttn"
+						class="form-control"
+						type="text"
+						placeholder="20400000000000"
+						inputmode="numeric"
+					/>
+					<button class="btn btn-primary" type="submit">{{ t('trackOrder.track') }}</button>
+				</form>
+			</div>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
 const { t } = useI18n()
+const { infoMenu } = useSiteMenus()
 
 usePageSeo({ title: () => t('header.topbar.trackOrder'), noindex: true })
 

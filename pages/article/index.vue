@@ -5,7 +5,7 @@
 		<h1>{{ t('pageTitle.blog') }}</h1>
 
 		<!-- Категорії блогу -->
-		<BlocksBlogTypesNav class="blog-nav" />
+		<BlocksSideMenu :menu="blogMenu" variant="strip" class="blog-nav" />
 
 		<BlocksPostsGrid :title="''" :posts="posts" class="blog-grid" />
 	</div>
@@ -14,6 +14,7 @@
 <script setup lang="ts">
 const { t, locale } = useI18n()
 const shopApi = useShopApi()
+const { blogMenu } = useSiteMenus()
 
 const { data: posts } = await useAsyncData('articles-all-' + locale.value, () =>
 	shopApi.getArticles('all')

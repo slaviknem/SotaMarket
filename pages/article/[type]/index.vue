@@ -10,7 +10,7 @@
 		<h1>{{ typeTitle }}</h1>
 
 		<!-- Категорії блогу — як на головній сторінці блогу -->
-		<BlocksBlogTypesNav :active-type="type" class="blog-nav" />
+		<BlocksSideMenu :menu="blogMenu" variant="strip" class="blog-nav" />
 
 		<BlocksPostsGrid :title="''" :posts="posts" class="blog-grid" />
 	</div>
@@ -21,6 +21,7 @@ const { t, locale } = useI18n()
 const localePath = useLocalePath()
 const route = useRoute()
 const shopApi = useShopApi()
+const { blogMenu } = useSiteMenus()
 
 const type = computed(() => String(route.params.type))
 

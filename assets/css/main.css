@@ -840,6 +840,53 @@ textarea.form-control {
 	}
 }
 
+/* ---------- Сайдбар-layout (інфо-сторінки, блог-стаття) ----------
+   Меню зліва (sticky) + контент справа, разом на всю ширину контейнера.
+   Контентом керує сама сторінка; сайдбар — <BlocksSideMenu>. */
+.side-layout {
+	display: grid;
+	grid-template-columns: 250px 1fr;
+	gap: 22px;
+	align-items: start;
+	padding-bottom: 30px;
+}
+
+/* Колонка тягнеться на висоту ряду — інакше sticky-панелі немає куди рухатись */
+.side-layout__aside {
+	align-self: stretch;
+}
+
+/* Sticky-панель меню під прибитою шапкою (як у сайдбарі фільтрів категорії) */
+.side-layout__aside-panel {
+	position: sticky;
+	top: calc(var(--header-stuck-h) + 5px);
+}
+
+.side-layout__content {
+	min-width: 0;
+}
+
+@media (max-width: 1023px) {
+	.side-layout {
+		grid-template-columns: 1fr;
+		gap: 14px;
+	}
+
+	.side-layout__aside-panel {
+		position: static;
+	}
+
+	/* За замовчуванням на мобільному сайдбар ховаємо (інфо-сторінки — меню вже є в шапці) */
+	.side-layout__aside {
+		display: none;
+	}
+
+	/* Модифікатор: лишити меню стрічкою зверху (блог) */
+	.side-layout--strip .side-layout__aside {
+		display: block;
+	}
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 768px) {
 	h1 { font-size: 23px; }

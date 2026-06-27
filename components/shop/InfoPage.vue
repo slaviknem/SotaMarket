@@ -2,12 +2,21 @@
 	<div v-if="article" class="container">
 		<Breadcrumbs :items="[{ title: article.title }]" />
 
-		<article class="info-page">
-			<h1>{{ article.title }}</h1>
-			<div class="typography" v-html="article.text" />
+		<div class="side-layout">
+			<!-- Меню інфо-сторінок зліва (на мобільному ховається — є в шапці) -->
+			<aside class="side-layout__aside">
+				<div class="side-layout__aside-panel">
+					<BlocksSideMenu :menu="infoMenu" />
+				</div>
+			</aside>
 
-			<slot />
-		</article>
+			<article class="side-layout__content info-page">
+				<h1>{{ article.title }}</h1>
+				<div class="typography" v-html="article.text" />
+
+				<slot />
+			</article>
+		</div>
 	</div>
 </template>
 
@@ -16,6 +25,7 @@ const props = defineProps<{ alias: string }>()
 
 const { locale } = useI18n()
 const shopApi = useShopApi()
+const { infoMenu } = useSiteMenus()
 
 const { data: article } = await useAsyncData(
 	`info-${props.alias}-${locale.value}`,
@@ -34,8 +44,6 @@ usePageSeo({
 
 <style scoped>
 .info-page {
-	max-width: 920px;
-	margin: 0 auto;
-	padding-bottom: 50px;
+	padding-bottom: 30px;
 }
 </style>

@@ -2,27 +2,37 @@
 	<div v-if="article" class="container">
 		<Breadcrumbs :items="[{ title: article.title }]" />
 
-		<article class="info-page">
-			<h1>{{ article.title }}</h1>
-			<div v-if="article.text" class="typography" v-html="article.text" />
+		<div class="side-layout">
+			<!-- Меню інфо-сторінок зліва (на мобільному ховається — є в шапці) -->
+			<aside class="side-layout__aside">
+				<div class="side-layout__aside-panel">
+					<BlocksSideMenu :menu="infoMenu" />
+				</div>
+			</aside>
 
-			<!-- Віджет відгуків Elfsight (як на старому сайті) -->
-			<ClientOnly>
-				<div class="elfsight-app-5ff3437e-c2a1-42cb-a6cc-b6957280109d" data-elfsight-app-lazy />
-			</ClientOnly>
+			<article class="side-layout__content info-page">
+				<h1>{{ article.title }}</h1>
+				<div v-if="article.text" class="typography" v-html="article.text" />
 
-			<!-- Відгуки з API + форма -->
-			<section class="reviews-section">
-				<h2>{{ t('reviews.newReview') }}</h2>
-				<ShopReviewsBlock :reviews="article.reviews || []" :article-id="article.id" />
-			</section>
-		</article>
+				<!-- Віджет відгуків Elfsight (як на старому сайті) -->
+				<ClientOnly>
+					<div class="elfsight-app-5ff3437e-c2a1-42cb-a6cc-b6957280109d" data-elfsight-app-lazy />
+				</ClientOnly>
+
+				<!-- Відгуки з API + форма -->
+				<section class="reviews-section">
+					<h2>{{ t('reviews.newReview') }}</h2>
+					<ShopReviewsBlock :reviews="article.reviews || []" :article-id="article.id" />
+				</section>
+			</article>
+		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
 const { t, locale } = useI18n()
 const shopApi = useShopApi()
+const { infoMenu } = useSiteMenus()
 
 const { data: article } = await useAsyncData(
 	'info-otzyvy-' + locale.value,
@@ -46,9 +56,7 @@ useHead({
 
 <style scoped>
 .info-page {
-	max-width: 920px;
-	margin: 0 auto;
-	padding-bottom: 50px;
+	padding-bottom: 30px;
 }
 
 .reviews-section {
