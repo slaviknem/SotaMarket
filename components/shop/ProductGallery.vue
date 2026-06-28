@@ -4,10 +4,10 @@
 		<Swiper
 			:modules="mainModules"
 			:slides-per-view="1"
-			:auto-height="true"
 			:thumbs="{ swiper: thumbsSwiper }"
-			:pagination="{ clickable: true }"
 			:navigation="images.length > 1"
+			:observer="true"
+			:observe-parents="true"
 			class="gallery__main"
 			@swiper="onMain"
 			@slide-change="onSlide"
@@ -22,6 +22,7 @@
 						:preload="i === 0"
 						:width="600"
 						:height="600"
+						sizes="(max-width: 768px) 96vw, (max-width: 900px) 460px, 650px"
 					/>
 					<figcaption class="visually-hidden">{{ captionFor(i) }}</figcaption>
 				</figure>
@@ -94,7 +95,7 @@ const props = defineProps<{ images: any[]; alt: string }>()
 const url = useUrl()
 const { t } = useI18n()
 
-const mainModules = [Thumbs, Navigation, Pagination]
+const mainModules = [Thumbs, Navigation]
 const lbModules = [Navigation, Pagination, Zoom]
 
 const thumbsSwiper = ref<SwiperClass | null>(null)
@@ -118,11 +119,16 @@ watch(lightbox, (open) => {
 	if (import.meta.client) document.body.style.overflow = open ? 'hidden' : ''
 })
 
-// При зміні набору зображень (вибір атрибута) — повертаємось на перше
+// При зміні набору зображень (вибір атрибута або перехід на інший товар) —
+// перерахувати слайди Swiper і повернутись на перше; без update() новий слайд
+// інколи лишається порожнім (фото «не підвантажується»)
 watch(
 	() => props.images,
-	() => {
+	async () => {
 		current.value = 0
+		await nextTick()
+		mainSwiper.value?.update()
+		if (thumbsSwiper.value && !thumbsSwiper.value.destroyed) thumbsSwiper.value.update()
 		mainSwiper.value?.slideTo(0, 0)
 	}
 )
@@ -138,36 +144,58 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* min-width:0 дозволяє галереї стискатись у grid-колонці (інакше внутрішній
+   .swiper-wrapper роздуває колонку за ширину екрана — фото вилазить на мобільному) */
+.gallery {
+	min-width: 0;
+	max-width: 100%;
+}
+
 .gallery__main {
 	background: var(--img-bg);
 	border-radius: var(--radius);
 	overflow: hidden;
 	border: 1px solid var(--border);
 	padding: 5px;
+	/* На всю ширину колонки/екрана */
+	width: 100%;
+	min-width: 0;
+}
+
+/* Слайди тягнуться на повну висоту сцени, щоб фото центрувалось */
+.gallery__main :deep(.swiper-slide) {
+	height: auto;
 }
 
 .gallery__figure {
 	margin: 0;
 	cursor: zoom-in;
+	/* Детермінований квадрат (фото зі сховища — 700×700): висота не «стрибає»,
+	   не залежить від JS-виміру Swiper і завжди влазить у ширину */
+	aspect-ratio: 1;
+	width: 100%;
 }
 
 .gallery__main :deep(img) {
 	display: block;
 	width: 100%;
-	height: auto;
+	height: 100%;
 	object-fit: contain;
 	border-radius: var(--radius-sm);
 }
 
-/* Стрілки навігації (десктоп) */
+/* Стрілки навігації — лише десктоп (на тач-екранах гортаємо свайпом) */
 .gallery__main :deep(.swiper-button-next),
 .gallery__main :deep(.swiper-button-prev) {
 	color: var(--accent);
 	transform: scale(0.7);
 }
 
-.gallery__main :deep(.swiper-pagination-bullet-active) {
-	background: var(--accent);
+@media (max-width: 768px) {
+	.gallery__main :deep(.swiper-button-next),
+	.gallery__main :deep(.swiper-button-prev) {
+		display: none;
+	}
 }
 
 .gallery__thumbs {

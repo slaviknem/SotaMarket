@@ -626,8 +626,18 @@ onMounted(() => {
 
 @media (max-width: 900px) {
 	.product {
-		grid-template-columns: 1fr;
+		/* minmax(0,1fr), а не 1fr: інакше внутрішній .swiper-wrapper роздуває
+		   колонку за ширину екрана і весь документ їде вправо (overflow) */
+		grid-template-columns: minmax(0, 1fr);
 		gap: 20px;
+	}
+
+	/* Одна колонка — не даємо галереї роздуватись на всю ширину на планшетах */
+	.product__gallery {
+		width: 100%;
+		max-width: 460px;
+		min-width: 0;
+		margin-inline: auto;
 	}
 
 	.product__title {
