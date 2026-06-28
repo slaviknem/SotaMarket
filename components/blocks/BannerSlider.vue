@@ -228,7 +228,7 @@ const modules = [Autoplay, Pagination]
 	transform: translateX(3px);
 }
 
-/* Планшет: плитки під слайдером, у рядок */
+/* Планшет / мобільний: плитки під слайдером, у рядок */
 @media (max-width: 900px) {
 	.banner-hero__grid {
 		grid-template-columns: 1fr;
@@ -241,11 +241,19 @@ const modules = [Autoplay, Pagination]
 	.promo-tile {
 		flex: 1;
 	}
-}
 
-@media (max-width: 768px) {
+	/* Банер на всю ширину: висота плавно масштабується разом із шириною,
+	   зі стелею, щоб не «з'їдав» перший екран. Пропорція близька до самих
+	   зображень (~2.1:1) — телефони не обрізаються. */
 	.banner-slide__img {
-		aspect-ratio: 16 / 7;
+		aspect-ratio: auto;
+		height: clamp(170px, 45vw, 320px);
+	}
+
+	/* Текст ширше, бо на вузькому екрані 46% замало */
+	.banner-slide__content {
+		left: 5%;
+		max-width: 70%;
 	}
 }
 
