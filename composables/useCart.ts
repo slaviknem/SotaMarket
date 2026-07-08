@@ -29,6 +29,11 @@ export interface CartState {
 	discount: number
 }
 
+// Приблизна вартість доставки — показуємо орієнтовно в кошику.
+// Точну вартість визначає перевізник (Нова Пошта) при отриманні (накладений платіж).
+// Локальна константа (не export) — щоб не плодити глобальний авто-імпорт; назовні віддаємо через cart.shipping.
+const SHIPPING = { delivery: 60, nalogka: 20 }
+
 export function useCartState() {
 	return useState<CartState>('cart', () => ({
 		lastItemId: 0,
@@ -43,6 +48,8 @@ export function useCart() {
 	const quantity = computed(() => state.value.items.reduce((q, i) => q + i.quantity, 0))
 	const subtotal = computed(() => state.value.items.reduce((s, i) => s + i.total, 0))
 	const total = computed(() => subtotal.value - state.value.discount)
+	// Орієнтовний підсумок із доставкою (показуємо з «≈»)
+	const grandTotal = computed(() => total.value + SHIPPING.delivery + SHIPPING.nalogka)
 
 	function add(payload: {
 		product: any
@@ -108,7 +115,7 @@ export function useCart() {
 		state.value.discount = discount
 	}
 
-	return { state, quantity, subtotal, total, add, remove, removeAll, updateQuantity, setDiscount }
+	return { state, quantity, subtotal, total, grandTotal, shipping: SHIPPING, add, remove, removeAll, updateQuantity, setDiscount }
 }
 
 // Слайдер-кошик (mini-cart): глобальний стан відкриття.

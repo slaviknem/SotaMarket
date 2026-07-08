@@ -64,9 +64,17 @@
 						<span>{{ t('cart.discount') }}</span>
 						<b>−{{ formatPrice(cart.state.value.discount) }}</b>
 					</div>
+					<div class="cart-summary__row">
+						<span>{{ t('cart.shipping') }}</span>
+						<b>{{ t('cart.from') }} {{ formatPrice(cart.shipping.delivery) }}</b>
+					</div>
+					<div class="cart-summary__row">
+						<span>{{ t('cart.nalogka') }}</span>
+						<b>{{ formatPrice(cart.shipping.nalogka) }}</b>
+					</div>
 					<div class="cart-summary__row cart-summary__row--total">
 						<span>{{ t('cart.total') }}</span>
-						<b>{{ formatPrice(cart.total.value) }}</b>
+						<b>≈ {{ formatPrice(cart.grandTotal.value) }}</b>
 					</div>
 				</div>
 			</div>

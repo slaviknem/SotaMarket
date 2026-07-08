@@ -65,17 +65,29 @@
 
 						<!-- Підсумок + дії -->
 						<footer class="cart-drawer__foot">
+							<div class="cart-drawer__sum">
+								<span>{{ t('cart.subtotal') }}</span>
+								<b>{{ formatPrice(cart.subtotal.value) }}</b>
+							</div>
 							<div v-if="cart.state.value.discount" class="cart-drawer__sum cart-drawer__sum--discount">
 								<span>{{ t('cart.discount') }}</span>
 								<b>−{{ formatPrice(cart.state.value.discount) }}</b>
 							</div>
+							<div class="cart-drawer__sum">
+								<span>{{ t('cart.shipping') }}</span>
+								<b>{{ t('cart.from') }} {{ formatPrice(cart.shipping.delivery) }}</b>
+							</div>
+							<div class="cart-drawer__sum">
+								<span>{{ t('cart.nalogka') }}</span>
+								<b>{{ formatPrice(cart.shipping.nalogka) }}</b>
+							</div>
 							<div class="cart-drawer__sum cart-drawer__sum--total">
 								<span>{{ t('cart.total') }}</span>
-								<b>{{ formatPrice(cart.total.value) }}</b>
+								<b>≈ {{ formatPrice(cart.grandTotal.value) }}</b>
 							</div>
 
 							<NuxtLink :to="localePath('/shop/cart')" class="btn btn-primary btn-lg btn-block" @click="close">
-								{{ t('cart.goToCart') }}
+								{{ t('cart.checkout') }}
 							</NuxtLink>
 							<button class="btn btn-outline btn-block" @click="close">
 								{{ t('cart.continueShopping') }}
@@ -302,6 +314,11 @@ onUnmounted(() => {
 	align-items: baseline;
 	font-size: 14px;
 	color: var(--text-soft);
+}
+
+.cart-drawer__sum b {
+	color: var(--accent);
+	font-weight: 700;
 }
 
 .cart-drawer__sum--discount b {

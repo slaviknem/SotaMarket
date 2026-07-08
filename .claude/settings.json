@@ -7,7 +7,15 @@
       "Bash(curl -s \"https://admin.floy.com.ua/storage/images/banners/1.jpg\" -o b1.jpg)",
       "Bash(curl -s \"https://admin.floy.com.ua/storage/images/banners/2.jpg\" -o b2.jpg)",
       "Bash(curl -s \"https://admin.floy.com.ua/storage/images/banners/bmw_1.jpg\" -o bmw.jpg)",
-      "Bash(file *.jpg)"
+      "Bash(file *.jpg)",
+      "Bash(git --no-pager diff HEAD -- pages/shop/cart/index.vue)",
+      "Bash(netstat -ano)",
+      "Bash(curl -s \"http://127.0.0.1:3000/shop/cart\" -o /tmp/cart.html)",
+      "Bash(curl -s \"http://127.0.0.1:3000/_nuxt/pages/shop/cart/index.vue?vue&type=style&index=0&scoped=8d83d88e&lang.css\" -o /tmp/cart.css)",
+      "Bash(curl -s \"http://127.0.0.1:3000/_nuxt/pages/shop/cart/index.vue\" -o /tmp/cartjs.txt)",
+      "Bash(cd \"c:/Web-SERVER/domains/FLOY-NEW\" && echo \"=== .nuxt ===\"; ls -d .nuxt 2>/dev/null && stat -c '%y' .nuxt 2>/dev/null; echo \"=== node_modules/.vite ===\"; ls -d node_modules/.vite 2>/dev/null && du -sh node_modules/.vite 2>/dev/null; echo \"=== node_modules/.cache ===\"; ls -d node_modules/.cache 2>/dev/null; echo \"=== .nuxt/cache ===\"; ls -d .nuxt/cache 2>/dev/null; echo \"=== dev server process ===\"; ls -la .output 2>/dev/null | head -2 || echo \"no .output \\(good, dev mode\\)\")",
+      "Read(//c/Web-SERVER/domains/FLOY-NEW/**)",
+      "Bash(taskkill //F //PID 8976)"
     ]
   }
 }
