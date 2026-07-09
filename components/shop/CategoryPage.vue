@@ -8,8 +8,10 @@
 				<div class="cat-layout__sidebar-backdrop" @click="mobileFiltersOpen = false" />
 				<div class="cat-layout__sidebar-panel">
 					<ShopFiltersSidebar
-						:filters="filtersTree || []"
-						:selected="selectedFilters"
+						:groups="displayTree"
+						:selected="selectedForSidebar"
+						:category-alias="categoryAlias"
+						:active-alias="filterAlias"
 						@toggle="toggleFilter"
 						@reset="resetFilters"
 					/>
@@ -87,6 +89,14 @@
 					<button class="btn btn-outline" @click="resetFilters">{{ t('filters.rezetFilters') }}</button>
 				</div>
 
+				<!-- Перелінковка: усі фільтри як crawlable посилання (для індексації одно-фасетних сторінок) -->
+				<ShopFilterLinks
+					v-if="!brandsLanding && displayTree.length"
+					:groups="displayTree"
+					:category-alias="categoryAlias"
+					:active-alias="filterAlias"
+				/>
+
 				<!-- SEO-опис категорії -->
 				<div v-if="category?.description" class="cat-desc typography" v-html="category.description" />
 			</div>
@@ -109,8 +119,12 @@ const url = useUrl()
 const localePath = useLocalePath()
 const shopApi = useShopApi()
 const config = useRuntimeConfig()
+const { buildFilterTree, findGroupAlias, isParentTheme, expandAliasForApi } = useFilters()
 
 const mobileFiltersOpen = ref(false)
+
+// Закриваємо мобільний сайдбар при переході на іншу сторінку (клік по посиланню-фільтру)
+watch(() => route.path, () => { mobileFiltersOpen.value = false })
 
 // ---------- Параметри з URL ----------
 const options = computed(() => ({
@@ -204,16 +218,25 @@ const brandTree = computed(() => {
 	}]
 })
 
-// Група (батьківський alias) для фільтра зі сторінки /filter/
-const filterParentAlias = computed(() => {
-	if (!props.filterAlias || !filtersTree.value) return null
-	for (const group of filtersTree.value) {
-		if (group.items?.some((i: any) => i.alias === props.filterAlias)) return group.alias
+// Дерево фільтрів для сайдбара (синтетичні групи Категорія/Форм-фактор/Матеріал + теми)
+const displayTree = computed(() => buildFilterTree(filtersTree.value || []))
+
+// Вибрані фільтри для сайдбара: query-вибір + активний фільтр сторінки (крім теми-батька,
+// у якої немає власного пункту — її підсвічуємо через activeAlias у заголовку).
+const selectedForSidebar = computed<Record<string, string[]>>(() => {
+	const base: Record<string, string[]> = {}
+	for (const k in selectedFilters.value) base[k] = [...selectedFilters.value[k]]
+
+	if (props.filterAlias && !isParentTheme(filtersTree.value || [], props.filterAlias)) {
+		const g = findGroupAlias(filtersTree.value || [], props.filterAlias)
+		const arr = base[g] || (base[g] = [])
+		if (!arr.includes(props.filterAlias)) arr.push(props.filterAlias)
 	}
-	return null
+	return base
 })
 
-// Фільтри для API: query-фільтри + фільтр сторінки
+// Фільтри для API: query-фільтри + фільтр сторінки.
+// Тема-батько розкривається в перелік дітей (агрегація товарів усіх підкатегорій).
 const apiFilters = computed<Record<string, string>>(() => {
 	const result: Record<string, string> = {}
 
@@ -222,19 +245,20 @@ const apiFilters = computed<Record<string, string>>(() => {
 	}
 
 	if (props.filterAlias) {
-		const parent = filterParentAlias.value
-		if (parent) {
-			const existing = result[parent] ? result[parent].split(',') : []
-			if (!existing.includes(props.filterAlias)) existing.push(props.filterAlias)
-			result[parent] = existing.join(',')
-		} else {
-			result._page_filter = props.filterAlias
-		}
+		const { groupKey, value } = expandAliasForApi(filtersTree.value || [], props.filterAlias)
+		const existing = result[groupKey] ? result[groupKey].split(',') : []
+		for (const v of value.split(',')) if (!existing.includes(v)) existing.push(v)
+		result[groupKey] = existing.join(',')
 	}
 
 	result.category = props.categoryAlias
 	return result
 })
+
+// Наявність мультивибору в URL (?filter_*) — такі комбінації не індексуємо (canonical → база)
+const hasFilterQuery = computed(() =>
+	Object.keys(route.query).some((k) => k.startsWith('filter_'))
+)
 
 const { data: productsData, pending } = await useAsyncData(
 	'cat-products-' + keySuffix.value,
@@ -288,10 +312,16 @@ function pageLink(page: number) {
 }
 
 // ---------- Заголовки та SEO ----------
+// Унікальний H1/title сторінки фільтра за типом (тема → «Чохли з тематикою…», інші → «{filter} на {cat}»)
+const filterHeading = computed(() => {
+	if (!filterPage.value) return ''
+	const cat = category.value?.title_full || category.value?.title_rus || ''
+	const key = filterPage.value.type === 'theme' ? 'pageTitle.filters.theme' : 'pageTitle.filters.main'
+	return t(key, { filter: filterPage.value.title, category: cat })
+})
+
 const pageTitle = computed(() => {
-	if (filterPage.value) {
-		return `${filterPage.value.title} — ${category.value?.title_rus || category.value?.title_full || ''}`
-	}
+	if (filterPage.value) return filterHeading.value
 	return category.value?.title_rus || category.value?.title_full || category.value?.title || ''
 })
 
@@ -317,12 +347,14 @@ const breadcrumbs = computed(() => {
 usePageSeo({
 	title: () =>
 		filterPage.value
-			? `${filterPage.value.title} ${category.value?.title_full || ''} — FLOY`
+			? filterHeading.value
 			: category.value?.meta_title || pageTitle.value,
 	description: () =>
 		filterPage.value
-			? `${filterPage.value.title} ${category.value?.title_full || ''}. ${t('metaDescription.index')}`
+			? `${filterHeading.value}. ${t('metaDescription.index')}`
 			: category.value?.meta_description || '',
+	// Мультивибір-комбінації (?filter_*) не індексуємо — canonical веде на базову категорію
+	noindex: () => hasFilterQuery.value,
 })
 
 // JSON-LD: список товарів
@@ -337,6 +369,21 @@ useJsonLd(() => ({
 		url: config.public.siteUrl + `/${p.alias_cat}/${p.alias}`,
 	})),
 }))
+
+// JSON-LD: хлібні крихти (Категорія → Фільтр) для розуміння структури пошуковиками/AI
+useJsonLd(() => {
+	const crumbs = [{ title: 'FLOY', url: '/' }, ...breadcrumbs.value]
+	return {
+		'@context': 'https://schema.org',
+		'@type': 'BreadcrumbList',
+		itemListElement: crumbs.map((c, i) => ({
+			'@type': 'ListItem',
+			position: i + 1,
+			name: c.title,
+			...(c.url ? { item: config.public.siteUrl + c.url } : {}),
+		})),
+	}
+})
 
 // Облік візитів
 onMounted(() => {

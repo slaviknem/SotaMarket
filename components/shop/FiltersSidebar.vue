@@ -8,40 +8,60 @@
 		</div>
 
 		<div class="filters__body">
-			<div v-for="group in filters" :key="group.id" class="filter-group">
-				<button class="filter-group__head" @click="toggleGroup(group.id)">
-					{{ group.title }}
-					<svg
-						width="11"
-						height="11"
-						viewBox="0 0 12 8"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						:style="{ transform: isOpen(group) ? 'rotate(180deg)' : '' }"
+			<div v-for="group in groups" :key="group.alias" class="filter-group">
+				<!-- Заголовок групи. Тема (має власну сторінку) → посилання + окрема стрілка.
+				     Синтетична група (Категорія/Форм-фактор/Матеріал) → лише кнопка-тогл. -->
+				<div v-if="!group.synthetic" class="filter-group__head filter-group__head--link">
+					<NuxtLink
+						class="filter-group__link"
+						:class="{ 'is-active': group.alias === activeAlias }"
+						:to="url.category(categoryAlias, group.alias)"
 					>
-						<path d="M1 1l5 5 5-5" />
-					</svg>
+						{{ group.title }}
+					</NuxtLink>
+					<button
+						class="filter-group__toggle"
+						type="button"
+						:aria-expanded="isOpen(group)"
+						:aria-label="group.title"
+						@click="toggleGroup(group.alias)"
+					>
+						<svg width="11" height="11" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2" :style="{ transform: isOpen(group) ? 'rotate(180deg)' : '' }"><path d="M1 1l5 5 5-5" /></svg>
+					</button>
+				</div>
+				<button v-else class="filter-group__head" type="button" @click="toggleGroup(group.alias)">
+					{{ group.title }}
+					<svg width="11" height="11" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2" :style="{ transform: isOpen(group) ? 'rotate(180deg)' : '' }"><path d="M1 1l5 5 5-5" /></svg>
 				</button>
 
 				<div v-if="isOpen(group)" class="filter-group__body">
-					<label
+					<div
 						v-for="item in group.items || []"
-						:key="item.id"
+						:key="item.alias"
 						class="filter-item"
 						:class="{ 'is-checked': isSelected(group.alias, item.alias) }"
 					>
-						<input
-							type="checkbox"
-							:checked="isSelected(group.alias, item.alias)"
-							@change="$emit('toggle', { group: group.alias, alias: item.alias })"
-						/>
-						<span class="filter-item__box">
+						<!-- Квадратик: перемикає фільтр на місці (мультивибір, лишаємось на сторінці) -->
+						<button
+							class="filter-item__box"
+							type="button"
+							role="checkbox"
+							:aria-checked="isSelected(group.alias, item.alias)"
+							:aria-label="item.title"
+							@click="$emit('toggle', { group: group.alias, alias: item.alias })"
+						>
 							<svg width="10" height="8" viewBox="0 0 12 9" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4.5l3.5 3.5L11 1"/></svg>
-						</span>
-						<span class="filter-item__label">{{ item.title }}</span>
-						<span class="filter-item__count">{{ item.count }}</span>
-					</label>
+						</button>
+						<!-- Назва: посилання на окрему SEO-сторінку фільтра (crawlable для індексації) -->
+						<NuxtLink
+							class="filter-item__label"
+							:class="{ 'is-active': item.alias === activeAlias }"
+							:to="url.category(categoryAlias, item.alias)"
+						>
+							{{ item.title }}
+						</NuxtLink>
+						<span v-if="item.count" class="filter-item__count">{{ item.count }}</span>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -56,9 +76,13 @@
 </template>
 
 <script setup lang="ts">
+import type { IFilterNode } from '~/composables/useFilters'
+
 const props = defineProps<{
-	filters: any[]
-	selected: Record<string, string[]> // { parentAlias: [childAlias, ...] }
+	groups: IFilterNode[]
+	selected: Record<string, string[]> // { groupAlias: [childAlias, ...] }
+	categoryAlias: string
+	activeAlias?: string // alias фільтра поточної сторінки (для підсвітки + авто-розгортання)
 }>()
 
 defineEmits<{
@@ -67,15 +91,24 @@ defineEmits<{
 }>()
 
 const { t } = useI18n()
+const url = useUrl()
 
-// Стан розгорнутих груп (теми за замовчуванням закриті — open=false з API)
-const openOverride = ref<Record<number, boolean>>({})
+// Стан розгорнутих груп (синтетичні відкриті, теми закриті — за замовчуванням з API)
+const openOverride = ref<Record<string, boolean>>({})
 
-const isOpen = (group: any) => openOverride.value[group.id] ?? !!group.open
+const isOpen = (group: IFilterNode) => {
+	if (openOverride.value[group.alias] !== undefined) return openOverride.value[group.alias]
+	// Авто-розгортання групи активного фільтра (сама тема або її дитина)
+	if (props.activeAlias) {
+		if (group.alias === props.activeAlias) return true
+		if (group.items?.some((i) => i.alias === props.activeAlias)) return true
+	}
+	return !!group.open
+}
 
-const toggleGroup = (id: number) => {
-	const group = props.filters.find((f) => f.id === id)
-	openOverride.value[id] = !(openOverride.value[id] ?? !!group?.open)
+const toggleGroup = (alias: string) => {
+	const group = props.groups.find((g) => g.alias === alias)
+	openOverride.value[alias] = !(openOverride.value[alias] ?? (group ? isOpen(group) : false))
 }
 
 const isSelected = (groupAlias: string, alias: string) =>
@@ -183,6 +216,7 @@ const hasSelected = computed(() => Object.values(props.selected).some((v) => v.l
 	border-bottom: none;
 }
 
+/* Синтетичний заголовок (кнопка-тогл на всю ширину) */
 .filter-group__head {
 	display: flex;
 	align-items: center;
@@ -206,6 +240,44 @@ const hasSelected = computed(() => Object.values(props.selected).some((v) => v.l
 	flex-shrink: 0;
 }
 
+/* Заголовок теми: назва-посилання + окрема стрілка */
+.filter-group__head--link {
+	display: flex;
+	align-items: center;
+	padding: 0 8px 0 18px;
+}
+
+.filter-group__link {
+	flex: 1;
+	padding: 13px 0;
+	font-weight: 600;
+	font-size: 13.5px;
+	color: var(--text);
+	transition: color 0.15s;
+}
+
+.filter-group__link:hover,
+.filter-group__link.is-active {
+	color: var(--accent);
+}
+
+.filter-group__toggle {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 10px;
+	color: var(--text-muted);
+	transition: color 0.15s;
+}
+
+.filter-group__toggle:hover {
+	color: var(--accent);
+}
+
+.filter-group__toggle svg {
+	transition: transform 0.2s;
+}
+
 .filter-group__body {
 	padding: 2px 10px 12px;
 	max-height: 320px;
@@ -218,18 +290,11 @@ const hasSelected = computed(() => Object.values(props.selected).some((v) => v.l
 	gap: 10px;
 	padding: 6px 8px;
 	border-radius: var(--radius-sm);
-	cursor: pointer;
 	transition: background 0.12s;
 }
 
 .filter-item:hover {
 	background: var(--bg-elevated);
-}
-
-.filter-item input {
-	position: absolute;
-	opacity: 0;
-	pointer-events: none;
 }
 
 .filter-item__box {
@@ -243,6 +308,7 @@ const hasSelected = computed(() => Object.values(props.selected).some((v) => v.l
 	color: transparent;
 	transition: all 0.15s;
 	flex-shrink: 0;
+	cursor: pointer;
 }
 
 .filter-item.is-checked .filter-item__box {
@@ -255,6 +321,13 @@ const hasSelected = computed(() => Object.values(props.selected).some((v) => v.l
 	flex: 1;
 	font-size: 13.5px;
 	color: var(--text-soft);
+	cursor: pointer;
+	transition: color 0.15s;
+}
+
+.filter-item__label:hover,
+.filter-item__label.is-active {
+	color: var(--accent);
 }
 
 .filter-item.is-checked .filter-item__label {

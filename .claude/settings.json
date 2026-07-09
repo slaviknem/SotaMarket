@@ -15,7 +15,18 @@
       "Bash(curl -s \"http://127.0.0.1:3000/_nuxt/pages/shop/cart/index.vue\" -o /tmp/cartjs.txt)",
       "Bash(cd \"c:/Web-SERVER/domains/FLOY-NEW\" && echo \"=== .nuxt ===\"; ls -d .nuxt 2>/dev/null && stat -c '%y' .nuxt 2>/dev/null; echo \"=== node_modules/.vite ===\"; ls -d node_modules/.vite 2>/dev/null && du -sh node_modules/.vite 2>/dev/null; echo \"=== node_modules/.cache ===\"; ls -d node_modules/.cache 2>/dev/null; echo \"=== .nuxt/cache ===\"; ls -d .nuxt/cache 2>/dev/null; echo \"=== dev server process ===\"; ls -la .output 2>/dev/null | head -2 || echo \"no .output \\(good, dev mode\\)\")",
       "Read(//c/Web-SERVER/domains/FLOY-NEW/**)",
-      "Bash(taskkill //F //PID 8976)"
+      "Bash(taskkill //F //PID 8976)",
+      "Bash(curl -s \"https://admin.floy.com.ua/apisite/filters/filter/xiaomi-redmi-note-13-pro/case?lang=uk&site=floy\")",
+      "Bash(curl -s \"https://admin.floy.com.ua/apisite/filters/filter/xiaomi-redmi-note-13-pro/brendy?lang=uk&site=floy\")",
+      "Bash(curl -s \"https://admin.floy.com.ua/apisite/filters/filter/xiaomi-redmi-note-13-pro/nayk?lang=uk&site=floy\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"http://localhost:3000/xiaomi-redmi-note-13-pro\")",
+      "Bash(curl -s \"http://localhost:3000/xiaomi-redmi-note-13-pro\")",
+      "Bash(python -c ' *)",
+      "Bash(curl -s -o /dev/null -w \"status=%{http_code}\\\\n\" \"http://localhost:3000/xiaomi-redmi-note-13-pro/filter/brendy\")",
+      "Bash(curl -s \"http://localhost:3000/xiaomi-redmi-note-13-pro/filter/brendy\")",
+      "Bash(curl -s \"http://localhost:3000/xiaomi-redmi-note-13-pro/filter/case\")",
+      "Bash(curl -s \"http://localhost:3000/xiaomi-redmi-note-13-pro?filter_cat=case\")"
     ]
   }
 }

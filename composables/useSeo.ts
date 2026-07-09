@@ -4,7 +4,7 @@ export function usePageSeo(opts: {
 	title: MaybeRefOrGetter<string>
 	description?: MaybeRefOrGetter<string>
 	image?: MaybeRefOrGetter<string | undefined>
-	noindex?: boolean
+	noindex?: MaybeRefOrGetter<boolean>
 }) {
 	const route = useRoute()
 	const config = useRuntimeConfig()
@@ -20,12 +20,13 @@ export function usePageSeo(opts: {
 		const title = toValue(opts.title)
 		const description = toValue(opts.description) || ''
 		const image = toValue(opts.image)
+		const noindex = toValue(opts.noindex)
 
 		return {
 			title,
 			meta: [
 				{ name: 'description', content: description },
-				...(opts.noindex ? [{ name: 'robots', content: 'noindex, nofollow' }] : []),
+				...(noindex ? [{ name: 'robots', content: 'noindex, follow' }] : []),
 				// Open Graph
 				{ property: 'og:type', content: 'website' },
 				{ property: 'og:site_name', content: 'FLOY' },
