@@ -5,11 +5,12 @@
 		</div>
 
 		<div class="filter-links__groups">
-			<div v-for="group in groups" :key="group.alias" class="filter-links__group">
+			<div v-for="group in expandedGroups" :key="group.alias" class="filter-links__group">
 				<!-- Заголовок групи. Тема має власну SEO-сторінку → посилання; синтетична — простий текст. -->
 				<NuxtLink
 					v-if="!group.synthetic"
 					class="filter-links__group-title"
+					:class="{ 'is-active': group.alias === activeAlias }"
 					:to="url.category(categoryAlias, group.alias)"
 				>
 					{{ group.title }}
@@ -29,6 +30,23 @@
 					</NuxtLink>
 				</div>
 			</div>
+
+			<!-- Інші теми — лише посилання на сторінки-хаби тем (без дітей): вага не розмивається,
+			     а діти доступні з хаба теми та з повного блоку на сторінці категорії -->
+			<div v-if="themeHubs.length" class="filter-links__group">
+				<span class="filter-links__group-title filter-links__group-title--plain">{{ t('filters.type.theme') }}</span>
+				<div class="filter-links__chips">
+					<NuxtLink
+						v-for="theme in themeHubs"
+						:key="theme.alias"
+						class="filter-links__chip"
+						:to="url.category(categoryAlias, theme.alias)"
+					>
+						{{ theme.title }}
+						<span v-if="theme.count" class="filter-links__chip-count">{{ theme.count }}</span>
+					</NuxtLink>
+				</div>
+			</div>
 		</div>
 	</section>
 </template>
@@ -36,7 +54,7 @@
 <script setup lang="ts">
 import type { IFilterNode } from '~/composables/useFilters'
 
-defineProps<{
+const props = defineProps<{
 	groups: IFilterNode[]
 	categoryAlias: string
 	activeAlias?: string
@@ -44,6 +62,22 @@ defineProps<{
 
 const { t } = useI18n()
 const url = useUrl()
+
+// Група активного фільтра: сама тема (її сторінка) або група, що містить фільтр
+const isCurrentGroup = (g: IFilterNode) =>
+	g.alias === props.activeAlias || !!g.items?.some((i) => i.alias === props.activeAlias)
+
+// Сторінка категорії (без activeAlias) — повний блок: категорія є хабом для всіх фільтрів.
+// Сторінка фільтра — тематичний силос: розгорнуто лише синтетичні групи (топ-фасети,
+// їх мало) і групу активного фільтра (сусіди за темою — релевантні анкори).
+const expandedGroups = computed(() =>
+	props.activeAlias ? props.groups.filter((g: IFilterNode) => g.synthetic || isCurrentGroup(g)) : props.groups
+)
+
+// Решта тем на сторінці фільтра — згорнуті до посилань-хабів
+const themeHubs = computed(() =>
+	props.activeAlias ? props.groups.filter((g: IFilterNode) => !g.synthetic && !isCurrentGroup(g)) : []
+)
 </script>
 
 <style scoped>

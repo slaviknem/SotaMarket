@@ -43,6 +43,20 @@ export function sortedAttributes(attributes: any[] | undefined): any[] {
 	return [...attributes].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
 }
 
+// Розгортання списку товарів у картки «товар + атрибут» (як на старому сайті):
+// кожен атрибут будь-якого типу (колір/принт/дизайн) — окрема картка зі своїм фото,
+// назвою «Товар (Атрибут)» і URL /attr/{alias}.
+// Товар без атрибутів лишається однією карткою (attribute: null).
+export function expandProductsByAttributes(products: any[]): { product: any; attribute: any | null }[] {
+	const items: { product: any; attribute: any | null }[] = []
+	for (const product of products) {
+		const attrs = sortedAttributes(product.attributes)
+		if (attrs.length) for (const attribute of attrs) items.push({ product, attribute })
+		else items.push({ product, attribute: null })
+	}
+	return items
+}
+
 // ---------- Наявність: ЄДИНА логіка для картки і сторінки товару ----------
 
 // Чи в наявності конкретний атрибут:

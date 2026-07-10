@@ -334,7 +334,11 @@ useJsonLd(() => ({
 	brand: { '@type': 'Brand', name: modelCategory.value?.brend_name || 'FLOY' },
 	offers: {
 		'@type': 'Offer',
-		url: config.public.siteUrl + `/${props.categoryAlias}/${props.productAlias}`,
+		// На attr-сторінці URL оферу = її canonical (/attr/…), інакше — базовий товар
+		url:
+			config.public.siteUrl +
+			`/${props.categoryAlias}/${props.productAlias}` +
+			(props.attributeAlias ? `/attr/${props.attributeAlias}` : ''),
 		priceCurrency: 'UAH',
 		price: product.value?.price,
 		availability: available.value ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',

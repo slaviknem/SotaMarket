@@ -1,10 +1,10 @@
 <template>
 	<article class="p-card">
 		<div class="p-card__media">
-			<NuxtLink :to="url.product(product)" class="p-card__img-link">
+			<NuxtLink :to="cardLink" class="p-card__img-link">
 				<AppImage
 					:src="url.productThumb(imageFile)"
-					:alt="product.title"
+					:alt="cardTitle"
 					:width="280"
 					:height="280"
 				/>
@@ -36,11 +36,11 @@
 		</div>
 
 		<div class="p-card__body">
-			<NuxtLink :to="url.product(product)" class="p-card__title">
-				{{ product.title }}
+			<NuxtLink :to="cardLink" class="p-card__title">
+				{{ cardTitle }}
 			</NuxtLink>
 
-			<!-- Кольори/атрибути -->
+			<!-- Кольори/атрибути (у режимі картки-варіанта не показуємо — колір уже в назві) -->
 			<div v-if="colorAttributes.length" class="p-card__attrs">
 				<NuxtLink
 					v-for="attr in colorAttributes.slice(0, 6)"
@@ -71,7 +71,9 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ product: any }>()
+// attribute — режим картки-варіанта (сторінки фільтрів): назва з кольором, фото
+// і посилання ведуть на сторінку атрибута /attr/{alias}
+const props = defineProps<{ product: any; attribute?: any }>()
 
 const { t } = useI18n()
 const url = useUrl()
@@ -82,21 +84,31 @@ const compare = useCompare()
 
 // images[] є у відповідях API; для збережених карток (wishlist/compare) — image_file
 const imageFile = computed(
-	() => getImageByAttribute(props.product, props.product.attribute_id) ?? props.product.image_file
+	() =>
+		getImageByAttribute(props.product, props.attribute?.id ?? props.product.attribute_id) ??
+		props.product.image_file
 )
+
+const cardTitle = computed(() =>
+	props.attribute ? `${props.product.title} (${props.attribute.title})` : props.product.title
+)
+
+const cardLink = computed(() => url.product(props.product, props.attribute?.alias))
 
 const discount = computed(() => discountPercent(props.product.price, props.product.price_old))
 
 const colorAttributes = computed(() =>
-	sortedAttributes(props.product.attributes).filter((a: any) => a.type === 'color' || a.type === 'print')
+	props.attribute
+		? []
+		: sortedAttributes(props.product.attributes).filter((a: any) => a.type === 'color' || a.type === 'print')
 )
 
 function addToCart() {
 	const p = props.product
 	const attrs = sortedAttributes(p.attributes)
 
-	// Якщо є атрибути — додаємо перший у наявності (єдина логіка наявності)
-	const attr = attrs.find((a: any) => isAttrInStock(p, a)) || attrs[0]
+	// Картка-варіант — додаємо саме її атрибут; інакше перший у наявності (єдина логіка наявності)
+	const attr = props.attribute || attrs.find((a: any) => isAttrInStock(p, a)) || attrs[0]
 	const attributeId = attr?.id || 0
 
 	cart.add({

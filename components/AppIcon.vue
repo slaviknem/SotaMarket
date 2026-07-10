@@ -58,6 +58,10 @@ const ICONS: Record<string, IconDef> = {
 		path: '<path d="M5 12h14M13 6l6 6-6 6"/>',
 		round: true,
 	},
+	'chevron-down': {
+		path: '<path d="M6 9l6 6 6-6"/>',
+		round: true,
+	},
 	bolt: {
 		path: '<path d="M13 2 4 13h6l-1 9 9-11h-6l1-9z"/>',
 		round: true,

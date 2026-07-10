@@ -62,7 +62,12 @@
 					<div class="products-grid" :class="gridModifier">
 						<!-- Конструктор чохлів — перший товар (як на старому сайті) -->
 						<ProductCardPrintcase v-if="showPrintcaseCard" :category="category" />
-						<ProductCard v-for="p in displayProducts" :key="p.id" :product="p" />
+						<ProductCard
+							v-for="item in displayItems"
+							:key="item.product.id + '-' + (item.attribute?.id || 0)"
+							:product="item.product"
+							:attribute="item.attribute || undefined"
+						/>
 
 						<!-- Кнопка «Показати ще» + авто-підвантаження + пагінація -->
 						<ShopCatControls
@@ -96,6 +101,21 @@
 					:category-alias="categoryAlias"
 					:active-alias="filterAlias"
 				/>
+
+				<!-- FAQ + таблиця цін (як на старому сайті): унікальний SSR-контент з реальних
+				     даних сторінки + FAQPage JSON-LD. Лише 1-ша сторінка моделі/фільтра. -->
+				<template v-if="showSeoBlocks">
+					<ShopFilterFaq
+						v-if="filterAlias"
+						:category="category"
+						:category-alias="categoryAlias"
+						:filter-page="filterPage"
+						:items="pageItems"
+						:total="total"
+					/>
+					<ShopCategoryFaq v-else :category="category" :products="products" />
+					<ShopPriceTable :title="pricesTitle" :rows="priceRows" />
+				</template>
 
 				<!-- SEO-опис категорії -->
 				<div v-if="category?.description" class="cat-desc typography" v-html="category.description" />
@@ -281,6 +301,52 @@ const showPrintcaseCard = computed(
 		!props.filterAlias
 )
 
+// SEO-блоки FAQ/цін: модельні сторінки та сторінки /filter/, лише 1-ша сторінка і без
+// мультивибору ?filter_* — інакше той самий текст дублювався б на URL пагінації/комбінацій
+const showSeoBlocks = computed(
+	() =>
+		category.value?.type === 'model' &&
+		!hasFilterQuery.value &&
+		currentPage.value === 1 &&
+		products.value.length > 0
+)
+
+// Розгорнуті картки «товар + атрибут» 1-ї сторінки — для FAQ/таблиці цін сторінки фільтра
+// (стабільні дані: не залежать від «Показати ще»)
+const pageItems = computed<{ product: any; attribute: any | null }[]>(() =>
+	props.filterAlias ? expandProductsByAttributes(products.value) : []
+)
+
+// Заголовок таблиці цін: модель / фільтр / тема-принт
+const pricesTitle = computed(() => {
+	const params = {
+		filter: filterPage.value?.title,
+		category_title: category.value?.title_full || category.value?.title || '',
+	}
+	if (!props.filterAlias) return t('faq.prices.title', params)
+	return t(filterPage.value?.type === 'theme' ? 'faq.prices.titleTheme' : 'faq.prices.titleFilter', params)
+})
+
+// Рядки таблиці цін: на сторінці фільтра — варіанти «Товар (Атрибут)» з URL /attr/
+// (довгохвостові анкори), на сторінці моделі — топ-10 товарів
+const priceRows = computed(() => {
+	if (props.filterAlias) {
+		return pageItems.value
+			.filter(({ product }) => product.price)
+			.slice(0, 10)
+			.map(({ product, attribute }) => ({
+				id: `${product.id}-${attribute?.id || 0}`,
+				title: attribute ? `${product.title} (${attribute.title})` : product.title,
+				to: url.product(product, attribute?.alias),
+				price: product.price,
+			}))
+	}
+	return products.value
+		.filter((p: any) => p.price)
+		.slice(0, 10)
+		.map((p: any) => ({ id: p.id, title: p.title, to: url.product(p), price: p.price }))
+})
+
 // ---------- Підвантаження «Показати ще» / авто по скролу (логіка — у composable) ----------
 // 1 партія авто по скролу (плавний старт) → далі кнопка/ползунок. Кожна партія = одна сторінка (24).
 const { items: displayProducts, isLoadingMore, autoOn, hasMorePages, loadedPages, showButton, loadMore, scrollSentinel } =
@@ -292,6 +358,18 @@ const { items: displayProducts, isLoadingMore, autoOn, hasMorePages, loadedPages
 			shopApi.getProductsList({ ...options.value, page }, apiFilters.value).then((r) => r?.data || []),
 		autoBatches: 1,
 	})
+
+// Активний фільтр (/filter/ або вибір у сайдбарі ?filter_*): розбиваємо товар на окрему
+// картку під кожен атрибут — колір/принт/дизайн (як на старому сайті). Кожна картка має
+// власний URL /attr/{alias}, назву «Товар (Атрибут)» і фото варіанта — пошуковики
+// індексують довгохвостові запити («чохол книжка … чорний») через унікальні анкори.
+const splitByAttributes = computed(() => !!props.filterAlias || hasFilterQuery.value)
+
+const displayItems = computed<{ product: any; attribute: any | null }[]>(() =>
+	splitByAttributes.value
+		? expandProductsByAttributes(displayProducts.value)
+		: displayProducts.value.map((p: any) => ({ product: p, attribute: null }))
+)
 
 // Лендінг — 6 у ряд; багатосторінкова — flow (товари зліва + блок контролів у вільний простір
 // справа від останнього товару); одна сторінка (контролів нема) — вирівнюємо неповний хвіст зліва.
@@ -357,18 +435,38 @@ usePageSeo({
 	noindex: () => hasFilterQuery.value,
 })
 
-// JSON-LD: список товарів
-useJsonLd(() => ({
-	'@context': 'https://schema.org',
-	'@type': 'ItemList',
-	name: pageTitle.value,
-	numberOfItems: total.value,
-	itemListElement: products.value.slice(0, 24).map((p: any, i: number) => ({
-		'@type': 'ListItem',
-		position: (currentPage.value - 1) * options.value.limit + i + 1,
-		url: config.public.siteUrl + `/${p.alias_cat}/${p.alias}`,
-	})),
-}))
+// JSON-LD: список товарів. На сторінці фільтра — картки-варіанти з URL /attr/
+// (дзеркалить видимий список); позиції — у межах поточної сторінки.
+useJsonLd(() => {
+	if (splitByAttributes.value) {
+		const items = expandProductsByAttributes(products.value)
+		return {
+			'@context': 'https://schema.org',
+			'@type': 'ItemList',
+			name: pageTitle.value,
+			numberOfItems: items.length,
+			itemListElement: items.slice(0, 48).map(({ product: p, attribute: a }, i: number) => ({
+				'@type': 'ListItem',
+				position: i + 1,
+				name: a ? `${p.title} (${a.title})` : p.title,
+				url: config.public.siteUrl + `/${p.alias_cat}/${p.alias}` + (a ? `/attr/${a.alias}` : ''),
+			})),
+		}
+	}
+
+	return {
+		'@context': 'https://schema.org',
+		'@type': 'ItemList',
+		name: pageTitle.value,
+		numberOfItems: total.value,
+		itemListElement: products.value.slice(0, 24).map((p: any, i: number) => ({
+			'@type': 'ListItem',
+			position: (currentPage.value - 1) * options.value.limit + i + 1,
+			name: p.title,
+			url: config.public.siteUrl + `/${p.alias_cat}/${p.alias}`,
+		})),
+	}
+})
 
 // JSON-LD: хлібні крихти (Категорія → Фільтр) для розуміння структури пошуковиками/AI
 useJsonLd(() => {
