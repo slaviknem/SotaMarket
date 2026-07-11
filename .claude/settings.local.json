@@ -49,7 +49,8 @@
       "Bash(ls -d /d/Web-SERVER/domains/*/ | head -30)",
       "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('i18n/locales/uk.json','utf8'\\)\\); JSON.parse\\(require\\('fs'\\).readFileSync\\('i18n/locales/ru.json','utf8'\\)\\); console.log\\('JSON OK'\\)\")",
       "Bash(PATH=/d/Web-SERVER/domains/FLOY-NEW/.node/node-v22.14.0-win-x64:__TRACKED_VAR__ node -e 'JSON.parse\\(require\\('\\\\''fs'\\\\''\\).readFileSync\\('\\\\''i18n/locales/uk.json'\\\\'','\\\\''utf8'\\\\''\\)\\); JSON.parse\\(require\\('\\\\''fs'\\\\''\\).readFileSync\\('\\\\''i18n/locales/ru.json'\\\\'','\\\\''utf8'\\\\''\\)\\); console.log\\('\\\\''JSON OK'\\\\''\\)')",
-      "Bash(PATH=/d/Web-SERVER/domains/FLOY-NEW/.node/node-v22.14.0-win-x64:__TRACKED_VAR__ node -e 'for \\(const f of ['\\\\''i18n/locales/uk.json'\\\\'','\\\\''i18n/locales/ru.json'\\\\'']\\) { const j = JSON.parse\\(require\\('\\\\''fs'\\\\''\\).readFileSync\\(f,'\\\\''utf8'\\\\''\\)\\); console.log\\(f, '\\\\''OK, faq keys:'\\\\'', Object.keys\\(j.faq\\).join\\('\\\\'', '\\\\''\\)\\) }')"
+      "Bash(PATH=/d/Web-SERVER/domains/FLOY-NEW/.node/node-v22.14.0-win-x64:__TRACKED_VAR__ node -e 'for \\(const f of ['\\\\''i18n/locales/uk.json'\\\\'','\\\\''i18n/locales/ru.json'\\\\'']\\) { const j = JSON.parse\\(require\\('\\\\''fs'\\\\''\\).readFileSync\\(f,'\\\\''utf8'\\\\''\\)\\); console.log\\(f, '\\\\''OK, faq keys:'\\\\'', Object.keys\\(j.faq\\).join\\('\\\\'', '\\\\''\\)\\) }')",
+      "PowerShell(Get-ChildItem -Force | Where-Object { $_.Name -notin '.node','node_modules' } | Select-Object Name, Mode)"
     ],
     "defaultMode": "acceptEdits"
   }
