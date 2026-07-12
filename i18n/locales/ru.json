@@ -37,7 +37,8 @@
 		"latestProducts": "Новинки мобильных аксессуаров",
 		"popularModels": "Популярные модели смартфонов",
 		"popularCategory": "Топ категории",
-		"lastBlog": "Последнее в блоге"
+		"lastBlog": "Последнее в блоге",
+		"lastReviews": "Отзывы наших клиентов"
 	},
 	"error404": {
 		"error": "Ошибка 404",
@@ -219,6 +220,14 @@
 			"technic": "{category}: {type} {filter}"
 		}
 	},
+	"productTags": {
+		"aria": "Похожие подборки",
+		"theme": "Чехлы с картинкой {filter}",
+		"themeHub": "Чехлы с принтами {filter}",
+		"themeCategory": "{category} с принтом {filter}",
+		"spec": "{category} {filter}",
+		"brand": "Чехлы {brend}"
+	},
 	"metaTitle": {
 		"index": "Чехлы и стекла на телефон",
 		"chekhly": "Чехлы для телефонов",
@@ -315,13 +324,19 @@
 		}
 	},
 	"reviews": {
+		"title": "Отзывы",
+		"aboutTitle": "Отзывы о {title}",
+		"all": "Все отзывы",
+		"basedOn": "на основе отзывов: {n}",
 		"newReview": "Оставьте отзыв или комментарий",
 		"notReviews": "Пока отзывов нет, будьте первым, кто оставит отзыв!",
-		"nameAndSurname": "Имя и фамилия",
+		"name": "Имя",
+		"email": "Email",
 		"message": "Ваш комментарий",
 		"postReivew": "Отправить",
-		"fillAuthor": "Заполните поле 'Имя и фамилия'",
-		"fillText": "Заполните поле 'Сообщение'"
+		"fillAuthor": "Заполните поле 'Имя'",
+		"fillText": "Заполните поле 'Сообщение'",
+		"sentMsg": "Спасибо! Ваш отзыв отправлен."
 	},
 	"widgetDiscount": {
 		"msgMain": "Мы насчитаем ВАМ скидку, пока ВЫ выбирете себе товар!",

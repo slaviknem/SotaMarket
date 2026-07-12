@@ -117,6 +117,17 @@
 					<ShopPriceTable :title="pricesTitle" :rows="priceRows" />
 				</template>
 
+				<!-- Відгуки: на сторінці моделі — відгуки моделі + усіх її товарів;
+				     на сторінці фільтра — відгуки товарів, що підпадають під фільтр (агрегує бекенд). -->
+				<ShopReviewsBlock
+					v-if="showReviews"
+					:reviews="reviewsList"
+					type="category"
+					:target-id="category.id"
+					:title="t('reviews.aboutTitle', { title: category.title_full || category.title })"
+					class="cat-reviews"
+				/>
+
 				<!-- SEO-опис категорії -->
 				<div v-if="category?.description" class="cat-desc typography" v-html="category.description" />
 			</div>
@@ -309,6 +320,21 @@ const showSeoBlocks = computed(
 		!hasFilterQuery.value &&
 		currentPage.value === 1 &&
 		products.value.length > 0
+)
+
+// Відгуки: сторінки моделі та її фільтрів (відгуки прив'язані до категорії).
+// Лише 1-ша сторінка без ?filter_* — щоб той самий текст не дублювався на URL пагінації/комбінацій.
+const showReviews = computed(
+	() =>
+		!props.brandsLanding &&
+		(category.value?.type === 'model' || !!props.filterAlias) &&
+		!hasFilterQuery.value &&
+		currentPage.value === 1
+)
+
+// Джерело відгуків: сторінка фільтра — відгуки товарів фільтра, інакше — відгуки моделі (+ її товарів)
+const reviewsList = computed(() =>
+	props.filterAlias ? filterPage.value?.reviews || [] : category.value?.reviews || []
 )
 
 // Розгорнуті картки «товар + атрибут» 1-ї сторінки — для FAQ/таблиці цін сторінки фільтра
@@ -631,6 +657,12 @@ function changeSort(e: Event) {
 .cat-empty {
 	padding: 50px 20px;
 	text-align: center;
+}
+
+.cat-reviews {
+	margin-top: 34px;
+	padding-top: 22px;
+	border-top: 1px solid var(--border);
 }
 
 .cat-desc {

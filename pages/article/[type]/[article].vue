@@ -39,11 +39,15 @@
 
 				<div class="post__content typography" v-html="article.text" />
 
-				<!-- Коментарі -->
-				<section class="post__reviews">
-					<h2>{{ t('product.reviews') }}</h2>
-					<ShopReviewsBlock :reviews="article.reviews || []" :article-id="article.id" />
-				</section>
+				<!-- Коментарі (єдиний компонент відгуків) -->
+				<div class="post__reviews">
+					<ShopReviewsBlock
+						:reviews="article.reviews || []"
+						type="article"
+						:target-id="article.id"
+						:title="t('product.reviews')"
+					/>
+				</div>
 			</article>
 		</div>
 	</div>
@@ -126,11 +130,6 @@ useJsonLd(() => ({
 	margin-top: 40px;
 	padding-top: 24px;
 	border-top: 1px solid var(--border);
-}
-
-.post__reviews h2 {
-	font-size: 20px;
-	margin-bottom: 16px;
 }
 
 @media (max-width: 768px) {

@@ -14,16 +14,21 @@
 				<h1>{{ article.title }}</h1>
 				<div v-if="article.text" class="typography" v-html="article.text" />
 
-				<!-- Віджет відгуків Elfsight (як на старому сайті) -->
+				<!-- Останні відгуки з усього сайту (лише з зірочками 4-5) + форма.
+				     Нові відгуки прив'язуються до цієї сторінки (стаття). -->
+				<div class="reviews-section">
+					<ShopReviewsBlock
+						:reviews="latestReviews || []"
+						type="article"
+						:target-id="article.id"
+						:title="t('reviews.title')"
+					/>
+				</div>
+
+				<!-- Віджет відгуків Google/Elfsight (як на старому сайті) -->
 				<ClientOnly>
 					<div class="elfsight-app-5ff3437e-c2a1-42cb-a6cc-b6957280109d" data-elfsight-app-lazy />
 				</ClientOnly>
-
-				<!-- Відгуки з API + форма -->
-				<section class="reviews-section">
-					<h2>{{ t('reviews.newReview') }}</h2>
-					<ShopReviewsBlock :reviews="article.reviews || []" :article-id="article.id" />
-				</section>
 			</article>
 		</div>
 	</div>
@@ -34,10 +39,14 @@ const { t, locale } = useI18n()
 const shopApi = useShopApi()
 const { infoMenu } = useSiteMenus()
 
-const { data: article } = await useAsyncData(
-	'info-otzyvy-' + locale.value,
-	async () => (await shopApi.getArticleByAlias('otzyvy-klientov')) ?? false
-)
+const [{ data: article }, { data: latestReviews }] = await Promise.all([
+	useAsyncData(
+		'info-otzyvy-' + locale.value,
+		async () => (await shopApi.getArticleByAlias('otzyvy-klientov')) ?? false
+	),
+	// Останні відгуки з усього сайту — лише з оцінкою 4-5 зірок
+	useAsyncData('otzyvy-latest-' + locale.value, () => shopApi.getLatestReviews(50, 4)),
+])
 
 if (!article.value) {
 	throw createError({ statusCode: 404, fatal: true })
@@ -60,12 +69,6 @@ useHead({
 }
 
 .reviews-section {
-	margin-top: 36px;
-	padding-top: 24px;
-	border-top: 1px solid var(--border);
-}
-
-.reviews-section h2 {
-	font-size: 20px;
+	margin: 24px 0 36px;
 }
 </style>

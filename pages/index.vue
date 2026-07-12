@@ -17,6 +17,8 @@
 
 		<BlocksPostsGrid :title="t('index.lastBlog')" :posts="posts" />
 
+		<BlocksReviewsStrip :title="t('index.lastReviews')" :reviews="latestReviews" />
+
 		<!-- SEO-текст -->
 		<section class="block">
 			<div class="container">
@@ -40,13 +42,14 @@ const productTabs = computed(() => [
 ])
 
 // Дані головної (SSR, паралельно)
-const [{ data: banners }, { data: popularModels }, { data: latestProducts }, { data: popularCategories }, { data: posts }, { data: article }] =
+const [{ data: banners }, { data: popularModels }, { data: latestProducts }, { data: popularCategories }, { data: posts }, { data: latestReviews }, { data: article }] =
 	await Promise.all([
 		useAsyncData('home-banners-' + locale.value, () => shopApi.getBanners()),
 		useAsyncData('home-models-' + locale.value, () => shopApi.getPopularCategory({ type: 'model', limit: 8 })),
 		useAsyncData('home-latest-' + locale.value, () => shopApi.getLatestProducts({ category: 'all', limit: 10 })),
 		useAsyncData('home-cats-' + locale.value, () => shopApi.getPopularCategory({ type: 'category', limit: 6 })),
 		useAsyncData('home-posts-' + locale.value, () => shopApi.getLatestArticles({ type: 'all', limit: 3 })),
+		useAsyncData('home-reviews-' + locale.value, () => shopApi.getLatestReviews(10, 4)),
 		useAsyncData('home-article-' + locale.value, async () => (await shopApi.getArticleByAlias('index')) ?? false),
 	])
 

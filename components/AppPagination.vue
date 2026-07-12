@@ -1,10 +1,14 @@
 <template>
 	<nav v-if="totalPages > 1" class="pagination" aria-label="Pagination">
 		<!-- Назад -->
-		<NuxtLink v-if="current > 1" :to="to(current - 1)" class="pagination__btn" :rel="current - 1 === 1 ? undefined : 'prev'" @click="scrollTop">
+		<NuxtLink v-if="current > 1 && to" :to="to(current - 1)" class="pagination__btn" :rel="current - 1 === 1 ? undefined : 'prev'" @click="scrollTop">
 			<svg width="12" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1L2 6l5 5"/></svg>
 			<span class="pagination__btn-text">{{ t('category.prev') }}</span>
 		</NuxtLink>
+		<button v-else-if="current > 1" type="button" class="pagination__btn" @click="emit('change', current - 1)">
+			<svg width="12" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1L2 6l5 5"/></svg>
+			<span class="pagination__btn-text">{{ t('category.prev') }}</span>
+		</button>
 		<span v-else class="pagination__btn is-disabled" aria-disabled="true">
 			<svg width="12" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1L2 6l5 5"/></svg>
 			<span class="pagination__btn-text">{{ t('category.prev') }}</span>
@@ -14,15 +18,20 @@
 			<template v-for="p in pages" :key="p.key">
 				<span v-if="!p.num" class="pagination__page is-dots">…</span>
 				<span v-else-if="p.num === current" class="pagination__page is-current" aria-current="page">{{ p.num }}</span>
-				<NuxtLink v-else :to="to(p.num)" class="pagination__page" :class="{ 'is-loaded': isLoaded(p.num) }" @click="scrollTop">{{ p.num }}</NuxtLink>
+				<NuxtLink v-else-if="to" :to="to(p.num)" class="pagination__page" :class="{ 'is-loaded': isLoaded(p.num) }" @click="scrollTop">{{ p.num }}</NuxtLink>
+				<button v-else type="button" class="pagination__page" @click="emit('change', p.num)">{{ p.num }}</button>
 			</template>
 		</div>
 
 		<!-- Вперед -->
-		<NuxtLink v-if="current < totalPages" :to="to(current + 1)" class="pagination__btn" rel="next" @click="scrollTop">
+		<NuxtLink v-if="current < totalPages && to" :to="to(current + 1)" class="pagination__btn" rel="next" @click="scrollTop">
 			<span class="pagination__btn-text">{{ t('category.next') }}</span>
 			<svg width="12" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l5 5-5 5"/></svg>
 		</NuxtLink>
+		<button v-else-if="current < totalPages" type="button" class="pagination__btn" @click="emit('change', current + 1)">
+			<span class="pagination__btn-text">{{ t('category.next') }}</span>
+			<svg width="12" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l5 5-5 5"/></svg>
+		</button>
 		<span v-else class="pagination__btn is-disabled" aria-disabled="true">
 			<span class="pagination__btn-text">{{ t('category.next') }}</span>
 			<svg width="12" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l5 5-5 5"/></svg>
@@ -34,11 +43,14 @@
 const props = defineProps<{
 	current: number
 	totalPages: number
-	// Білдер посилання на сторінку — рендеримо crawlable <a> (пагінація завжди має бути для ботів)
-	to: (page: number) => any
+	// Білдер посилання на сторінку — рендеримо crawlable <a> (пагінація завжди має бути для ботів).
+	// Без `to` — режим кнопок: клієнтська пагінація всередині блоку (подія `change`)
+	to?: (page: number) => any
 	// Номери вже підвантажених (видимих) сторінок — позначаємо їх крапкою
 	loaded?: number[]
 }>()
+
+const emit = defineEmits<{ (e: 'change', page: number): void }>()
 
 const { t } = useI18n()
 

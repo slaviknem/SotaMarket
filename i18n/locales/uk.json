@@ -37,7 +37,8 @@
 		"latestProducts": "Новинки мобільних аксесуарів",
 		"popularModels": "Популярні моделі смартфонів",
 		"popularCategory": "Топ категорії",
-		"lastBlog": "Останнє в блозі"
+		"lastBlog": "Останнє в блозі",
+		"lastReviews": "Відгуки наших клієнтів"
 	},
 	"error404": {
 		"error": "Помилка 404",
@@ -219,6 +220,14 @@
 			"technic": "{category}: {type} {filter}"
 		}
 	},
+	"productTags": {
+		"aria": "Схожі добірки",
+		"theme": "Чохли з картинкою {filter}",
+		"themeHub": "Чохли з принтами {filter}",
+		"themeCategory": "{category} з принтом {filter}",
+		"spec": "{category} {filter}",
+		"brand": "Чохли {brend}"
+	},
 	"metaTitle": {
 		"index": "Чохли та скло на телефон",
 		"chekhly": "Чохли для телефонів",
@@ -315,13 +324,19 @@
 		}
 	},
 	"reviews": {
+		"title": "Відгуки",
+		"aboutTitle": "Відгуки про {title}",
+		"all": "Усі відгуки",
+		"basedOn": "на основі відгуків: {n}",
 		"newReview": "Залиште відгук або коментар",
 		"notReviews": "Поки відгуків немає, будьте першим, хто залишить відгук!",
-		"nameAndSurname": "Ім'я та прізвище",
+		"name": "Ім'я",
+		"email": "Email",
 		"message": "Ваш коментар",
 		"postReivew": "Надіслати",
-		"fillAuthor": "Заповніть поле 'Ім'я та прізвище'",
-		"fillText": "Заповніть поле 'Повідомлення'"
+		"fillAuthor": "Заповніть поле 'Ім'я'",
+		"fillText": "Заповніть поле 'Повідомлення'",
+		"sentMsg": "Дякуємо! Ваш відгук надіслано."
 	},
 	"widgetDiscount": {
 		"msgMain": "Ми нарахуємо ВАМ знижку, поки ВИ вибираєте собі товар!",

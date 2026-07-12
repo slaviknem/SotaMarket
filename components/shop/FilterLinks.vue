@@ -21,12 +21,12 @@
 					<NuxtLink
 						v-for="item in group.items || []"
 						:key="item.alias"
-						class="filter-links__chip"
+						class="chip"
 						:class="{ 'is-active': item.alias === activeAlias }"
 						:to="url.category(categoryAlias, item.alias)"
 					>
 						{{ item.title }}
-						<span v-if="item.count" class="filter-links__chip-count">{{ item.count }}</span>
+						<span v-if="item.count" class="chip__count">{{ item.count }}</span>
 					</NuxtLink>
 				</div>
 			</div>
@@ -39,11 +39,11 @@
 					<NuxtLink
 						v-for="theme in themeHubs"
 						:key="theme.alias"
-						class="filter-links__chip"
+						class="chip"
 						:to="url.category(categoryAlias, theme.alias)"
 					>
 						{{ theme.title }}
-						<span v-if="theme.count" class="filter-links__chip-count">{{ theme.count }}</span>
+						<span v-if="theme.count" class="chip__count">{{ theme.count }}</span>
 					</NuxtLink>
 				</div>
 			</div>
@@ -123,38 +123,4 @@ a.filter-links__group-title:hover {
 	gap: 8px;
 }
 
-.filter-links__chip {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	padding: 6px 12px;
-	background: var(--bg-elevated);
-	border: 1px solid var(--border);
-	border-radius: var(--radius-pill);
-	font-size: 13px;
-	color: var(--text-soft);
-	transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-
-.filter-links__chip:hover {
-	background: var(--accent-soft);
-	border-color: var(--accent);
-	color: var(--accent);
-}
-
-.filter-links__chip.is-active {
-	background: var(--accent);
-	border-color: var(--accent);
-	color: var(--on-accent);
-}
-
-.filter-links__chip-count {
-	font-size: 11px;
-	color: var(--text-muted);
-}
-
-.filter-links__chip:hover .filter-links__chip-count,
-.filter-links__chip.is-active .filter-links__chip-count {
-	color: inherit;
-}
 </style>

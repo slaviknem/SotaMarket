@@ -139,6 +139,13 @@ export function useShopApi() {
 				order_id: orderId,
 			}),
 
+		// Останні опубліковані відгуки (головна, сторінка відгуків).
+		// minRating > 0 — лише відгуки з оцінкою не нижче вказаної (напр. 4 = тільки 4-5 зірок)
+		getLatestReviews: async (limit = 8, minRating = 0) => {
+			const res = await api<{ data: any[] }>(`reviews/latest/${limit}${minRating ? '/' + minRating : ''}`)
+			return res?.data ?? []
+		},
+
 		// Відгук
 		sendReview: (review: Record<string, any>) =>
 			$fetch(config.public.urlApi + 'reviews/send', {

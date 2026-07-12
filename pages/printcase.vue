@@ -162,6 +162,16 @@
 		<!-- SEO-текст -->
 		<article v-if="article?.text" class="block typography" v-html="article.text" />
 
+		<!-- Відгуки про конструктор (прив'язані до статті сторінки) -->
+		<ShopReviewsBlock
+			v-if="article"
+			:reviews="article.reviews || []"
+			type="article"
+			:target-id="article.id"
+			:title="t('reviews.title')"
+			class="block"
+		/>
+
 		<!-- Модалки -->
 		<PrintcaseModelSelectModal v-model="modelModalOpen" :brands="brands" @select="selectModel" />
 		<PrintcaseLibraryModal v-model="libraryOpen" @select="addImageFromLibrary" />

@@ -139,6 +139,9 @@
 			</div>
 		</div>
 
+		<!-- Перелінковка: принти/фасети товару → модель → бренд (або характеристики → категорія) -->
+		<ShopProductTags :product="product" />
+
 		<!-- Таби: опис / характеристики / відгуки -->
 		<div class="product-tabs">
 			<div class="product-tabs__nav">
@@ -167,7 +170,7 @@
 				</div>
 
 				<div v-show="activeTab === 'reviews'">
-					<ShopReviewsBlock :reviews="product.reviews || []" :product-id="product.id" />
+					<ShopReviewsBlock :reviews="product.reviews || []" type="product" :target-id="product.id" />
 				</div>
 			</div>
 		</div>
@@ -344,16 +347,24 @@ useJsonLd(() => ({
 		availability: available.value ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
 		itemCondition: 'https://schema.org/NewCondition',
 	},
-	...(product.value?.reviews?.length
-		? {
-				review: product.value.reviews.slice(0, 5).map((r: any) => ({
-					'@type': 'Review',
-					author: { '@type': 'Person', name: r.author },
-					reviewBody: r.text,
-				})),
-		  }
-		: {}),
+	// Відгуки + зведений рейтинг (лише з реальних даних)
+	...reviewsJsonLd(product.value?.reviews),
 }))
+
+// JSON-LD: хлібні крихти (Бренд → Модель → Товар) — структура каталогу для пошуковиків/AI
+useJsonLd(() => {
+	const crumbs = [{ title: 'FLOY', url: '/' }, ...breadcrumbs.value]
+	return {
+		'@context': 'https://schema.org',
+		'@type': 'BreadcrumbList',
+		itemListElement: crumbs.map((c, i) => ({
+			'@type': 'ListItem',
+			position: i + 1,
+			name: c.title,
+			...(c.url ? { item: config.public.siteUrl + c.url } : {}),
+		})),
+	}
+})
 
 // Облік візитів
 onMounted(() => {

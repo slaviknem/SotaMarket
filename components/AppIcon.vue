@@ -47,6 +47,11 @@ const ICONS: Record<string, IconDef> = {
 	filter: {
 		path: '<path d="M22 3H2l8 9.5V19l4 2v-8.5L22 3z"/>',
 	},
+	star: {
+		path: '<path d="M12 2.6l2.9 5.9 6.5.95-4.7 4.58 1.1 6.47L12 17.44 6.2 20.5l1.1-6.47L2.6 9.45l6.5-.95L12 2.6z"/>',
+		round: true,
+		fillable: true,
+	},
 	edit: {
 		path: '<path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>',
 	},
