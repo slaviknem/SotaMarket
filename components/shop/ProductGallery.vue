@@ -2,21 +2,23 @@
 	<div class="gallery">
 		<!-- Головне фото: на мобільному гортається пальцем (свайп), клік відкриває лайтбокс -->
 		<Swiper
+			v-if="slides.length"
 			:modules="mainModules"
 			:slides-per-view="1"
 			:thumbs="{ swiper: thumbsSwiper }"
-			:navigation="images.length > 1"
+			:navigation="slides.length > 1"
 			:observer="true"
 			:observe-parents="true"
 			class="gallery__main"
 			@swiper="onMain"
 			@slide-change="onSlide"
 		>
-			<SwiperSlide v-for="(img, i) in images" :key="img.id">
+			<SwiperSlide v-for="(slide, i) in slides" :key="slide.id">
 				<figure class="gallery__figure" @click="openLightbox(i)">
 					<AppImage
-						:src="url.productBig(img.image_file)"
-						:alt="captionFor(i)"
+						:src="url.productBig(slide.file)"
+						:alt="slide.alt"
+						:title="slide.alt"
 						:fetchpriority="i === 0 ? 'high' : 'auto'"
 						:loading="i === 0 ? 'eager' : 'lazy'"
 						:preload="i === 0"
@@ -24,22 +26,41 @@
 						:height="600"
 						sizes="(max-width: 768px) 96vw, (max-width: 900px) 460px, 650px"
 					/>
-					<figcaption class="visually-hidden">{{ captionFor(i) }}</figcaption>
+					<figcaption class="visually-hidden">{{ slide.alt }}</figcaption>
 				</figure>
 			</SwiperSlide>
 		</Swiper>
 
-		<!-- Стрічка мініатюр (синхронізована зі Swiper) -->
+		<!-- Товар без фото -->
+		<div v-else class="gallery__main">
+			<figure class="gallery__figure">
+				<AppImage :src="url.productBig(null)" :alt="t('product.image')" :width="600" :height="600" />
+			</figure>
+		</div>
+
+		<!-- Стрічка мініатюр (синхронізована зі Swiper).
+		     Для товарів з одним фото на атрибут це вітрина всіх принтів: клік = вибір принта -->
 		<Swiper
-			v-if="images.length > 1"
+			v-if="slides.length > 1"
 			:slides-per-view="'auto'"
 			:space-between="8"
 			:watch-slides-progress="true"
 			class="gallery__thumbs"
 			@swiper="(s) => (thumbsSwiper = s)"
 		>
-			<SwiperSlide v-for="(img, i) in images" :key="img.id" class="gallery__thumb">
-				<AppImage :src="url.productThumb(img.image_file)" :alt="captionFor(i)" :width="72" :height="72" />
+			<SwiperSlide
+				v-for="(slide, i) in slides"
+				:key="slide.id"
+				class="gallery__thumb"
+				role="button"
+				tabindex="0"
+				:title="slide.label"
+				:aria-label="slide.label"
+				:aria-current="i === current"
+				@keydown.enter="goTo(i)"
+				@keydown.space.prevent="goTo(i)"
+			>
+				<AppImage :src="url.productThumb(slide.file)" :alt="slide.alt" :width="72" :height="72" />
 			</SwiperSlide>
 		</Swiper>
 
@@ -51,28 +72,30 @@
 						<button class="lb__close" :aria-label="t('other.close')" @click="lightbox = false">
 							<AppIcon name="close" :size="22" />
 						</button>
-						<span class="lb__counter">{{ current + 1 }} / {{ images.length }}</span>
+						<span class="lb__counter">{{ current + 1 }} / {{ slides.length }}</span>
 						<Swiper
 							:modules="lbModules"
 							:slides-per-view="1"
 							:initial-slide="current"
 							:zoom="true"
-							:navigation="images.length > 1"
+							:navigation="slides.length > 1"
 							:pagination="{ clickable: true }"
 							class="lb__swiper"
 							@slide-change="onSlide"
 						>
-							<SwiperSlide v-for="(img, i) in images" :key="img.id">
+							<SwiperSlide v-for="slide in slides" :key="slide.id">
 								<div class="swiper-zoom-container">
 									<AppImage
-										:src="url.productBig(img.image_file)"
-										:alt="captionFor(i)"
+										:src="url.productBig(slide.file)"
+										:alt="slide.alt"
+										:title="slide.alt"
 										:width="1000"
 										:height="1000"
 									/>
 								</div>
 							</SwiperSlide>
 						</Swiper>
+						<span v-if="currentSlide" class="lb__caption">{{ currentSlide.label }}</span>
 					</div>
 				</Transition>
 			</Teleport>
@@ -84,13 +107,18 @@
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Thumbs, Navigation, Pagination, Zoom } from 'swiper/modules'
 import type { Swiper as SwiperClass } from 'swiper'
+import type { IGallerySlide } from '~/composables/useProductGallery'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import 'swiper/css/thumbs'
 import 'swiper/css/zoom'
 
-const props = defineProps<{ images: any[]; alt: string }>()
+// Слайди готує useProductGallery: кожен знає свій атрибут і власний опис (alt/title).
+// Галерея лише показує їх і повідомляє сторінку, який атрибут зараз на екрані.
+const props = defineProps<{ slides: IGallerySlide[]; activeIndex: number }>()
+
+const emit = defineEmits<{ select: [slide: IGallerySlide] }>()
 
 const url = useUrl()
 const { t } = useI18n()
@@ -100,36 +128,53 @@ const lbModules = [Navigation, Pagination, Zoom]
 
 const thumbsSwiper = ref<SwiperClass | null>(null)
 const mainSwiper = ref<SwiperClass | null>(null)
-const current = ref(0)
+const current = ref(props.activeIndex)
 const lightbox = ref(false)
 
-// Описовий підпис кожного фото — для SEO/доступності та alt
-const captionFor = (i: number) => (props.images.length > 1 ? `${props.alt} — фото ${i + 1}` : props.alt)
+const currentSlide = computed(() => props.slides[current.value])
 
 const onMain = (s: SwiperClass) => (mainSwiper.value = s)
-const onSlide = (s: SwiperClass) => (current.value = s.activeIndex)
+
+// Свайп, клік по мініатюрі, стрілки, гортання в лайтбоксі — усе веде сюди:
+// показане фото задає обраний атрибут (інакше на екрані один принт, а в кошик іде інший)
+const onSlide = (s: SwiperClass) => {
+	current.value = s.activeIndex
+	if (currentSlide.value) emit('select', currentSlide.value)
+}
+
+const goTo = (i: number) => mainSwiper.value?.slideTo(i)
 
 const openLightbox = (i: number) => {
 	current.value = i
 	lightbox.value = true
 }
 
-// Блокування прокрутки сторінки під лайтбоксом
+// Блокування прокрутки сторінки під лайтбоксом; після закриття головне фото
+// лишається на тому, до якого догортали в лайтбоксі
 watch(lightbox, (open) => {
-	if (import.meta.client) document.body.style.overflow = open ? 'hidden' : ''
+	if (!import.meta.client) return
+	document.body.style.overflow = open ? 'hidden' : ''
+	if (!open) mainSwiper.value?.slideTo(current.value, 0)
 })
 
-// При зміні набору зображень (вибір атрибута або перехід на інший товар) —
-// перерахувати слайди Swiper і повернутись на перше; без update() новий слайд
-// інколи лишається порожнім (фото «не підвантажується»)
+// Вибір атрибута ззовні (чипси) — перемотуємо на його фото
 watch(
-	() => props.images,
+	() => props.activeIndex,
+	(i) => {
+		if (mainSwiper.value && mainSwiper.value.activeIndex !== i) mainSwiper.value.slideTo(i)
+	}
+)
+
+// При зміні набору слайдів (інший атрибут у режимі фотосесії або перехід на інший товар) —
+// перерахувати Swiper; без update() новий слайд інколи лишається порожнім («фото не підвантажується»)
+watch(
+	() => props.slides,
 	async () => {
-		current.value = 0
 		await nextTick()
 		mainSwiper.value?.update()
 		if (thumbsSwiper.value && !thumbsSwiper.value.destroyed) thumbsSwiper.value.update()
-		mainSwiper.value?.slideTo(0, 0)
+		mainSwiper.value?.slideTo(props.activeIndex, 0)
+		current.value = props.activeIndex
 	}
 )
 
@@ -220,8 +265,10 @@ onBeforeUnmount(() => {
 }
 
 .gallery__thumb:hover,
+.gallery__thumb:focus-visible,
 .gallery__thumb.swiper-slide-thumb-active {
 	border-color: var(--accent);
+	outline: none;
 }
 
 /* ---- Лайтбокс ---- */
@@ -279,6 +326,23 @@ onBeforeUnmount(() => {
 	color: #fff;
 	font-size: 14px;
 	opacity: 0.8;
+}
+
+/* Назва принта/кольору під фото — у лайтбоксі немає іншого контексту */
+.lb__caption {
+	position: absolute;
+	bottom: 34px;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 2;
+	max-width: 80vw;
+	padding: 7px 16px;
+	border-radius: var(--radius-pill);
+	background: rgba(0, 0, 0, 0.55);
+	color: #fff;
+	font-size: 14px;
+	font-weight: 600;
+	text-align: center;
 }
 
 .lb :deep(.swiper-button-next),

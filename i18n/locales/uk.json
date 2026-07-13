@@ -113,6 +113,11 @@
 		"specification": "Характеристики",
 		"reviews": "Відгуки",
 		"selectAttribute": "Виберіть Атрибут:",
+		"naming": {
+			"casePrint": "Чохол з принтом «{attr}» для {model}",
+			"variant": "{title} — {attr}",
+			"photo": "{base} — фото {n}"
+		},
 		"specificationTitle": "Технічні характеристики товару:",
 		"specificationDisclaimer": "* Характеристики та комплектація товару можуть змінюватися виробником без повідомлення продавця.",
 		"relatedProducts": "Супутні товари",

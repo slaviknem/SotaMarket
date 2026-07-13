@@ -4,6 +4,7 @@
 		v-if="isSvg"
 		:src="src"
 		:alt="alt"
+		:title="title"
 		:width="width"
 		:height="height"
 		:loading="loading"
@@ -13,6 +14,7 @@
 		v-else
 		:src="src"
 		:alt="alt"
+		:title="title"
 		:width="width"
 		:height="height"
 		:sizes="sizes"
@@ -31,6 +33,7 @@ const props = withDefaults(
 	defineProps<{
 		src: string
 		alt?: string
+		title?: string
 		width?: number | string
 		height?: number | string
 		sizes?: string

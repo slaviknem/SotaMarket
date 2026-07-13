@@ -3,8 +3,13 @@
 		<Breadcrumbs :items="breadcrumbs" />
 
 		<div class="product">
-			<!-- Галерея -->
-			<ShopProductGallery :images="galleryImages" :alt="pageTitle" class="product__gallery" />
+			<!-- Галерея (гортання фото = вибір принта/кольору) -->
+			<ShopProductGallery
+				:slides="slides"
+				:active-index="activeIndex"
+				class="product__gallery"
+				@select="onGallerySelect"
+			/>
 
 			<!-- Інфо -->
 			<div class="product__info">
@@ -34,13 +39,13 @@
 							:class="{
 								'is-active': attr.id === selectedAttributeId,
 								'is-unavailable': !isAttrInStock(product, attr),
-								'attr-chip--img': isPrintAttr(attr),
+								'attr-chip--img': isPrintAttribute(attr),
 							}"
 							:title="attr.title"
 							@click="selectAttribute(attr)"
 						>
 							<AppImage
-								v-if="isPrintAttr(attr)"
+								v-if="isPrintAttribute(attr)"
 								:src="attrImageSrc(attr)"
 								:alt="attr.title"
 								:width="56"
@@ -185,6 +190,8 @@
 </template>
 
 <script setup lang="ts">
+import type { IGallerySlide } from '~/composables/useProductGallery'
+
 const props = defineProps<{
 	categoryAlias: string
 	productAlias: string
@@ -194,7 +201,6 @@ const props = defineProps<{
 const { t, locale } = useI18n()
 const url = useUrl()
 const shopApi = useShopApi()
-const config = useRuntimeConfig()
 const cart = useCart()
 const { openCart } = useCartDrawer()
 const wishlist = useWishlist()
@@ -241,17 +247,19 @@ function selectAttribute(attr: any) {
 }
 
 // Принти/альфапринти показуємо картинкою; кольори — текстом із кружечком кольору
-const PRINT_TYPES = ['alpha_print', 'alpha_print_gen', 'neo_print', 'alpha_vdmt']
-const isPrintAttr = (attr: any) =>
-	attr.type !== 'color' && (PRINT_TYPES.includes(attr.type) || !!attr.image_file)
-
+// (кружечок: завантажений свотч → явний колір → превʼю за alias — див. url.attrDot)
 const attrImageSrc = (attr: any) =>
 	attr.image_file ? url.img('attributes/' + attr.image_file) : url.attributeImg(attr.alias)
 
-// Кружечок кольору: завантажений свотч → явний колір (поле «Колір») → превʼю за alias
-
 // ---------- Галерея ----------
-const galleryImages = computed(() => getImagesByAttribute(product.value, selectedAttributeId.value))
+const { slides, activeIndex, seoImages, variantImages } = useProductGallery(product, selectedAttributeId)
+
+// Гортання галереї / клік по мініатюрі = вибір атрибута: те, що на екрані, і те, що в кошику, — одне й те саме
+function onGallerySelect(slide: IGallerySlide) {
+	if (slide.attributeId && slide.attributeId !== selectedAttributeId.value) {
+		selectedAttributeId.value = slide.attributeId
+	}
+}
 
 const currentImageFile = computed(() => getImageByAttribute(product.value, selectedAttributeId.value))
 
@@ -281,10 +289,29 @@ const breadcrumbs = computed(() => {
 	return crumbs
 })
 
-// ---------- Заголовок (з атрибутом для attr-сторінок) ----------
+// ---------- Глибоке посилання на варіант ----------
+// Вибір принта/кольору переписує URL на /attr/{alias}, і сторінка стає сторінкою цього варіанта
+// (заголовок, canonical, og, schema.org) — рівно такою, яку віддасть SSR при перезавантаженні.
+// Тому посилання можна скопіювати, зберегти в закладки чи переслати.
+//
+// history.replaceState, а не роутер: навігація перемонтувала б сторінку (повторні запити, стрибок
+// скролу), а pushState засмічував би історію новим записом на кожен свайп галереї.
+const attributeInUrl = ref(!!props.attributeAlias)
+
+watch(selectedAttributeId, () => {
+	const alias = selectedAttribute.value?.alias
+	if (!import.meta.client || !alias || !product.value) return
+
+	attributeInUrl.value = true
+
+	const href = url.product(product.value, alias) + location.search
+	history.replaceState({ ...history.state, current: href }, '', href)
+})
+
+// ---------- Заголовок (з атрибутом на сторінці варіанта) ----------
 const pageTitle = computed(() => {
 	const base = product.value?.title || ''
-	if (props.attributeAlias && selectedAttribute.value) {
+	if (attributeInUrl.value && selectedAttribute.value) {
 		return `${base} (${selectedAttribute.value.title})`
 	}
 	return base
@@ -319,51 +346,32 @@ const tabs = computed(() => [
 const activeTab = ref('description')
 
 // ---------- SEO ----------
+// canonical/og ідуть за URL: на сторінці варіанта (або після вибору принта) це /attr/{alias}
+const canonicalPath = computed(() =>
+	product.value
+		? url.product(product.value, attributeInUrl.value ? selectedAttribute.value?.alias : undefined)
+		: ''
+)
+
 usePageSeo({
 	title: () => `${pageTitle.value} — ${formatPrice(product.value?.price)}`,
 	description: () =>
 		product.value?.description_short ||
 		`${pageTitle.value}. ${t('product.inStock')}. ${formatPrice(product.value?.price)}.`,
 	image: () => (currentImageFile.value ? url.productBig(currentImageFile.value) : undefined),
+	path: () => canonicalPath.value,
 })
 
-useJsonLd(() => ({
-	'@context': 'https://schema.org',
-	'@type': 'Product',
-	name: pageTitle.value,
-	image: galleryImages.value.map((img: any) => url.productBig(img.image_file)),
-	description: product.value?.description_short || '',
-	sku: String(product.value?.id || ''),
-	brand: { '@type': 'Brand', name: modelCategory.value?.brend_name || 'FLOY' },
-	offers: {
-		'@type': 'Offer',
-		// На attr-сторінці URL оферу = її canonical (/attr/…), інакше — базовий товар
-		url:
-			config.public.siteUrl +
-			`/${props.categoryAlias}/${props.productAlias}` +
-			(props.attributeAlias ? `/attr/${props.attributeAlias}` : ''),
-		priceCurrency: 'UAH',
-		price: product.value?.price,
-		availability: available.value ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-		itemCondition: 'https://schema.org/NewCondition',
-	},
-	// Відгуки + зведений рейтинг (лише з реальних даних)
-	...reviewsJsonLd(product.value?.reviews),
-}))
-
-// JSON-LD: хлібні крихти (Бренд → Модель → Товар) — структура каталогу для пошуковиків/AI
-useJsonLd(() => {
-	const crumbs = [{ title: 'FLOY', url: '/' }, ...breadcrumbs.value]
-	return {
-		'@context': 'https://schema.org',
-		'@type': 'BreadcrumbList',
-		itemListElement: crumbs.map((c, i) => ({
-			'@type': 'ListItem',
-			position: i + 1,
-			name: c.title,
-			...(c.url ? { item: config.public.siteUrl + c.url } : {}),
-		})),
-	}
+// Product / ProductGroup + hasVariant / Product варіанта + BreadcrumbList
+useProductJsonLd({
+	product,
+	attributes,
+	selectedAttribute,
+	isVariantPage: attributeInUrl,
+	pageTitle,
+	images: seoImages,
+	variantImages,
+	breadcrumbs,
 })
 
 // Облік візитів

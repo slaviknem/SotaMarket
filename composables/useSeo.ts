@@ -5,6 +5,9 @@ export function usePageSeo(opts: {
 	description?: MaybeRefOrGetter<string>
 	image?: MaybeRefOrGetter<string | undefined>
 	noindex?: MaybeRefOrGetter<boolean>
+	// Явний шлях сторінки. Потрібен там, де URL змінюється без навігації роутера
+	// (сторінка товару переписує його на /attr/… при виборі принта) — інакше route.path відстає
+	path?: MaybeRefOrGetter<string>
 }) {
 	const route = useRoute()
 	const config = useRuntimeConfig()
@@ -13,7 +16,8 @@ export function usePageSeo(opts: {
 	// інакше сторінки 2+ виглядали б дублями 1-ї і товари з них випадали б з індексу.
 	const canonical = computed(() => {
 		const page = Number(route.query.page) || 1
-		return config.public.siteUrl + route.path + (page > 1 ? `?page=${page}` : '')
+		const path = toValue(opts.path) || route.path
+		return config.public.siteUrl + path + (page > 1 ? `?page=${page}` : '')
 	})
 
 	useHead(() => {

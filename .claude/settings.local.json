@@ -104,7 +104,27 @@
       "Bash(curl -s \"https://admin.floy.com.ua/apisite/products/search/Baseus?lang=uk&site=floy\")",
       "Bash(node -e \"let s='';process.stdin.on\\('data',d=>s+=d\\).on\\('end',\\(\\)=>{const d=JSON.parse\\(s\\).data||[];console.log\\(d.slice\\(0,4\\).map\\(p=>p.alias+' | '+p.alias_cat\\).join\\('\\\\n'\\)\\);}\\)\")",
       "Bash(PATH=__TRACKED_VAR__/.node/node-v22.14.0-win-x64:__TRACKED_VAR__ node C:/Users/slavi/AppData/Local/Temp/claude/d--Web-SERVER-domains-FLOY-NEW/3c4f2e8c-2364-4821-86bf-d1f190ae7ff5/scratchpad/tags-check.js)",
-      "Bash(PATH=__TRACKED_VAR__/.node/node-v22.14.0-win-x64:__TRACKED_VAR__ node -e ' *)"
+      "Bash(PATH=__TRACKED_VAR__/.node/node-v22.14.0-win-x64:__TRACKED_VAR__ node -e ' *)",
+      "WebFetch(domain:test.floy.com.ua)",
+      "Bash(cd \"d:/Web-SERVER/domains/FLOY-ADMIN\" && ls && echo \"=== Resources ===\" && find . -path ./node_modules -prune -o -path ./vendor -prune -o -iname \"*Resource*.php\" -print 2>/dev/null | head -30)",
+      "Bash(cd \"d:/Web-SERVER/domains/FLOY-ADMIN\" && echo \"=== Image model ===\" && cat app/Models/Image.php 2>/dev/null | head -60 && echo \"=== images migration ===\" && find database/migrations -iname \"*image*\" | head -5)",
+      "Bash(cd \"d:/Web-SERVER/domains/FLOY-ADMIN\" && grep -rn \"type_attribute\" --include=*.php --include=*.vue --include=*.js app resources config 2>/dev/null | grep -v vendor | head -30)",
+      "Bash(cd \"d:/Web-SERVER/domains/FLOY-ADMIN\" && cat database/migrations/2022_12_26_175122_create_images_table.php && echo \"=== product model images relation ===\" && grep -n -A6 \"function images\\\\|function attributes\" app/Models/Product.php | head -40 && echo \"=== type_attribute options in admin UI ===\" && grep -rn \"type_attribute\" resources/ 2>/dev/null | head -20)",
+      "Bash(curl -s \"https://floy.com.ua/samsung-galaxy-m12/zimovi-olenyata-samsung-samsung-galaxy-m12\")",
+      "Bash(cd \"d:/Web-SERVER/domains/FLOY-ADMIN\" && grep -rn \"alpha_print\\\\|neo_print\\\\|alpha_vdmt\\\\|'print'\" --include=*.php app | grep -v vendor | head -20; echo \"=== product type values ===\"; grep -rn \"chekhly\\\\|plenki\\\\|accessories\" --include=*.php app/Models app/Http/Controllers 2>/dev/null | head -10)",
+      "Bash(cd \"d:/Web-SERVER/domains/FLOY-ADMIN\" && grep -rn \"plenki\\\\|steklo\\\\|'accessories'\\\\|\\\\\"accessories\\\\\"\" --include=*.php --include=*.blade.php app resources/views 2>/dev/null | grep -i \"type\\\\|option\\\\|select\" | head -15)",
+      "Bash(curl -s -m 5 -o /dev/null -w \"dev :3000 → %{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -s -m 5 -o /dev/null -w \"test.floy → %{http_code}\\\\n\" https://test.floy.com.ua/)",
+      "Bash(curl -s -m 60 \"http://localhost:3000/samsung-galaxy-m12/zimovi-olenyata-samsung-samsung-galaxy-m12/attr/olen-v-svetri\" -o /tmp/attr.html)",
+      "Read(//tmp/**)",
+      "Bash(sed -E 's/ \\(src|srcset|sizes|data-nuxt-img|decoding\\)=\"[^\"]*\"//g')",
+      "Bash(echo \"exit: $?\")",
+      "Bash(curl -s -m 60 \"http://localhost:3000/uk/samsung-galaxy-m12/zimovi-olenyata-samsung-samsung-galaxy-m12\" -o /tmp/base.html)",
+      "Bash(curl -s -m 60 \"http://localhost:3000/naushniki/accessories_981103\" -o /tmp/acc.html)",
+      "Bash(curl -s -o /dev/null -w \"big/kabelya/2471033.jpg → %{http_code}\\\\n\" \"https://admin.floy.com.ua/storage/images/products/big/kabelya/2471033.jpg\")",
+      "Bash(curl -s -o /dev/null -w \"thumb/kabelya/2471033.jpg → %{http_code}\\\\n\" \"https://admin.floy.com.ua/storage/images/products/thumb/kabelya/2471033.jpg\")",
+      "Bash(curl -s -o /dev/null -w \"redirect → %{redirect_url} \\(%{http_code}\\)\\\\n\" \"https://admin.floy.com.ua/storage/images/products/big/kabelya/2471033.jpg\")",
+      "Bash(curl -sL -o /dev/null -w \"після редіректу → %{http_code}, тип: %{content_type}\\\\n\" \"https://admin.floy.com.ua/storage/images/products/big/kabelya/2471033.jpg\")"
     ],
     "defaultMode": "acceptEdits"
   }

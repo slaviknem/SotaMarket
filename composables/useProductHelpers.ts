@@ -13,16 +13,13 @@ export function getImageByAttribute(product: any, attributeId?: number | null): 
 	return product.images[0].image_file
 }
 
-// Всі зображення для атрибута (для галереї). Якщо немає - всі зображення
-export function getImagesByAttribute(product: any, attributeId?: number | null): any[] {
-	if (!product?.images?.length) return []
+// Принт/дизайн (показуємо картинкою) чи колір (кружечок) — єдина логіка для картки,
+// сторінки товару і галереї
+const PRINT_TYPES = ['alpha_print', 'alpha_print_gen', 'neo_print', 'alpha_vdmt']
 
-	if (attributeId) {
-		const imgs = product.images.filter((i: any) => i.attribute_id === attributeId)
-		if (imgs.length) return imgs
-	}
-
-	return product.images
+export function isPrintAttribute(attr: any): boolean {
+	if (!attr || attr.type === 'color') return false
+	return PRINT_TYPES.includes(attr.type) || !!attr.image_file
 }
 
 // Назва атрибута за id

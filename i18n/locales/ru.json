@@ -113,6 +113,11 @@
 		"specification": "Характеристики",
 		"reviews": "Отзывы",
 		"selectAttribute": "Выберите Атрибут:",
+		"naming": {
+			"casePrint": "Чехол с принтом «{attr}» для {model}",
+			"variant": "{title} — {attr}",
+			"photo": "{base} — фото {n}"
+		},
 		"specificationTitle": "Технические характеристики товара:",
 		"specificationDisclaimer": "* Характеристики и комплектация товара могут изменяться производителем без уведомления продавца.",
 		"relatedProducts": "Сопутствующие товары",
