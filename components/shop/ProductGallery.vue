@@ -91,6 +91,7 @@
 										:title="slide.alt"
 										:width="1000"
 										:height="1000"
+										sizes="(max-width: 900px) 100vw, 900px"
 									/>
 								</div>
 							</SwiperSlide>
@@ -281,6 +282,9 @@ onBeforeUnmount(() => {
 	justify-content: center;
 	background: rgba(0, 0, 0, 0.92);
 	backdrop-filter: blur(2px);
+	/* Поля сцени: зверху лічильник, з боків стрілки, знизу підпис + пагінація.
+	   Решту простору віддаємо фото */
+	padding: 56px 76px 84px;
 }
 
 .lb__swiper {
@@ -293,12 +297,25 @@ onBeforeUnmount(() => {
 	height: 100%;
 }
 
+/* Фото тягнеться на всю сцену і саме впирається або в її ширину, або у висоту
+   (object-fit: contain). Розмір задає контейнер, а не intrinsic-розмір файлу —
+   інакше 2x-кандидат зі srcset рендериться вдвічі меншим */
 .lb__swiper :deep(img) {
-	max-width: 92vw;
-	max-height: 88vh;
-	width: auto;
-	height: auto;
+	width: 100%;
+	height: 100%;
 	object-fit: contain;
+}
+
+/* На мобільному гортаємо свайпом — стрілки ховаємо, поля мінімальні */
+@media (max-width: 768px) {
+	.lb {
+		padding: 52px 10px 76px;
+	}
+
+	.lb :deep(.swiper-button-next),
+	.lb :deep(.swiper-button-prev) {
+		display: none;
+	}
 }
 
 .lb__close {
