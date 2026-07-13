@@ -1,7 +1,23 @@
-User-agent: *
+# --- ШІ-краулери Anthropic (Claude) — явно дозволені ---
+# ClaudeBot — обхід сайту, Claude-User — коли користувач просить Claude відкрити сторінку,
+# Claude-SearchBot — індексація для пошуку всередині Claude.
+User-agent: ClaudeBot
+User-agent: Claude-User
+User-agent: Claude-SearchBot
+User-agent: anthropic-ai
+Allow: /
 Disallow: /shop/cart
 Disallow: /shop/compare
 Disallow: /shop/wishlist
 Disallow: /shop/track-order
+
+# --- Усі інші боти ---
+User-agent: *
+Allow: /
+Disallow: /shop/cart
+Disallow: /shop/compare
+Disallow: /shop/wishlist
+Disallow: /shop/track-order
+
 Host: https://floy.com.ua
 Sitemap: https://floy.com.ua/sitemap.xml
