@@ -124,7 +124,8 @@
       "Bash(curl -s -o /dev/null -w \"big/kabelya/2471033.jpg → %{http_code}\\\\n\" \"https://admin.floy.com.ua/storage/images/products/big/kabelya/2471033.jpg\")",
       "Bash(curl -s -o /dev/null -w \"thumb/kabelya/2471033.jpg → %{http_code}\\\\n\" \"https://admin.floy.com.ua/storage/images/products/thumb/kabelya/2471033.jpg\")",
       "Bash(curl -s -o /dev/null -w \"redirect → %{redirect_url} \\(%{http_code}\\)\\\\n\" \"https://admin.floy.com.ua/storage/images/products/big/kabelya/2471033.jpg\")",
-      "Bash(curl -sL -o /dev/null -w \"після редіректу → %{http_code}, тип: %{content_type}\\\\n\" \"https://admin.floy.com.ua/storage/images/products/big/kabelya/2471033.jpg\")"
+      "Bash(curl -sL -o /dev/null -w \"після редіректу → %{http_code}, тип: %{content_type}\\\\n\" \"https://admin.floy.com.ua/storage/images/products/big/kabelya/2471033.jpg\")",
+      "Bash(ls d:/Web-SERVER/domains/FLOY-NEW && echo \"=== docs? ===\" && ls d:/Web-SERVER/domains/FLOY-NEW/docs 2>/dev/null; echo \"=== parent ===\" && ls d:/Web-SERVER)"
     ],
     "defaultMode": "acceptEdits"
   }
