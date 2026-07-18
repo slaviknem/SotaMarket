@@ -31,6 +31,20 @@ export function useUrl() {
 			return { backgroundImage: `url("${base}${attr.alias}.jpg")` }
 		},
 
+		// ---------- NeoPrint (готовий дизайн) ----------
+		// Шаблон принта: thumb — для карток, повний — для сторінки та для друку
+		neoprintTemplate: (alias: string | number, thumb = false) =>
+			config.public.urlStorage + 'images/templates/' + (thumb ? 'thumb/' : '') + alias + '.jpg',
+
+		// Маска моделі (PNG з прозорістю) — накладається ПОВЕРХ шаблона
+		neoprintMask: (categoryAlias: string) =>
+			config.public.urlStorage + 'images/printcase/masks/' + categoryAlias + '.png',
+
+		// Готова композиція «шаблон + маска» одним файлом (og:image, JSON-LD, кошик).
+		// Збирає наш Nitro-роут; у верстці композицію робить CSS (див. NeoPrintImage).
+		neoprintImage: (categoryAlias: string, alias: string | number) =>
+			`/img/neoprint/${categoryAlias}/${alias}.jpg`,
+
 		categoryImg: (imageFile?: string | null) =>
 			imageFile ? config.public.urlStorage + 'images/categories/' + imageFile : '/images/no-photo.svg',
 
@@ -51,8 +65,16 @@ export function useUrl() {
 					: `/${p.alias_cat}/${p.alias}`
 			),
 
-		printcase: (modelAlias?: string) =>
-			localePath(modelAlias ? `/printcase?model=${modelAlias}` : '/printcase'),
+		// Сторінка готового дизайну на конкретній моделі
+		neoprint: (categoryAlias: string, id: string | number) =>
+			localePath(`/neoprint/${categoryAlias}/${id}`),
+
+		// Конструктор. З neoPrintAlias — відкривається з уже завантаженим дизайном (правка готового)
+		printcase: (modelAlias?: string, neoPrintAlias?: string | number) => {
+			if (!modelAlias) return localePath('/printcase')
+			const np = neoPrintAlias ? `&neo_print_id=${neoPrintAlias}` : ''
+			return localePath(`/printcase?model=${modelAlias}${np}`)
+		},
 
 		blogPost: (post: { type: string; alias: string }) =>
 			localePath(`/article/${post.type}/${post.alias}`),

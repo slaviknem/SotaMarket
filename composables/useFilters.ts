@@ -17,6 +17,12 @@ export interface IFilterNode {
 // Листкові типи (пункти з порожнім items), які групуємо під синтетичними батьками
 const LEAF_TYPES = ['cat', 'form_factor', 'material'] as const
 
+// Плоский перелік усіх фільтрів (батьки + діти) — коли потрібен пошук за id/alias
+export function flattenFilters(raw: IFilterNode[] = []): IFilterNode[] {
+	const list = Array.isArray(raw) ? raw : []
+	return list.flatMap((f) => [f, ...(f.items || [])])
+}
+
 export function useFilters() {
 	const { t } = useI18n()
 

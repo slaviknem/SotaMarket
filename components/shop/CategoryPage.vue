@@ -22,7 +22,7 @@
 			<div class="cat-layout__content">
 				<header class="cat-head">
 					<h1 class="cat-head__title">{{ pageTitle }}</h1>
-					<span v-if="total" class="cat-head__count">{{ total }} {{ t('category.products') }}</span>
+					<span v-if="displayTotal" class="cat-head__count">{{ displayTotal }} {{ t('category.products') }}</span>
 
 					<div class="cat-head__controls">
 						<button v-if="!brandsLanding" class="cat-head__filters-btn" @click="mobileFiltersOpen = true">
@@ -58,8 +58,8 @@
 					<div v-for="i in 24" :key="i" class="skeleton" style="aspect-ratio: 0.62" />
 				</div>
 
-				<template v-else-if="products.length">
-					<div class="products-grid" :class="gridModifier">
+				<template v-else-if="hasItems">
+					<div v-if="products.length" class="products-grid" :class="gridModifier">
 						<!-- Конструктор чохлів — перший товар (як на старому сайті) -->
 						<ProductCardPrintcase v-if="showPrintcaseCard" :category="category" />
 						<ProductCard
@@ -86,6 +86,27 @@
 
 					<!-- Тригер авто-підвантаження по скролу -->
 					<div ref="scrollSentinel" class="cat-sentinel" aria-hidden="true" />
+
+					<!-- Готові дизайни теми: друкуємо будь-який принт із бібліотеки на цю модель.
+					     Товару в БД немає — картка веде на /neoprint/{модель}/{дизайн}. -->
+					<section v-if="showNeoPrints" class="cat-neoprints">
+						<div class="section-title">
+							<h2>{{ t('neoprint.sectionTitle', { filter: filterPage.title }) }}</h2>
+						</div>
+
+						<p class="cat-neoprints__note text-muted">
+							{{ t('neoprint.sectionNote', { model: modelName, count: neoprints.length }) }}
+						</p>
+
+						<div class="products-grid products-grid--left">
+							<NeoPrintCard
+								v-for="np in neoprints"
+								:key="np.id"
+								:neoprint="np"
+								:category="category"
+							/>
+						</div>
+					</section>
 				</template>
 
 				<div v-else class="cat-empty">
@@ -151,6 +172,7 @@ const localePath = useLocalePath()
 const shopApi = useShopApi()
 const config = useRuntimeConfig()
 const { buildFilterTree, findGroupAlias, isParentTheme, expandAliasForApi } = useFilters()
+const { title: neoPrintTitle } = useNeoPrint()
 
 const mobileFiltersOpen = ref(false)
 
@@ -210,13 +232,23 @@ const brands = computed(() =>
 	(brandsData.value || []).map((b: any) => ({ ...b, image_file: brandLogos.value[b.url] }))
 )
 
-// Дані фільтра потрібні тільки на сторінках /filter/ (гілка стабільна для роута)
+// Дані фільтра потрібні тільки на сторінках /filter/ (гілка стабільна для роута).
+// Разом із фільтром тягнемо готові дизайни (NeoPrint) його теми — віртуальні товари,
+// яких немає в products: принт із бібліотеки, надрукований на чохлі цієї моделі.
 let filterPage = ref<any>(false)
 if (props.filterAlias) {
-	const { data } = await useAsyncData(
-		'cat-filter-page-' + keySuffix.value,
-		async () => (await shopApi.getFilterByAlias(props.categoryAlias, props.filterAlias!)) ?? false
-	)
+	const { data } = await useAsyncData('cat-filter-page-' + keySuffix.value, async () => {
+		const filter = await shopApi.getFilterByAlias(props.categoryAlias, props.filterAlias!)
+		if (!filter) return false
+
+		// Дизайни живуть на темах і лише там, де модель підтримує друк (є маска)
+		const neoprints =
+			filter.type === 'theme' && category.value?.printcase
+				? await shopApi.getNeoPrints(filter.id)
+				: []
+
+		return { ...filter, neoprints }
+	})
 	filterPage = data
 }
 
@@ -311,6 +343,28 @@ const showPrintcaseCard = computed(
 		currentPage.value === 1 &&
 		!props.filterAlias
 )
+
+// ---------- Готові дизайни (NeoPrint) ----------
+const neoprints = computed<INeoPrint[]>(() => filterPage.value?.neoprints || [])
+
+// Окремою секцією під товарами і лише на «чистій» 1-й сторінці теми — інакше той самий
+// перелік дублювався б на пагінації та на комбінаціях ?filter_*
+const showNeoPrints = computed(
+	() => neoprints.value.length > 0 && currentPage.value === 1 && !hasFilterQuery.value
+)
+
+// Лічильник у шапці. На сторінці фільтра meta.total рахує ТОВАРИ (1), а в сітці кожен
+// атрибут — окрема картка (5) плюс дизайни (41). Бекенд у count фільтра рахує рівно те,
+// що ми показуємо (варіанти + дизайни = 46) — і це ж число стоїть у сайдбарі.
+// Для комбінацій ?filter_* count не підходить: він не враховує додаткові фільтри.
+const displayTotal = computed(() =>
+	props.filterAlias && !hasFilterQuery.value && filterPage.value?.count
+		? filterPage.value.count
+		: total.value
+)
+
+// Порожньо — лише коли немає ні товарів, ні дизайнів
+const hasItems = computed(() => products.value.length > 0 || showNeoPrints.value)
 
 // SEO-блоки FAQ/цін: модельні сторінки та сторінки /filter/, лише 1-ша сторінка і без
 // мультивибору ?filter_* — інакше той самий текст дублювався б на URL пагінації/комбінацій
@@ -429,6 +483,8 @@ const pageTitle = computed(() => {
 	return category.value?.title_rus || category.value?.title_full || category.value?.title || ''
 })
 
+const modelName = computed(() => category.value?.title_full || category.value?.title || '')
+
 const breadcrumbs = computed(() => {
 	const crumbs: { title: string; url?: string }[] = []
 
@@ -461,21 +517,39 @@ usePageSeo({
 	noindex: () => hasFilterQuery.value,
 })
 
+// Готові дизайни для ItemList — тими самими позиціями, що й у видимій сітці
+const neoPrintListItems = computed(() =>
+	showNeoPrints.value
+		? neoprints.value.map((np: INeoPrint) => ({
+				name: neoPrintTitle(np, category.value),
+				url: url.absolute(url.neoprint(props.categoryAlias, np.id)),
+			}))
+		: []
+)
+
 // JSON-LD: список товарів. На сторінці фільтра — картки-варіанти з URL /attr/
 // (дзеркалить видимий список); позиції — у межах поточної сторінки.
 useJsonLd(() => {
 	if (splitByAttributes.value) {
 		const items = expandProductsByAttributes(products.value)
+		const listed = [
+			...items.slice(0, 48).map(({ product: p, attribute: a }) => ({
+				name: a ? `${p.title} (${a.title})` : p.title,
+				url: config.public.siteUrl + `/${p.alias_cat}/${p.alias}` + (a ? `/attr/${a.alias}` : ''),
+			})),
+			...neoPrintListItems.value,
+		]
+
 		return {
 			'@context': 'https://schema.org',
 			'@type': 'ItemList',
 			name: pageTitle.value,
-			numberOfItems: items.length,
-			itemListElement: items.slice(0, 48).map(({ product: p, attribute: a }, i: number) => ({
+			numberOfItems: listed.length,
+			itemListElement: listed.map((item, i: number) => ({
 				'@type': 'ListItem',
 				position: i + 1,
-				name: a ? `${p.title} (${a.title})` : p.title,
-				url: config.public.siteUrl + `/${p.alias_cat}/${p.alias}` + (a ? `/attr/${a.alias}` : ''),
+				name: item.name,
+				url: item.url,
 			})),
 		}
 	}
@@ -652,6 +726,16 @@ function changeSort(e: Event) {
 
 .cat-sentinel {
 	height: 1px;
+}
+
+/* Секція готових дизайнів під товарами теми */
+.cat-neoprints {
+	margin-top: 30px;
+}
+
+.cat-neoprints__note {
+	margin: -6px 0 16px;
+	font-size: 13.5px;
 }
 
 .cat-empty {

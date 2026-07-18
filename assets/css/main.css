@@ -490,6 +490,33 @@ textarea.form-control {
 }
 
 
+/* ---------- NeoPrint: композиція «шаблон принта + маска моделі» ----------
+   Дзеркалить бекендовий ImageH::composeAlphaprint: білий квадрат, обидва шари
+   вписані по висоті й центровані. Так замість canvas-малювання отримуємо
+   готове зображення прямо в SSR-HTML. */
+.np-img {
+	position: relative;
+	aspect-ratio: 1;
+	background: var(--img-bg);
+	overflow: hidden;
+}
+
+.np-img__print,
+.np-img__mask {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	transform: translateX(-50%);
+	height: 100%;
+	width: auto;
+	max-width: none;
+}
+
+/* Маска — верхній шар, кліки крізь неї йдуть на посилання картки */
+.np-img__mask {
+	pointer-events: none;
+}
+
 /* ---------- Badges ---------- */
 .badge {
 	display: inline-flex;

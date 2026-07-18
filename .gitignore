@@ -3,6 +3,8 @@
 .output
 .data
 dist
+# Кеш зібраних композицій neoprint (server/routes/img/neoprint)
+.cache
 
 # Node
 node_modules

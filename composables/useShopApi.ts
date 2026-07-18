@@ -11,6 +11,15 @@ export interface IFilterValues {
 	[filterAlias: string]: string
 }
 
+// Готовий дизайн для друку (атрибут type=neo_print), прив'язаний до фільтра-теми
+export interface INeoPrint {
+	id: number
+	alias: string
+	title: string
+	filter_id: number
+	type: string
+}
+
 export function useShopApi() {
 	const config = useRuntimeConfig()
 	const { locale } = useI18n()
@@ -109,6 +118,22 @@ export function useShopApi() {
 		getFilterByAlias: async (categoryAlias: string, filterAlias: string) => {
 			const res = await api<{ data: any }>(`filters/filter/${categoryAlias}/${filterAlias}`)
 			return res?.data ?? null
+		},
+
+		// Готові дизайни (NeoPrint) теми: віртуальні товари — принт із бібліотеки на будь-яку модель.
+		// Без filter_id віддає всі дизайни сайту. Відповідь — плоский масив (не {data}).
+		getNeoPrints: async (filterId?: number | string) => {
+			const res = await api<INeoPrint[]>('attributes/neo_prints', filterId ? { filter_id: filterId } : {})
+			return Array.isArray(res) ? res : []
+		},
+
+		// Один дизайн за alias (alias == id). Цей ендпоінт віддає сиру модель Attribute —
+		// без локалізованого title, який є в списку neo_prints. Доводимо до того ж вигляду.
+		getNeoPrint: async (alias: string | number) => {
+			const res = await $fetch<any>(`${config.public.urlApi}attributes/neo_print/${alias}`).catch(() => null)
+			if (!res?.id) return null
+
+			return { ...res, title: (locale.value === 'ru' ? res.title_ru : res.title_uk) || '' }
 		},
 
 		// Статті

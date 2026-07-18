@@ -28,6 +28,9 @@ export default defineNuxtConfig({
 			email: 'info@floy.com.ua',
 			printcasePrice: 289,
 			printcasePriceOld: 299,
+			// Готовий дизайн (NeoPrint) — дешевший за індивідуальний друк у конструкторі
+			neoprintPrice: 259,
+			neoprintPriceOld: 299,
 		},
 	},
 
@@ -69,5 +72,14 @@ export default defineNuxtConfig({
 
 	nitro: {
 		compressPublicAssets: true,
+
+		// Кеш зібраних композицій «дизайн + модель» (server/routes/img/neoprint) —
+		// sharp відпрацьовує один раз на пару, далі віддаємо з диска
+		storage: {
+			neoprint: { driver: 'fs', base: './.cache/neoprint' },
+		},
+		devStorage: {
+			neoprint: { driver: 'fs', base: './.cache/neoprint' },
+		},
 	},
 })
