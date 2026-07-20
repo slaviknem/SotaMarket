@@ -11,8 +11,10 @@
 			</NuxtLink>
 
 			<div class="p-card__badges">
-				<span class="badge np-card__badge">{{ t('neoprint.badge') }}</span>
 				<span v-if="discount > 0" class="badge badge-sale">-{{ discount }}%</span>
+				<span class="np-card__badge" :title="t('neoprint.badge')" :aria-label="t('neoprint.badge')">
+					<AppIcon name="printer" :size="15" />
+				</span>
 			</div>
 		</div>
 
@@ -56,7 +58,14 @@ const discount = computed(() => discountPercent(price.value, priceOld.value))
 	padding: 14px;
 }
 
+/* Компактний значок «готовий дизайн»: лише іконка принтера (сенс — у title/aria-label) */
 .np-card__badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	border-radius: var(--radius-pill);
 	background: var(--accent);
 	color: var(--on-accent);
 }

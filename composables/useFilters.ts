@@ -84,5 +84,11 @@ export function useFilters() {
 		return { groupKey: findGroupAlias(list, alias), value: alias }
 	}
 
-	return { buildFilterTree, findGroupAlias, isParentTheme, expandAliasForApi }
+	// id-и дітей теми-батька (для збору дизайнів усіх підтем). Порожньо, якщо це не батько.
+	const filterChildIds = (raw: IFilterNode[] = [], alias: string): number[] => {
+		const node = flattenFilters(raw).find((f) => f.alias === alias)
+		return (node?.items || []).map((i) => i.id).filter((id): id is number => typeof id === 'number')
+	}
+
+	return { buildFilterTree, findGroupAlias, isParentTheme, expandAliasForApi, filterChildIds }
 }

@@ -22,7 +22,16 @@
 			<div class="cat-layout__content">
 				<header class="cat-head">
 					<h1 class="cat-head__title">{{ pageTitle }}</h1>
-					<span v-if="displayTotal" class="cat-head__count">{{ displayTotal }} {{ t('category.products') }}</span>
+					<span v-if="displayTotal" class="cat-head__count">
+						<template v-if="showNeoPrints">
+							<template v-if="productsCount > 0">{{ productsCount }} {{ t('category.products') }} + </template>
+							<a class="cat-head__count-designs" href="#cat-neoprints" @click.prevent="scrollToNeoprints">
+								{{ neoprints.length }} {{ t('neoprint.countWord') }}
+								<AppIcon name="chevron-down" :size="12" />
+							</a>
+						</template>
+						<template v-else>{{ displayTotal }} {{ t('category.products') }}</template>
+					</span>
 
 					<div class="cat-head__controls">
 						<button v-if="!brandsLanding" class="cat-head__filters-btn" @click="mobileFiltersOpen = true">
@@ -69,6 +78,21 @@
 							:attribute="item.attribute || undefined"
 						/>
 
+						<!-- Місток у порожній «хвіст» останнього ряду: заповнює пустку і веде вниз
+						     до готових дизайнів. Лише на одній сторінці (у flow це місце — контроли). -->
+						<a
+							v-if="showNeoPrints && lastPage <= 1"
+							class="cat-bridge"
+							href="#cat-neoprints"
+							@click.prevent="scrollToNeoprints"
+						>
+							<span class="cat-bridge__inner">
+								<span class="cat-bridge__title">{{ t('neoprint.bridgeTitle', { count: neoprints.length }) }}</span>
+								<span class="cat-bridge__note">{{ t('neoprint.bridgeNote') }}</span>
+								<AppIcon name="arrow-down" :size="34" class="cat-bridge__arrow" />
+							</span>
+						</a>
+
 						<!-- Кнопка «Показати ще» + авто-підвантаження + пагінація -->
 						<ShopCatControls
 							v-if="lastPage > 1"
@@ -89,7 +113,7 @@
 
 					<!-- Готові дизайни теми: друкуємо будь-який принт із бібліотеки на цю модель.
 					     Товару в БД немає — картка веде на /neoprint/{модель}/{дизайн}. -->
-					<section v-if="showNeoPrints" class="cat-neoprints">
+					<section v-if="showNeoPrints" id="cat-neoprints" class="cat-neoprints">
 						<div class="section-title">
 							<h2>{{ t('neoprint.sectionTitle', { filter: filterPage.title }) }}</h2>
 						</div>
@@ -100,11 +124,17 @@
 
 						<div class="products-grid products-grid--left">
 							<NeoPrintCard
-								v-for="np in neoprints"
+								v-for="np in visibleNeoprints"
 								:key="np.id"
 								:neoprint="np"
 								:category="category"
 							/>
+						</div>
+
+						<div v-if="hasMoreNeoprints" class="cat-neoprints__more">
+							<button class="btn btn-outline" @click="showMoreNeoprints">
+								{{ t('neoprint.showMore') }}
+							</button>
 						</div>
 					</section>
 				</template>
@@ -171,7 +201,7 @@ const url = useUrl()
 const localePath = useLocalePath()
 const shopApi = useShopApi()
 const config = useRuntimeConfig()
-const { buildFilterTree, findGroupAlias, isParentTheme, expandAliasForApi } = useFilters()
+const { buildFilterTree, findGroupAlias, isParentTheme, expandAliasForApi, filterChildIds } = useFilters()
 const { title: neoPrintTitle } = useNeoPrint()
 
 const mobileFiltersOpen = ref(false)
@@ -232,6 +262,21 @@ const brands = computed(() =>
 	(brandsData.value || []).map((b: any) => ({ ...b, image_file: brandLogos.value[b.url] }))
 )
 
+// Стеля кількості дизайнів для теми-батька — щоб SSR-payload не роздувався.
+// Понад це — користувач іде глибше в конкретну підтему (у кожної свій повний список).
+const NEOPRINT_MAX = 240
+
+// Перемежовуємо списки дизайнів підтем по колу — щоб перша сторінка показувала різні
+// бренди (BMW, Mercedes…), а не 24 однакових поспіль.
+function interleave<T>(lists: T[][]): T[] {
+	const out: T[] = []
+	const longest = Math.max(0, ...lists.map((l) => l.length))
+	for (let i = 0; i < longest; i++) {
+		for (const list of lists) if (i < list.length) out.push(list[i])
+	}
+	return out
+}
+
 // Дані фільтра потрібні тільки на сторінках /filter/ (гілка стабільна для роута).
 // Разом із фільтром тягнемо готові дизайни (NeoPrint) його теми — віртуальні товари,
 // яких немає в products: принт із бібліотеки, надрукований на чохлі цієї моделі.
@@ -241,11 +286,19 @@ if (props.filterAlias) {
 		const filter = await shopApi.getFilterByAlias(props.categoryAlias, props.filterAlias!)
 		if (!filter) return false
 
-		// Дизайни живуть на темах і лише там, де модель підтримує друк (є маска)
-		const neoprints =
-			filter.type === 'theme' && category.value?.printcase
-				? await shopApi.getNeoPrints(filter.id)
-				: []
+		// Дизайни живуть на темах і лише там, де модель підтримує друк (є маска).
+		// Тема-батько (напр. «Машини») власних дизайнів не має — збираємо їх з усіх підтем
+		// (BMW, Mercedes…), перемежовуючи, щоб перша сторінка показувала різні бренди.
+		let neoprints: INeoPrint[] = []
+		if (category.value?.printcase) {
+			const childIds = filterChildIds(filtersTree.value || [], props.filterAlias!)
+			if (childIds.length) {
+				const batches = await Promise.all(childIds.map((cid) => shopApi.getNeoPrints(cid)))
+				neoprints = interleave(batches).slice(0, NEOPRINT_MAX)
+			} else if (filter.type === 'theme') {
+				neoprints = await shopApi.getNeoPrints(filter.id)
+			}
+		}
 
 		return { ...filter, neoprints }
 	})
@@ -353,6 +406,22 @@ const showNeoPrints = computed(
 	() => neoprints.value.length > 0 && currentPage.value === 1 && !hasFilterQuery.value
 )
 
+// Дизайни: до 48 показуємо всі одразу (як на листкових темах, напр. BMW). Більше — теми-батьки
+// з підтемами — вантажимо порціями по 24 («показати ще»), щоб не роздувати SSR-HTML.
+const NEOPRINT_STEP = 24
+const NEOPRINT_ALL_UP_TO = 48
+const neoprintsShown = ref(NEOPRINT_STEP)
+const paginateNeoprints = computed(() => neoprints.value.length > NEOPRINT_ALL_UP_TO)
+const visibleNeoprints = computed(() =>
+	paginateNeoprints.value ? neoprints.value.slice(0, neoprintsShown.value) : neoprints.value
+)
+const hasMoreNeoprints = computed(() => paginateNeoprints.value && neoprintsShown.value < neoprints.value.length)
+function showMoreNeoprints() {
+	neoprintsShown.value = Math.min(neoprintsShown.value + NEOPRINT_STEP, neoprints.value.length)
+}
+// Скидаємо показ при переході на іншу тему
+watch(() => props.filterAlias, () => { neoprintsShown.value = NEOPRINT_STEP })
+
 // Лічильник у шапці. На сторінці фільтра meta.total рахує ТОВАРИ (1), а в сітці кожен
 // атрибут — окрема картка (5) плюс дизайни (41). Бекенд у count фільтра рахує рівно те,
 // що ми показуємо (варіанти + дизайни = 46) — і це ж число стоїть у сайдбарі.
@@ -362,6 +431,10 @@ const displayTotal = computed(() =>
 		? filterPage.value.count
 		: total.value
 )
+
+// Скільки з displayTotal — реальні варіанти товарів (решта — готові дизайни).
+// Сума лишається = count фільтра (те саме число, що й у сайдбарі).
+const productsCount = computed(() => Math.max(0, displayTotal.value - neoprints.value.length))
 
 // Порожньо — лише коли немає ні товарів, ні дизайнів
 const hasItems = computed(() => products.value.length > 0 || showNeoPrints.value)
@@ -517,10 +590,10 @@ usePageSeo({
 	noindex: () => hasFilterQuery.value,
 })
 
-// Готові дизайни для ItemList — тими самими позиціями, що й у видимій сітці
+// Готові дизайни для ItemList — перші 48 (стабільно для SSR; далі — «показати ще» на клієнті)
 const neoPrintListItems = computed(() =>
 	showNeoPrints.value
-		? neoprints.value.map((np: INeoPrint) => ({
+		? neoprints.value.slice(0, 48).map((np: INeoPrint) => ({
 				name: neoPrintTitle(np, category.value),
 				url: url.absolute(url.neoprint(props.categoryAlias, np.id)),
 			}))
@@ -628,6 +701,11 @@ function resetFilters() {
 function changeSort(e: Event) {
 	updateQuery({ sort: (e.target as HTMLSelectElement).value, page: undefined })
 }
+
+// Плавний скрол до секції готових дизайнів (клік по «+N дизайнів» у лічильнику шапки)
+function scrollToNeoprints() {
+	document.getElementById('cat-neoprints')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
 </script>
 
 <style scoped>
@@ -685,6 +763,20 @@ function changeSort(e: Event) {
 	color: var(--text-muted);
 }
 
+/* Сигнал у шапці: «+N готових дизайнів» — акцентний клікабельний якір до секції нижче */
+.cat-head__count-designs {
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+	margin-left: 4px;
+	color: var(--accent);
+	font-weight: 700;
+}
+
+.cat-head__count-designs:hover {
+	text-decoration: underline;
+}
+
 .filter-desc {
 	margin: 10px 0;
 	font-size: 14px;
@@ -728,14 +820,93 @@ function changeSort(e: Event) {
 	height: 1px;
 }
 
-/* Секція готових дизайнів під товарами теми */
+/* Секція готових дизайнів — впритул під товарами (безшовне продовження сітки),
+   а не окремий блок із великим відступом. scroll-margin — щоб липка шапка не
+   перекривала заголовок при переході по якорю з лічильника шапки. */
 .cat-neoprints {
-	margin-top: 30px;
+	margin-top: 14px;
+	scroll-margin-top: calc(var(--header-stuck-h) + 12px);
 }
 
 .cat-neoprints__note {
 	margin: -6px 0 16px;
 	font-size: 13.5px;
+}
+
+.cat-neoprints__more {
+	margin-top: 20px;
+	text-align: center;
+}
+
+/* Місток у «хвіст» ряду товарів: акцентна панель, що доростає рівно на ширину
+   порожнечі (flex-grow), заповнює пустку і веде до секції готових дизайнів нижче.
+   flex-basis дзеркалить ширину картки товару (4/3/2 колонки, gap 14/14/10). */
+.cat-bridge {
+	flex: 1 0 calc((100% - 3 * 14px) / 4);
+	width: auto;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	overflow: hidden;
+	padding: 22px 20px;
+	border: 1px dashed var(--accent);
+	border-radius: var(--radius);
+	background: var(--accent-soft);
+	color: var(--accent);
+	transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.cat-bridge:hover {
+	background: var(--accent);
+	color: var(--on-accent);
+	transform: translateY(-2px);
+}
+
+.cat-bridge__inner {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	max-width: 240px;
+}
+
+.cat-bridge__title {
+	font-size: 16px;
+	font-weight: 800;
+	line-height: 1.25;
+}
+
+/* Менший інфо-рядок під заголовком (приглушений відтінок поточного кольору) */
+.cat-bridge__note {
+	font-size: 12.5px;
+	line-height: 1.35;
+	opacity: 0.7;
+}
+
+/* Велика стрілка-заклик униз — плавний «дихаючий» стрибок */
+.cat-bridge__arrow {
+	margin-top: 4px;
+	animation: cat-bridge-bounce 1.4s ease-in-out infinite;
+}
+
+@keyframes cat-bridge-bounce {
+	0%, 100% { transform: translateY(0); opacity: 0.55; }
+	50% { transform: translateY(6px); opacity: 1; }
+}
+
+@media (max-width: 1180px) {
+	.cat-bridge { flex-basis: calc((100% - 2 * 14px) / 3); }
+}
+
+@media (max-width: 760px) {
+	.cat-bridge { flex-basis: calc((100% - 10px) / 2); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.cat-bridge__arrow {
+		animation: none;
+	}
 }
 
 .cat-empty {

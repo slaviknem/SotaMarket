@@ -517,6 +517,13 @@ textarea.form-control {
 	pointer-events: none;
 }
 
+/* Hover-зум картки (.p-card:hover ... img { scale }) інакше затирає центрування
+   принта/маски (translateX(-50%)) — композиція «зїжджає» вправо. Тримаємо центр + той самий зум. */
+.p-card:hover .p-card__img-link .np-img__print,
+.p-card:hover .p-card__img-link .np-img__mask {
+	transform: translateX(-50%) scale(1.04);
+}
+
 /* ---------- Badges ---------- */
 .badge {
 	display: inline-flex;
