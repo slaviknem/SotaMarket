@@ -50,8 +50,8 @@
 					</div>
 				</header>
 
-				<!-- Опис фільтра (на сторінці фільтра) -->
-				<div v-if="filterPage?.description" class="filter-desc typography" v-html="filterPage.description" />
+				<!-- Короткий унікальний лід сторінки фільтра — фолбек, коли у фільтра ще немає власної статті -->
+				<p v-if="filterLead" class="filter-desc">{{ filterLead }}</p>
 
 				<!-- /chekhly: плитки брендів з логотипами + повний каталог бренд→серії→моделі -->
 				<template v-if="brandsLanding">
@@ -179,8 +179,11 @@
 					class="cat-reviews"
 				/>
 
-				<!-- SEO-опис категорії -->
-				<div v-if="category?.description" class="cat-desc typography" v-html="category.description" />
+				<!-- SEO-стаття низом: на сторінці фільтра — стаття фільтра (специфічна або шаблон
+				     фільтра з підставленою моделлю); на сторінці моделі/категорії — стаття моделі.
+				     Повну статтю моделі на сторінках фільтрів не дублюємо (там стаття фільтра або лід вище). -->
+				<div v-if="filterArticle" class="cat-desc typography" v-html="filterArticle" />
+				<div v-else-if="!filterAlias && category?.description" class="cat-desc typography" v-html="category.description" />
 			</div>
 		</div>
 	</div>
@@ -558,6 +561,28 @@ const pageTitle = computed(() => {
 
 const modelName = computed(() => category.value?.title_full || category.value?.title || '')
 
+// Стаття сторінки фільтра. Бекенд уже віддає «специфічна (filters_expands) ⟶ інакше
+// шаблон фільтра (filters)» одним полем description — тут лише підставляємо модель
+// (#model#/#model_uk#/#model_ru#/#brend#), як у готових дизайнах (fillModelPlaceholders).
+const filterArticle = computed(() =>
+	props.filterAlias ? fillModelPlaceholders(filterPage.value?.description, category.value) : ''
+)
+
+// Короткий унікальний текст сторінки фільтра (модель + фільтр + кількість). Plain-text:
+// завжди йде у meta description, а як видимий лід — лише коли у фільтра ще немає власної статті.
+const filterLeadText = computed(() =>
+	props.filterAlias
+		? t(filterPage.value?.type === 'theme' ? 'filterLead.theme' : 'filterLead.main', {
+				filter: filterPage.value?.title,
+				category_title: modelName.value,
+				count: displayTotal.value,
+			})
+		: ''
+)
+
+// Видимий лід — лише як фолбек, коли повної статті фільтра немає (щоб не дублювати статтю моделі)
+const filterLead = computed(() => (filterArticle.value ? '' : filterLeadText.value))
+
 const breadcrumbs = computed(() => {
 	const crumbs: { title: string; url?: string }[] = []
 
@@ -584,7 +609,7 @@ usePageSeo({
 			: category.value?.meta_title || pageTitle.value,
 	description: () =>
 		filterPage.value
-			? `${filterHeading.value}. ${t('metaDescription.index')}`
+			? filterLeadText.value
 			: category.value?.meta_description || '',
 	// Мультивибір-комбінації (?filter_*) не індексуємо — canonical веде на базову категорію
 	noindex: () => hasFilterQuery.value,
