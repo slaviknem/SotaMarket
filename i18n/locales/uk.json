@@ -92,6 +92,7 @@
 		"rezetFilters": "Очистити фільтри",
 		"filterTheme": "Тема фільтра",
 		"popular": "Популярні фільтри",
+		"viewAll": "Всі «{theme}»",
 		"type": {
 			"cat": "Категорія",
 			"form_factor": "Форм-фактор",

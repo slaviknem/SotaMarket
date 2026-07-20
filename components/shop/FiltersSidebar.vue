@@ -9,32 +9,31 @@
 
 		<div class="filters__body">
 			<div v-for="group in groups" :key="group.alias" class="filter-group">
-				<!-- Заголовок групи. Тема (має власну сторінку) → посилання + окрема стрілка.
-				     Синтетична група (Категорія/Форм-фактор/Матеріал) → лише кнопка-тогл. -->
-				<div v-if="!group.synthetic" class="filter-group__head filter-group__head--link">
-					<NuxtLink
-						class="filter-group__link"
-						:class="{ 'is-active': group.alias === activeAlias }"
-						:to="url.category(categoryAlias, group.alias)"
-					>
-						{{ group.title }}
-					</NuxtLink>
-					<button
-						class="filter-group__toggle"
-						type="button"
-						:aria-expanded="isOpen(group)"
-						:aria-label="group.title"
-						@click="toggleGroup(group.alias)"
-					>
-						<svg width="11" height="11" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2" :style="{ transform: isOpen(group) ? 'rotate(180deg)' : '' }"><path d="M1 1l5 5 5-5" /></svg>
-					</button>
-				</div>
-				<button v-else class="filter-group__head" type="button" @click="toggleGroup(group.alias)">
-					{{ group.title }}
+				<!-- Заголовок групи — завжди тогл-акордеон (клік по всьому рядку розгортає/згортає).
+				     Пряме посилання на SEO-сторінку теми — окремим рядком «Всі …» усередині блоку. -->
+				<button
+					class="filter-group__head"
+					type="button"
+					:aria-expanded="isOpen(group)"
+					@click="toggleGroup(group.alias)"
+				>
+					<span class="filter-group__title" :class="{ 'is-active': !group.synthetic && group.alias === activeAlias }">{{ group.title }}</span>
 					<svg width="11" height="11" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2" :style="{ transform: isOpen(group) ? 'rotate(180deg)' : '' }"><path d="M1 1l5 5 5-5" /></svg>
 				</button>
 
 				<div v-if="isOpen(group)" class="filter-group__body">
+					<!-- Тема має власну сторінку (агрегат усіх підфільтрів) — прямий crawlable-вхід.
+					     На самій сторінці теми (is-active) — це поточна сторінка, робимо неактивним. -->
+					<NuxtLink
+						v-if="!group.synthetic"
+						class="filter-group__all"
+						:class="{ 'is-active': group.alias === activeAlias }"
+						:to="url.category(categoryAlias, group.alias)"
+					>
+						{{ t('filters.viewAll', { theme: group.title }) }}
+						<AppIcon name="arrow-right" :size="13" />
+					</NuxtLink>
+
 					<div
 						v-for="item in group.items || []"
 						:key="item.alias"
@@ -216,7 +215,7 @@ const hasSelected = computed(() => Object.values(props.selected).some((v) => v.l
 	border-bottom: none;
 }
 
-/* Синтетичний заголовок (кнопка-тогл на всю ширину) */
+/* Заголовок групи — кнопка-тогл на всю ширину (клік будь-де розгортає/згортає) */
 .filter-group__head {
 	display: flex;
 	align-items: center;
@@ -240,42 +239,32 @@ const hasSelected = computed(() => Object.values(props.selected).some((v) => v.l
 	flex-shrink: 0;
 }
 
-/* Заголовок теми: назва-посилання + окрема стрілка */
-.filter-group__head--link {
-	display: flex;
-	align-items: center;
-	padding: 0 8px 0 18px;
+/* Назва теми поточної сторінки — підсвічуємо акцентом (стан «ви тут») */
+.filter-group__title.is-active {
+	color: var(--accent);
 }
 
-.filter-group__link {
-	flex: 1;
-	padding: 13px 0;
+/* Прямий вхід на агрегатну сторінку теми — окремим рядком угорі розкритого блоку */
+.filter-group__all {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	margin: 2px 8px 4px;
+	padding: 4px 8px;
+	font-size: 12.5px;
 	font-weight: 600;
-	font-size: 13.5px;
-	color: var(--text);
-	transition: color 0.15s;
-}
-
-.filter-group__link:hover,
-.filter-group__link.is-active {
 	color: var(--accent);
+	transition: gap 0.15s;
 }
 
-.filter-group__toggle {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 10px;
+.filter-group__all:hover {
+	gap: 8px;
+}
+
+/* На самій сторінці теми посилання веде «в себе» — гасимо і робимо неактивним */
+.filter-group__all.is-active {
 	color: var(--text-muted);
-	transition: color 0.15s;
-}
-
-.filter-group__toggle:hover {
-	color: var(--accent);
-}
-
-.filter-group__toggle svg {
-	transition: transform 0.2s;
+	pointer-events: none;
 }
 
 .filter-group__body {
