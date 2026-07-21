@@ -1,5 +1,5 @@
 <template>
-	<div class="np-img">
+	<div class="np-img" :class="{ 'np-img--big': big }">
 		<!-- Шаблон принта -->
 		<AppImage
 			:src="url.neoprintTemplate(alias, !big)"
