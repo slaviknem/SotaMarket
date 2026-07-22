@@ -2,11 +2,14 @@
 	<div class="container">
 		<Breadcrumbs :items="breadcrumbs" />
 
-		<div class="np-layout" :class="{ 'np-layout--with-designs': designs.length > 1 }">
+		<div class="np-layout" :class="{ 'np-layout--with-designs': themeTree.length }">
 			<!-- Галерея дизайнів: свайп/стрілки гортають композиції «принт + маска» (SSR, LCP).
 			     Вибір дизайну тут = активний товар сторінки (заголовок, ціна, кошик, URL). -->
 			<div class="np-layout__media">
+				<!-- key міняється лише при зміні теми → галерея чисто перемонтовується з новим набором
+				     (Swiper інакше може лишитися в застарілому стані). У межах теми key стабільний, свайп працює. -->
 				<NeoPrintGallery
+					:key="selectedChildAlias || selectedParentAlias || 'all'"
 					:slides="slides"
 					:active-index="activeIndex"
 					:category-alias="category.alias"
@@ -49,8 +52,8 @@
 				<!-- Перелінковка: тема → модель → бренд -->
 				<nav class="np-links" :aria-label="t('neoprint.seeAlso')">
 					<span class="np-links__label">{{ t('neoprint.seeAlso') }}:</span>
-					<NuxtLink v-if="theme" :to="url.category(category.alias, theme.alias)" class="chip">
-						{{ t('neoprint.allTheme', { filter: theme.title }) }}
+					<NuxtLink v-if="activeThemeAlias" :to="url.category(category.alias, activeThemeAlias)" class="chip">
+						{{ t('neoprint.allTheme', { filter: activeThemeTitle }) }}
 					</NuxtLink>
 					<NuxtLink :to="url.category(category.alias)" class="chip">
 						{{ t('neoprint.allModel', { model: modelName }) }}
@@ -64,45 +67,50 @@
 			<!-- Вибір дизайну: щільна сітка мініатюр. На десктопі — колонка справа (одразу видно
 			     багато варіантів), на вужчих екранах — сітка на всю ширину нижче. Кожна мініатюра —
 			     справжнє посилання (SSR/краулери/нова вкладка), а клік перемикає дизайн на місці. -->
-			<aside v-if="designs.length > 1" class="np-designs" :aria-label="t('neoprint.otherDesigns', { filter: theme?.title || modelName })">
-				<!-- Меню тем над блоком принтів: обери тему/підтему → нижче її дизайни.
-				     Верхній ряд — усі теми, нижній — підтеми активної. Справжні посилання на
-				     фільтр-сторінки моделі: і навігація, і перелінковка для SEO. -->
-				<nav v-if="themeNav.top.length" class="theme-nav" :aria-label="t('filters.type.theme')">
+			<aside v-if="themeTree.length" class="np-designs" :class="{ 'is-switching': switching }" :aria-label="t('neoprint.otherDesigns', { filter: activeThemeTitle })">
+				<!-- Меню тем над блоком принтів: клік по темі/підтемі перемикає показані дизайни
+				     ПРЯМО ТУТ, без переходу на іншу сторінку. Посилання лишаються справжніми (href),
+				     тож краулери/нова вкладка ведуть на фільтр-сторінку, а звичайний клік — перемикає. -->
+				<nav v-if="themeTree.length" class="theme-nav" :aria-label="t('filters.type.theme')">
 					<div class="theme-nav__row">
-						<NuxtLink
-							v-for="tp in themeNav.top"
+						<!-- Звичайний <a>, а не NuxtLink: клік перехоплюємо і перемикаємо дизайни на місці
+						     (preventDefault надійно спиняє лише дефолтну навігацію; NuxtLink навігував би
+						     програмно через router.push в обхід preventDefault). href лишається для SEO/нової вкладки. -->
+						<a
+							v-for="tp in themeTree"
 							:key="tp.alias"
-							:to="url.category(category.alias, tp.alias)"
+							:href="url.category(category.alias, tp.alias)"
 							class="chip theme-nav__chip"
-							:class="{ 'is-active': tp.alias === themeNav.activeParentAlias }"
+							:class="{ 'is-active': tp.alias === selectedParentAlias }"
+							@click="onThemeClick($event, tp)"
 						>
 							{{ tp.title }}
-						</NuxtLink>
+						</a>
 					</div>
 
-					<!-- Підтеми активної теми — окремий вкладений рівень (панель). «Всі авто» окремо
-					     не дублюємо: цю роль виконує підсвічений верхній чип теми. -->
-					<div v-if="themeNav.subthemes.length" class="theme-nav__sub">
-						<NuxtLink
-							v-for="st in themeNav.subthemes"
+					<!-- Підтеми активної теми — в одній загальній обводці, самі пункти як текст-посилання.
+					     «Всі авто» окремо не дублюємо: цю роль виконує підсвічений верхній чип теми. -->
+					<div v-if="subthemes.length" class="theme-nav__sub">
+						<a
+							v-for="st in subthemes"
 							:key="st.alias"
-							:to="url.category(category.alias, st.alias)"
-							class="chip theme-nav__chip theme-nav__chip--sub"
-							:class="{ 'is-active': st.alias === themeNav.activeChildAlias }"
+							:href="url.category(category.alias, st.alias)"
+							class="theme-nav__sublink"
+							:class="{ 'is-active': st.alias === selectedChildAlias }"
+							@click="onSubthemeClick($event, st)"
 						>
 							{{ st.title }}
-						</NuxtLink>
+						</a>
 					</div>
 				</nav>
 
-				<h2 class="np-designs__title">{{ t('neoprint.otherDesigns', { filter: theme?.title || modelName }) }}</h2>
+				<h2 class="np-designs__title">{{ t('neoprint.otherDesigns', { filter: activeThemeTitle }) }}</h2>
 
 				<div class="np-designs__grid">
-					<NuxtLink
+					<a
 						v-for="(d, i) in slides"
 						:key="d.id"
-						:to="url.neoprint(category.alias, d.id)"
+						:href="url.neoprint(category.alias, d.id)"
 						class="np-thumb"
 						:class="{ 'is-active': i === activeIndex }"
 						:title="d.title"
@@ -117,7 +125,7 @@
 							class="np-thumb__img"
 						/>
 						<span class="np-thumb__title">{{ d.title }}</span>
-					</NuxtLink>
+					</a>
 				</div>
 			</aside>
 		</div>
@@ -165,39 +173,44 @@ const { data } = await useAsyncData(
 		if (!neoprint?.publish || neoprint.site !== config.public.site) return false
 		if (!category?.printcase) return false
 
-		const all = await shopApi.getNeoPrints(neoprint.filter_id)
-		const others = all
-			.filter((n) => n.id !== neoprint.id)
-			.map((n) => ({ id: n.id, alias: n.alias, title: n.title }))
-
-		// Активний дизайн — першим; решта теми — далі. Разом це «плівка» галереї та рейл вибору.
-		const designs = [
-			{ id: neoprint.id, alias: neoprint.alias, title: neoprint.title },
-			...others,
-		].slice(0, 30)
-
-		// Тема дизайну (BMW) — дитина у дереві фільтрів; її батько (Авто) дає «ширше» посилання.
-		// flattenFilters зберігає батьків з їхніми items, тож батька шукаємо в тому ж плоскому списку.
+		// Дерево фільтрів: тема дизайну + її батько (для меню й підбору дизайнів)
 		const flat = flattenFilters(filters)
 		const themeNode = flat.find((f) => f.id === neoprint.filter_id) ?? null
 		const parentNode = themeNode
 			? flat.find((f) => f.items?.some((i) => i.id === themeNode.id)) ?? null
 			: null
-
-		// Меню тем (як на старому сайті): верхній ряд — усі теми верхнього рівня, нижній — підтеми
-		// активної теми. Теми — це всі записи верхнього рівня, окрім службових фільтр-типів
-		// (Категорія/Форм-фактор/Матеріал), які на старому сайті в темах не показувались.
-		const FILTER_TYPES = ['cat', 'form_factor', 'material']
-		const rawFilters = (filters as IFilterNode[]) || []
 		const activeParent = parentNode ?? themeNode
-		const themeNav = {
-			top: rawFilters
-				.filter((f) => !FILTER_TYPES.includes(f.type || ''))
-				.map((f) => ({ alias: f.alias, title: f.title })),
-			subthemes: (activeParent?.items || []).map((i) => ({ alias: i.alias, title: i.title })),
-			activeParentAlias: activeParent?.alias ?? null,
-			activeChildAlias: themeNode?.alias ?? null,
-		}
+
+		// Дизайни теми = її власний filter_id + усі підтеми: дизайни бувають прив'язані і напряму
+		// до теми (напр. «Футболисты»), і до підтем. Беремо обидва рівні й перемежовуємо для різноманіття.
+		const themeIds = [...new Set(
+			[neoprint.filter_id, ...(themeNode?.items || []).map((i) => i.id)].filter(
+				(v): v is number => typeof v === 'number' && v > 0
+			)
+		)]
+		const batches = await Promise.all(themeIds.map((fid) => shopApi.getNeoPrints(fid)))
+		const others = interleave(batches)
+			.filter((n) => n.id !== neoprint.id)
+			.map((n) => ({ id: n.id, alias: n.alias, title: n.title, filter_id: n.filter_id }))
+
+		// Активний дизайн — першим; решта теми — далі. Разом це «плівка» галереї та рейл вибору.
+		const designs = [
+			{ id: neoprint.id, alias: neoprint.alias, title: neoprint.title, filter_id: neoprint.filter_id },
+			...others,
+		].slice(0, 30)
+
+		// Дерево тем для меню-перемикача: верхній рівень — усі теми (окрім службових фільтр-типів
+		// Категорія/Форм-фактор/Матеріал), у кожної — її підтеми з id. id потрібні, щоб на кліку
+		// вантажити дизайни теми прямо тут, без переходу на фільтр-сторінку.
+		const FILTER_TYPES = ['cat', 'form_factor', 'material']
+		const themeTree = ((filters as IFilterNode[]) || [])
+			.filter((f) => !FILTER_TYPES.includes(f.type || ''))
+			.map((f) => ({
+				alias: f.alias,
+				title: f.title,
+				id: f.id ?? 0,
+				children: (f.items || []).map((i) => ({ alias: i.alias, title: i.title, id: i.id ?? 0 })),
+			}))
 
 		return {
 			landingId: neoprint.id,
@@ -210,9 +223,10 @@ const { data } = await useAsyncData(
 				title_full: category.title_full,
 				brend: category.brend ? { alias: category.brend.alias, title: category.brend.title } : null,
 			},
-			// Тема (фільтр) дизайну — з плоского дерева фільтрів моделі
-			theme: themeNode ? { id: themeNode.id, alias: themeNode.alias, title: themeNode.title } : null,
-			themeNav,
+			themeTree,
+			// Початковий вибір меню: батьківська тема (Авто) + конкретна підтема дизайну (BMW)
+			initialParentAlias: activeParent?.alias ?? null,
+			initialChildAlias: themeNode?.alias ?? null,
 			designs,
 		}
 	}
@@ -222,18 +236,38 @@ if (!data.value) {
 	throw createError({ statusCode: 404, statusMessage: 'Design not found', fatal: true })
 }
 
-// Дизайн у «плівці» галереї/рейлу: короткий об'єкт (getNeoPrint віддає any, тож типізуємо явно)
-type NpDesign = { id: number; alias: string; title: string }
+// Дизайн у «плівці» галереї/рейлу (getNeoPrint віддає any, тож типізуємо явно)
+type NpDesign = { id: number; alias: string; title: string; filter_id: number }
+type ThemeNode = { alias: string; title: string; id: number; children: { alias: string; title: string; id: number }[] }
 
 const category = computed(() => data.value!.category)
-const theme = computed(() => data.value!.theme)
-const themeNav = computed(() => data.value!.themeNav)
-const designs = computed<NpDesign[]>(() => data.value!.designs)
+const themeTree = data.value!.themeTree as ThemeNode[]
+
+// Показані зараз дизайни (галерея + рейл). Реф, бо меню тем перемикає набір без навігації.
+const designs = ref<NpDesign[]>([...data.value!.designs])
 
 const modelName = computed(() => category.value.title_full || category.value.title || '')
 
 // ---------- Активний дизайн (перемикання без навігації, як вибір принта на сторінці товару) ----------
 const activeId = ref<number>(data.value!.landingId)
+
+// Мережева пауза при перемиканні теми — приглушуємо сітку, щоб клік мав миттєвий відгук
+const switching = ref(false)
+
+// ---------- Обрана тема/підтема в меню (керує набором дизайнів і підсвіткою) ----------
+const selectedParentAlias = ref<string | null>(data.value!.initialParentAlias)
+const selectedChildAlias = ref<string | null>(data.value!.initialChildAlias)
+
+const selectedParent = computed(() => themeTree.find((tn) => tn.alias === selectedParentAlias.value) || null)
+const subthemes = computed(() => selectedParent.value?.children || [])
+const activeThemeAlias = computed(() => selectedChildAlias.value || selectedParentAlias.value || undefined)
+const activeThemeTitle = computed(() => {
+	if (selectedChildAlias.value) {
+		const c = subthemes.value.find((s: { alias: string }) => s.alias === selectedChildAlias.value)
+		if (c) return c.title
+	}
+	return selectedParent.value?.title || modelName.value
+})
 
 // Опис кожного дизайну вантажимо на вимогу (у списку теми його немає) і кешуємо.
 // Лендінговий — уже з SSR, тож перший показ без запиту.
@@ -282,6 +316,84 @@ function onThumbClick(e: MouseEvent, index: number) {
 	selectDesign(index)
 }
 
+// ---------- Перемикання теми в меню (без навігації): вантажимо дизайни теми прямо тут ----------
+// Перемежовуємо списки по колу (як у CategoryPage) — щоб набір теми показував різні підтеми,
+// а не всі одного бренду поспіль.
+function interleave<T>(lists: T[][]): T[] {
+	const out: T[] = []
+	const longest = Math.max(0, ...lists.map((l) => l.length))
+	for (let i = 0; i < longest; i++) for (const l of lists) if (i < l.length) out.push(l[i])
+	return out
+}
+
+// Дизайни теми = її власний filter_id + усі підтеми: дизайни бувають прив'язані і напряму до теми
+// (напр. «Футболисты»), і до підтем. Тому беремо обидва рівні, інакше тема «не відкривається».
+// id > 0 — захист від службових/порожніх вузлів (getNeoPrints(0) віддав би сміття → 404).
+async function loadThemeDesigns(node: { id: number; children?: { id: number }[] }): Promise<NpDesign[]> {
+	const toDesigns = (arr: any[]): NpDesign[] =>
+		(Array.isArray(arr) ? arr : []).map((n) => ({ id: n.id, alias: n.alias, title: n.title, filter_id: n.filter_id }))
+	const ids = [...new Set([node.id, ...(node.children || []).map((c) => c.id)].filter((cid) => cid > 0))]
+	if (!ids.length) return []
+	const batches = await Promise.all(ids.map((cid) => shopApi.getNeoPrints(cid)))
+	return interleave(batches.map(toDesigns)).slice(0, 30)
+}
+
+// Тільки останній клік застосовується — захист від гонки при швидкому перемиканні тем
+let switchToken = 0
+
+// true — застосовано (або запит застарів); false — у теми немає жодного дизайну.
+async function applyTheme(node: { id: number; children?: { id: number }[] }, commitSelection: () => void): Promise<boolean> {
+	const token = ++switchToken
+	switching.value = true
+	try {
+		const list = await loadThemeDesigns(node)
+		if (token !== switchToken) return true // прийшов новіший клік — цей застарів
+		if (!list.length) return false
+		designs.value = list
+		commitSelection()
+		activeId.value = list[0].id
+		return true
+	} finally {
+		if (token === switchToken) switching.value = false
+	}
+}
+
+// Клік по темі верхнього рівня → показати всі її дизайни (перемежовані підтеми)
+function selectTopTheme(node: ThemeNode) {
+	if (node.alias === selectedParentAlias.value && !selectedChildAlias.value) return
+	applyTheme(node, () => {
+		selectedParentAlias.value = node.alias
+		selectedChildAlias.value = null
+	})
+}
+
+// Клік по підтемі → її дизайни; якщо власних немає (прив'язані до теми-батька) — показуємо всю
+// батьківську тему, щоб клік не був «мертвим».
+async function selectSubtheme(node: { alias: string; id: number }) {
+	if (node.alias === selectedChildAlias.value) return
+	const applied = await applyTheme(node, () => {
+		selectedChildAlias.value = node.alias
+	})
+	if (!applied) {
+		const parent = selectedParent.value
+		if (parent) applyTheme(parent, () => { selectedChildAlias.value = null })
+	}
+}
+
+// Меню — справжні посилання на фільтр-сторінки (SEO/нова вкладка), а звичайний клік
+// перемикає набір дизайнів тут, без переходу.
+function onThemeClick(e: MouseEvent, node: ThemeNode) {
+	if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return
+	e.preventDefault()
+	selectTopTheme(node)
+}
+
+function onSubthemeClick(e: MouseEvent, node: { alias: string; id: number }) {
+	if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return
+	e.preventDefault()
+	selectSubtheme(node)
+}
+
 // Вибір дизайну переписує URL на його сторінку (рівно таку віддасть SSR при перезавантаженні) —
 // посилання можна скопіювати, зберегти чи переслати. history.replaceState, а не роутер: навігація
 // перемонтувала б сторінку (повторні запити, стрибок скролу), а pushState засмічував би історію.
@@ -290,7 +402,7 @@ watch(activeId, (nv: number) => {
 	ensureDescription(nv)
 	const href = url.neoprint(category.value.alias, nv) + location.search
 	history.replaceState({ ...history.state, current: href }, '', href)
-	shopApi.addVisit(category.value.id, 0, nv, theme.value?.id ?? 0)
+	shopApi.addVisit(category.value.id, 0, nv, activeDesign.value?.filter_id ?? 0)
 
 	// На вузьких екранах рейл вибору — під галереєю: підкрутимо фото у видиме
 	if (window.innerWidth <= 900) {
@@ -306,8 +418,8 @@ const breadcrumbs = computed(() => {
 	}
 	crumbs.push({ title: modelName.value, url: url.category(category.value.alias) })
 
-	if (theme.value) {
-		crumbs.push({ title: theme.value.title, url: url.category(category.value.alias, theme.value.alias) })
+	if (activeThemeAlias.value) {
+		crumbs.push({ title: activeThemeTitle.value, url: url.category(category.value.alias, activeThemeAlias.value) })
 	}
 	crumbs.push({ title: activeDesign.value.title })
 
@@ -363,7 +475,7 @@ useJsonLd(() => {
 })
 
 // Облік візитів лендінгового дизайну (наступні перемикання — у watch(activeId))
-onMounted(() => shopApi.addVisit(category.value.id, 0, activeId.value, theme.value?.id ?? 0))
+onMounted(() => shopApi.addVisit(category.value.id, 0, activeId.value, activeDesign.value?.filter_id ?? 0))
 </script>
 
 <style scoped>
@@ -386,23 +498,34 @@ onMounted(() => shopApi.addVisit(category.value.id, 0, activeId.value, theme.val
 	font-weight: 500;
 }
 
-/* Підтеми активної теми — вкладена панель (темніша підкладка + рамка): рівень «тема → підтеми»
-   читається одразу, а блок виглядає структурованим і вирівняним. */
+/* Підтеми активної теми — одна загальна обводка навколо всього блоку, а пункти всередині
+   без власних чипів: звичайні текстові посилання. Мінімалістично й компактно; рівень
+   «тема → підтеми» показує сам контур, без ваги окремих плашок. */
 .theme-nav__sub {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 8px;
+	align-items: center;
+	gap: 7px 16px;
 	margin-top: 10px;
-	padding: 9px 10px;
-	background: var(--bg-soft);
+	padding: 9px 14px;
 	border: 1px solid var(--border);
 	border-radius: var(--radius);
 }
 
-/* Чипи підтем — дрібніші; на темнішій панелі їхній фон (--bg-elevated) трохи виступає */
-.theme-nav__chip--sub {
-	padding: 5px 11px;
-	font-size: 12px;
+.theme-nav__sublink {
+	font-size: 13px;
+	color: var(--text-soft);
+	white-space: nowrap;
+	transition: color 0.15s;
+}
+
+.theme-nav__sublink:hover {
+	color: var(--accent);
+}
+
+.theme-nav__sublink.is-active {
+	color: var(--accent);
+	font-weight: 700;
 }
 
 .np-layout {
@@ -528,6 +651,13 @@ onMounted(() => shopApi.addVisit(category.value.id, 0, activeId.value, theme.val
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
 	gap: 10px;
+	transition: opacity 0.15s;
+}
+
+/* Поки вантажаться дизайни іншої теми — приглушуємо сітку (миттєвий відгук на клік) */
+.np-designs.is-switching .np-designs__grid {
+	opacity: 0.45;
+	pointer-events: none;
 }
 
 .np-thumb {
