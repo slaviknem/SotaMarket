@@ -11,6 +11,38 @@ export interface IFilterValues {
 	[filterAlias: string]: string
 }
 
+// Відповідь розумного пошуку (випадайка)
+export interface ISearchSuggest {
+	query: string
+	normalized: string
+	exact: boolean // розпізнано рівно одну модель → Enter веде одразу на неї
+	exact_alias: string | null // alias саме тієї моделі (у models першою може бути картка бренду)
+	models: {
+		id: number
+		alias: string
+		title: string
+		type: 'model' | 'brend' | 'serie' | 'category'
+		image?: string | null
+		products_count: number
+		// matched — тип чохла, що збігся із запитом («айфон 17 BMW» → чип BMW); показуємо першим і підсвіченим
+		case_types: { alias: string; title: string; count: number; matched?: boolean }[]
+	}[]
+	filters: { id: number; alias: string; title: string; model?: string | null }[]
+	articles: { alias: string; title: string; type: string }[]
+	products: {
+		id: number
+		alias: string
+		alias_cat: string
+		title: string
+		price: number
+		price_old: number
+		image?: string | null
+		available: boolean
+		attribute_id?: number | null
+	}[]
+	total: number | null
+}
+
 // Готовий дизайн для друку (атрибут type=neo_print), прив'язаний до фільтра-теми
 export interface INeoPrint {
 	id: number
@@ -102,11 +134,17 @@ export function useShopApi() {
 			return res?.data ?? []
 		},
 
-		// Пошук
-		getSuggestions: async (query: string) => {
-			const res = await api<{ data: any[] }>(`products/search/${encodeURIComponent(query)}`)
-			return res?.data ?? []
-		},
+		// Пошук: випадайка (моделі + типи чохлів + товари + статті).
+		// signal — щоб скасувати запит, коли користувач набрав далі
+		searchSuggest: (query: string, limit = 8, signal?: AbortSignal) =>
+			$fetch<ISearchSuggest>(config.public.urlApi + 'search/suggest', {
+				params: { ...baseParams(), q: query, limit },
+				signal,
+			}),
+
+		// Пошук: сторінка всіх результатів (формат як у products + блок search)
+		searchPage: (query: string, opts: IListOptions = {}) =>
+			api<{ data: any[]; meta: any; search: any }>('search', { q: query, ...opts }),
 
 		// Фільтри категорії (дерево)
 		getFilters: async (categoryAlias: string) => {

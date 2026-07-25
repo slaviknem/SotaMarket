@@ -208,6 +208,21 @@
 		"close": "Закрыть",
 		"notFind": "Ничего не найдено!"
 	},
+	"search": {
+		"models": "Модели",
+		"filters": "Типы чехлов",
+		"products": "Товары",
+		"productsFor": "Товары для {model}",
+		"articles": "Статьи",
+		"showAll": "Показать все результаты",
+		"clear": "Очистить",
+		"history": "Вы искали",
+		"clearHistory": "очистить",
+		"popularModels": "Популярные модели",
+		"nothingFound": "По запросу «{query}» ничего не найдено",
+		"nothingHint": "Попробуйте указать модель телефона — например, «Redmi Note 10» или «айфон 13»",
+		"resultsFor": "Поиск: {query}"
+	},
 	"blogCategory": {
 		"info": "Полезная информация",
 		"new": "Новости",

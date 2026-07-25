@@ -872,6 +872,104 @@ textarea.form-control {
 	}
 }
 
+/* Підсвітка точних входжень у результатах пошуку (вставляється через v-html,
+   тож стиль має бути глобальним — scoped-атрибути на цей <mark> не потрапляють). */
+mark.hl {
+	background: var(--accent-soft);
+	color: var(--accent);
+	border-radius: 3px;
+	padding: 0 1px;
+	font-weight: 700;
+}
+
+/* ---------- Картка категорії/моделі (горизонтальна: фото зліва, назва справа) ----------
+   База спільна для блоку «Популярні моделі» на головній (BlocksCategoryGrid)
+   і для розпізнаних моделей на сторінці пошуку. */
+.cat-grid {
+	display: grid;
+	gap: 12px;
+}
+
+.cat-grid--models {
+	grid-template-columns: repeat(4, 1fr);
+}
+
+.cat-grid--categories {
+	grid-template-columns: repeat(3, 1fr);
+}
+
+.cat-card {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	padding: 14px 16px;
+	background: var(--bg-card);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	transition: all 0.18s ease;
+}
+
+.cat-card:hover {
+	border-color: var(--accent);
+	transform: translateY(-2px);
+	box-shadow: var(--shadow-card);
+}
+
+.cat-card__img {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 64px;
+	height: 64px;
+	border-radius: 12px;
+	background: var(--img-bg);
+	padding: 6px;
+	flex-shrink: 0;
+	color: var(--text-muted);
+	overflow: hidden;
+}
+
+/* Модель без фото — біла підкладка виглядала б плямою */
+.cat-card__img--empty {
+	background: var(--bg-elevated);
+}
+
+.cat-card__img img {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+}
+
+.cat-card__title {
+	font-weight: 600;
+	font-size: 14px;
+	line-height: 1.35;
+}
+
+.cat-card:hover .cat-card__title {
+	color: var(--accent);
+}
+
+.cat-card__count {
+	margin-top: 3px;
+	font-size: 12.5px;
+	color: var(--text-muted);
+}
+
+@media (max-width: 1023px) {
+	.cat-grid--models,
+	.cat-grid--categories {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@media (max-width: 560px) {
+	.cat-grid--models,
+	.cat-grid--categories {
+		grid-template-columns: 1fr;
+	}
+}
+
 /* Стрічка з вирівнюванням по лівому краю — для одно­сторінкових категорій/пошуку.
    Повні ряди заповнюють усю ширину, неповний останній ряд притиснутий зліва (без «дірок» по центру).
    Ширини плиток дзеркалять колонки/відступи базової .products-grid (4/3/2 кол., gap 14/14/10). */

@@ -208,6 +208,21 @@
 		"close": "Закрити",
 		"notFind": "Нічого не знайдено!"
 	},
+	"search": {
+		"models": "Моделі",
+		"filters": "Типи чохлів",
+		"products": "Товари",
+		"productsFor": "Товари для {model}",
+		"articles": "Статті",
+		"showAll": "Показати всі результати",
+		"clear": "Очистити",
+		"history": "Ви шукали",
+		"clearHistory": "очистити",
+		"popularModels": "Популярні моделі",
+		"nothingFound": "За запитом «{query}» нічого не знайдено",
+		"nothingHint": "Спробуйте вказати модель телефону — наприклад, «Redmi Note 10» або «айфон 13»",
+		"resultsFor": "Пошук: {query}"
+	},
 	"blogCategory": {
 		"info": "Корисна інформація",
 		"new": "Новини",

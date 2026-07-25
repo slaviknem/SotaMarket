@@ -1,92 +1,175 @@
 <template>
-	<div class="search" :class="{ 'is-open': showResults }">
-		<form class="search__form" role="search" @submit.prevent>
+	<div ref="rootRef" class="search" :class="{ 'is-open': open }">
+		<!-- Десктопний інпут -->
+		<form class="search__form" role="search" @submit.prevent="submit">
 			<input
+				ref="inputRef"
 				v-model="query"
 				class="search__input"
 				type="search"
+				role="combobox"
+				aria-autocomplete="list"
+				:aria-expanded="open"
 				:placeholder="t('header.topbar.searchPlaceholder')"
 				autocomplete="off"
 				@input="onInput"
-				@focus="query.length >= 2 && (showResults = true)"
-				@blur="onBlur"
+				@focus="openSearch"
+				@keydown="onKeydown"
 			/>
+			<button
+				v-if="query"
+				class="search__clear"
+				type="button"
+				:aria-label="t('search.clear')"
+				@click="clearInput(inputRef)"
+			>
+				<AppIcon name="close" :size="14" />
+			</button>
 			<button class="search__btn" type="submit" :aria-label="t('header.topbar.search')">
-				<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></svg>
+				<AppIcon name="search" :size="19" />
 			</button>
 		</form>
 
+		<!-- Мобільний тригер: відкриває той самий пошук на весь екран -->
+		<button class="search__mobile" :aria-label="t('header.topbar.search')" @click="openMobile">
+			<AppIcon name="search" :size="20" />
+		</button>
+
+		<!-- Десктопна випадайка -->
 		<Transition name="search-drop">
-			<div v-if="showResults" class="search__results">
-				<div v-if="loading" class="search__loading">
-					<span class="skeleton" style="height: 52px" />
-					<span class="skeleton" style="height: 52px" />
-				</div>
-
-				<template v-else-if="results.length">
-					<NuxtLink
-						v-for="p in results"
-						:key="p.id"
-						:to="url.product(p)"
-						class="search__item"
-						@mousedown.prevent="goTo(p)"
-					>
-						<AppImage :src="url.productThumb(getImageByAttribute(p, p.attribute_id))" :alt="p.title" :width="46" :height="46" />
-						<span class="search__item-info">
-							<span class="search__item-title">{{ p.title }}</span>
-							<span class="search__item-price">{{ formatPrice(p.price) }}</span>
-						</span>
-					</NuxtLink>
-				</template>
-
-				<div v-else class="search__empty">{{ t('other.notFind') }}</div>
+			<div v-if="open && !isMobile" class="search__drop">
+				<SearchResults />
 			</div>
 		</Transition>
+
+		<!-- Мобільний повноекранний пошук -->
+		<Teleport to="body">
+			<Transition name="search-full">
+				<div v-if="open && isMobile" class="search-full">
+					<div class="search-full__bar">
+						<form class="search__form" role="search" @submit.prevent="submit">
+							<input
+								ref="mobileInputRef"
+								v-model="query"
+								class="search__input"
+								type="search"
+								inputmode="search"
+								:placeholder="t('header.topbar.searchPlaceholder')"
+								autocomplete="off"
+								@input="onInput"
+								@keydown="onKeydown"
+							/>
+							<button
+								v-if="query"
+								class="search__clear"
+								type="button"
+								:aria-label="t('search.clear')"
+								@click="clearInput(mobileInputRef)"
+							>
+								<AppIcon name="close" :size="14" />
+							</button>
+							<button class="search__btn" type="submit" :aria-label="t('header.topbar.search')">
+								<AppIcon name="search" :size="19" />
+							</button>
+						</form>
+						<button class="search-full__close" :aria-label="t('other.close')" @click="close">
+							<AppIcon name="close" :size="20" />
+						</button>
+					</div>
+					<div class="search-full__body">
+						<SearchResults />
+					</div>
+				</div>
+			</Transition>
+		</Teleport>
 	</div>
 </template>
 
 <script setup lang="ts">
 const { t } = useI18n()
-const url = useUrl()
-const router = useRouter()
-const shopApi = useShopApi()
+const route = useRoute()
 
-const query = ref('')
-const results = ref<any[]>([])
-const loading = ref(false)
-const showResults = ref(false)
+const { query, open, openSearch, close, submit, move, onInput, reset } = useSearch()
 
-let debounceTimer: ReturnType<typeof setTimeout> | null = null
+const rootRef = ref<HTMLElement>()
+const inputRef = ref<HTMLInputElement>()
+const mobileInputRef = ref<HTMLInputElement>()
+const isMobile = ref(false)
 
-function onInput() {
-	if (debounceTimer) clearTimeout(debounceTimer)
-
-	if (query.value.trim().length < 2) {
-		showResults.value = false
-		return
+function onKeydown(e: KeyboardEvent) {
+	if (e.key === 'ArrowDown') {
+		e.preventDefault()
+		move(1)
+	} else if (e.key === 'ArrowUp') {
+		e.preventDefault()
+		move(-1)
+	} else if (e.key === 'Escape') {
+		close()
+		;(e.target as HTMLElement).blur()
 	}
+}
 
-	debounceTimer = setTimeout(async () => {
-		loading.value = true
-		showResults.value = true
-		try {
-			results.value = await shopApi.getSuggestions(query.value.trim())
-		} catch {
-			results.value = []
+// Фокус ставить watch нижче — щоб працювало й коли пошук відкрили з мобільного меню
+const openMobile = () => openSearch()
+
+// Хрестик: чистимо поле й повертаємо курсор в інпут (панель лишається відкритою)
+function clearInput(el?: HTMLInputElement) {
+	reset()
+	el?.focus()
+}
+
+// Клік поза пошуком закриває випадайку (у результатах стоїть mousedown.prevent,
+// тож перехід по посиланню встигає спрацювати)
+function onDocMouseDown(e: MouseEvent) {
+	if (isMobile.value) return
+	if (!rootRef.value?.contains(e.target as Node)) close()
+}
+
+// Гарячі клавіші: Ctrl/⌘+K або «/» — відкрити пошук
+function onDocKeydown(e: KeyboardEvent) {
+	const tag = (e.target as HTMLElement)?.tagName
+	const typing = tag === 'INPUT' || tag === 'TEXTAREA'
+
+	if ((e.key === 'k' && (e.ctrlKey || e.metaKey)) || (e.key === '/' && !typing)) {
+		e.preventDefault()
+		if (isMobile.value) openMobile()
+		else {
+			openSearch()
+			nextTick(() => inputRef.value?.focus())
 		}
-		loading.value = false
-	}, 350)
+	}
 }
 
-function onBlur() {
-	setTimeout(() => (showResults.value = false), 150)
-}
+onMounted(() => {
+	const mq = window.matchMedia('(max-width: 640px)')
+	isMobile.value = mq.matches
+	const onMq = (e: MediaQueryListEvent) => (isMobile.value = e.matches)
+	mq.addEventListener('change', onMq)
 
-function goTo(p: any) {
-	showResults.value = false
-	query.value = ''
-	router.push(url.product(p))
-}
+	document.addEventListener('mousedown', onDocMouseDown)
+	document.addEventListener('keydown', onDocKeydown)
+
+	onUnmounted(() => {
+		mq.removeEventListener('change', onMq)
+		document.removeEventListener('mousedown', onDocMouseDown)
+		document.removeEventListener('keydown', onDocKeydown)
+	})
+})
+
+// Повноекранний режим: блокуємо скрол сторінки під ним і ставимо фокус в інпут
+watch([open, isMobile], async ([isOpen, mobile]: [boolean, boolean]) => {
+	if (!import.meta.client) return
+
+	const full = isOpen && mobile
+	document.body.style.overflow = full ? 'hidden' : ''
+
+	if (full) {
+		await nextTick()
+		mobileInputRef.value?.focus()
+	}
+})
+
+watch(() => route.fullPath, close)
 </script>
 
 <style scoped>
@@ -110,21 +193,49 @@ function goTo(p: any) {
 
 .search__input {
 	flex: 1;
+	min-width: 0;
 	padding: 11px 20px;
 	background: transparent;
 	border: none;
 	outline: none;
 	font-size: 14px;
+	color: var(--text);
 }
 
 .search__input::placeholder {
 	color: var(--text-muted);
 }
 
+/* Нативний хрестик Chrome/Safari прибираємо — рендеримо свій, вирівняний із лупою */
+.search__input::-webkit-search-cancel-button,
+.search__input::-webkit-search-decoration {
+	-webkit-appearance: none;
+	appearance: none;
+}
+
+.search__clear {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	margin: auto 0;
+	border-radius: var(--radius-pill);
+	background: var(--bg-elevated);
+	color: var(--text-muted);
+	flex-shrink: 0;
+	transition: background 0.14s, color 0.14s;
+}
+
+.search__clear:hover {
+	background: var(--border-light);
+	color: var(--text);
+}
+
 .search__btn {
 	display: flex;
 	align-items: center;
-	padding: 0 18px;
+	padding: 0 18px 0 14px;
 	color: var(--accent);
 	transition: color 0.15s;
 }
@@ -133,78 +244,90 @@ function goTo(p: any) {
 	color: var(--accent-hover);
 }
 
-.search__results {
+/* Мобільний тригер — показуємо замість інпута на вузьких екранах */
+.search__mobile {
+	display: none;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	border-radius: var(--radius-sm);
+	color: var(--text-soft);
+	transition: background 0.15s, color 0.15s;
+}
+
+.search__mobile:hover {
+	background: var(--bg-elevated);
+	color: var(--accent);
+}
+
+/* Десктопна випадайка. container-* — щоб результати самі вирішували, чи є місце
+   на дві колонки (див. @container search-panel у SearchResults). */
+.search__drop {
+	container-type: inline-size;
+	container-name: search-panel;
 	position: absolute;
 	top: calc(100% + 8px);
 	left: 0;
 	right: 0;
 	z-index: 110;
-	max-height: 430px;
+	max-height: min(72vh, 620px);
 	overflow-y: auto;
 	background: var(--bg-card);
 	border: 1px solid var(--border-light);
 	border-radius: var(--radius);
 	box-shadow: var(--shadow-pop);
-	padding: 8px;
+	padding: 6px;
+	scrollbar-width: thin;
+	scrollbar-color: var(--border-light) transparent;
 }
 
-.search__loading {
+/* Повноекранний пошук на мобільному */
+.search-full {
+	position: fixed;
+	inset: 0;
+	z-index: 1200;
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
-	padding: 4px;
+	background: var(--bg);
 }
 
-.search__item {
+.search-full__bar {
 	display: flex;
 	align-items: center;
-	gap: 12px;
-	padding: 8px;
-	border-radius: var(--radius-sm);
-	transition: background 0.12s;
-}
-
-.search__item:hover {
+	gap: 10px;
+	padding: 10px 12px;
 	background: var(--bg-elevated);
+	border-bottom: 1px solid var(--border);
 }
 
-.search__item img {
-	width: 46px;
-	height: 46px;
-	object-fit: contain;
-	border-radius: 8px;
-	background: var(--img-bg);
-	flex-shrink: 0;
-}
-
-.search__item-info {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
+.search-full__bar .search__form {
+	flex: 1;
 	min-width: 0;
 }
 
-.search__item-title {
-	font-size: 13.5px;
-	font-weight: 500;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	display: -webkit-box;
-	-webkit-line-clamp: 1;
-	-webkit-box-orient: vertical;
+.search-full__close {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	flex-shrink: 0;
+	border-radius: var(--radius-sm);
+	color: var(--text-soft);
 }
 
-.search__item-price {
-	font-size: 13.5px;
-	font-weight: 700;
+.search-full__close:hover {
+	background: var(--bg-card);
 	color: var(--accent);
 }
 
-.search__empty {
-	padding: 18px;
-	text-align: center;
-	color: var(--text-muted);
-	font-size: 14px;
+.search-full__body {
+	container-type: inline-size;
+	container-name: search-panel;
+	flex: 1;
+	overflow-y: auto;
+	padding: 6px 10px 24px;
 }
 
 .search-drop-enter-active,
@@ -216,5 +339,30 @@ function goTo(p: any) {
 .search-drop-leave-to {
 	opacity: 0;
 	transform: translateY(-6px);
+}
+
+.search-full-enter-active,
+.search-full-leave-active {
+	transition: opacity 0.18s;
+}
+
+.search-full-enter-from,
+.search-full-leave-to {
+	opacity: 0;
+}
+
+@media (max-width: 640px) {
+	.search__form {
+		display: none;
+	}
+
+	.search__mobile {
+		display: flex;
+	}
+
+	/* всередині повноекранного пошуку форма потрібна завжди */
+	.search-full .search__form {
+		display: flex;
+	}
 }
 </style>

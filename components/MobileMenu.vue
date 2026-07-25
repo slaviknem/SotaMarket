@@ -15,9 +15,12 @@
 						</button>
 					</div>
 
-					<div class="mobile-menu__search">
-						<SearchBar />
-					</div>
+					<!-- Не другий SearchBar (він один на застосунок), а вхід у той самий
+					     повноекранний пошук: закриваємо меню й відкриваємо пошук -->
+					<button class="mobile-menu__search" @click="openSearchFromMenu">
+						<AppIcon name="search" :size="17" />
+						<span>{{ t('header.topbar.searchPlaceholder') }}</span>
+					</button>
 
 					<div class="mobile-menu__body">
 						<!-- Категорії -->
@@ -81,6 +84,13 @@ const config = useRuntimeConfig()
 
 const open = useState('mobileMenuOpen', () => false)
 const openedBrand = ref<number | null>(null)
+
+const { openSearch } = useSearch()
+
+function openSearchFromMenu() {
+	open.value = false
+	openSearch()
+}
 
 const toggleBrand = (i: number) => {
 	openedBrand.value = openedBrand.value === i ? null : i
@@ -156,9 +166,30 @@ watch(open, (v: boolean) => {
 	color: var(--text);
 }
 
+/* Виглядає як поле пошуку, але це кнопка — відкриває повноекранний пошук */
 .mobile-menu__search {
-	padding: 12px 16px;
-	border-bottom: 1px solid var(--border);
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: calc(100% - 32px);
+	margin: 12px 16px;
+	padding: 11px 16px;
+	background: var(--bg-soft);
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-pill);
+	color: var(--text-muted);
+	font-size: 14px;
+	text-align: left;
+}
+
+.mobile-menu__search:hover {
+	border-color: var(--accent);
+	color: var(--text-soft);
+}
+
+.mobile-menu__search svg {
+	color: var(--accent);
+	flex-shrink: 0;
 }
 
 .mobile-menu__body {
