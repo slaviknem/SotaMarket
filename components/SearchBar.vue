@@ -38,7 +38,7 @@
 		<!-- Десктопна випадайка -->
 		<Transition name="search-drop">
 			<div v-if="open && !isMobile" class="search__drop">
-				<SearchResults />
+				<LazySearchResults />
 			</div>
 		</Transition>
 
@@ -77,7 +77,7 @@
 						</button>
 					</div>
 					<div class="search-full__body">
-						<SearchResults />
+						<LazySearchResults />
 					</div>
 				</div>
 			</Transition>

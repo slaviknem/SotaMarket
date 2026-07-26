@@ -9,8 +9,10 @@
 		<AppFooter />
 
 		<AppNotifications />
-		<MobileMenu :menu="menu" />
-		<CartDrawer />
+
+		<!-- Оверлеї монтуємо лениво — лише коли їх уперше відкрили (не тягнемо в стартовий JS) -->
+		<LazyMobileMenu v-if="mobileMenuMounted" :menu="menu" />
+		<LazyCartDrawer v-if="cartMounted" />
 
 		<!-- Онлайн-чат: відкладений клієнтський віджет.
 		     Lazy-чанк вантажиться ПІСЛЯ завантаження сайту (коли браузер простоює)
@@ -37,6 +39,20 @@ const shopApi = useShopApi()
 const { data: menu } = await useAsyncData('menu-' + locale.value, () => shopApi.getMenu(10), {
 	watch: [locale],
 	default: () => ({ brends: [], categories: [] }),
+})
+
+// Оверлеї (кошик-слайдер, мобільне меню) монтуємо лениво — лише коли їх уперше відкрили,
+// щоб їхній JS не потрапляв у стартовий бандл.
+const { open: cartOpen } = useCartDrawer()
+const cartMounted = ref(false)
+watch(cartOpen, (v: boolean) => {
+	if (v) cartMounted.value = true
+})
+
+const mobileMenuOpen = useState('mobileMenuOpen', () => false)
+const mobileMenuMounted = ref(false)
+watch(mobileMenuOpen, (v: boolean) => {
+	if (v) mobileMenuMounted.value = true
 })
 
 // Відкладений монтаж онлайн-чату: не тягнемо його JS у критичний шлях.
