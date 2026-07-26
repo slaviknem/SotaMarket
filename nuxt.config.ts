@@ -26,6 +26,10 @@ export default defineNuxtConfig({
 			phones: ['099 072 14 12', '098 072 14 12', '093 072 14 12'],
 			address: 'м. Полтава, проспект Віталія Грицаєнка, 15А',
 			email: 'info@floy.com.ua',
+			// Месенджери (кнопки швидкого переходу в онлайн-чаті)
+			telegram: 'https://t.me/floyshop',
+			viber: 'viber://chat?number=%2B380990721412',
+			whatsapp: 'https://wa.me/380990721412',
 			printcasePrice: 289,
 			printcasePriceOld: 299,
 			// Готовий дизайн (NeoPrint) — дешевший за індивідуальний друк у конструкторі

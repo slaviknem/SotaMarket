@@ -11,6 +11,13 @@
 		<AppNotifications />
 		<MobileMenu :menu="menu" />
 		<CartDrawer />
+
+		<!-- Онлайн-чат: відкладений клієнтський віджет.
+		     Lazy-чанк вантажиться ПІСЛЯ завантаження сайту (коли браузер простоює)
+		     або на першу взаємодію — щоб не додавати ваги в критичний JS. -->
+		<ClientOnly>
+			<LazyChatWidget v-if="chatReady" />
+		</ClientOnly>
 	</div>
 </template>
 
@@ -30,6 +37,21 @@ const shopApi = useShopApi()
 const { data: menu } = await useAsyncData('menu-' + locale.value, () => shopApi.getMenu(10), {
 	watch: [locale],
 	default: () => ({ brends: [], categories: [] }),
+})
+
+// Відкладений монтаж онлайн-чату: не тягнемо його JS у критичний шлях.
+// Активуємо, коли браузер простоює, або на першу взаємодію користувача.
+const chatReady = ref(false)
+onMounted(() => {
+	const events = ['pointerdown', 'keydown', 'touchstart', 'scroll'] as const
+	const activate = () => {
+		if (chatReady.value) return
+		chatReady.value = true
+		events.forEach((e) => window.removeEventListener(e, activate))
+	}
+	events.forEach((e) => window.addEventListener(e, activate, { passive: true }))
+	if ('requestIdleCallback' in window) (window as any).requestIdleCallback(activate, { timeout: 3000 })
+	else setTimeout(activate, 2500)
 })
 </script>
 
