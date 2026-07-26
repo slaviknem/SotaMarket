@@ -715,9 +715,11 @@ onMounted(() => shopApi.addVisit(category.value.id, 0, activeId.value, activeDes
 }
 
 @media (max-width: 900px) {
+	/* minmax(0, 1fr), а не 1fr: у «1fr» мінімальний розмір треку = auto, і min-content
+	   Swiper-а (усі слайди в один ряд) роздуває колонку — галерея виїжджає за екран. */
 	.np-layout,
 	.np-layout--with-designs {
-		grid-template-columns: 1fr;
+		grid-template-columns: minmax(0, 1fr);
 		gap: 20px;
 	}
 

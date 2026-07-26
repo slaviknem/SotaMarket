@@ -98,7 +98,7 @@
 							:class="{ 'is-open': openedBrand === i }"
 							@click="closeBrand"
 						>
-							{{ brand.title }}
+							<span class="brands-nav__title">{{ brand.title }}</span>
 							<svg v-if="brand.children?.length" width="9" height="9" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l5 5 5-5"/></svg>
 						</NuxtLink>
 					</div>
@@ -598,17 +598,25 @@ onMounted(() => {
 }
 
 /* Бренди */
+/* min-width:0 по всьому ланцюжку: без нього мінімальний розмір flex-елемента = min-content
+   (усі назви повністю), і смуга брендів виштовхує сторінку за екран на вузьких десктопах.
+   З ним зайве обрізається трикрапкою — див. .brands-nav__title. Це страховка на випадок,
+   коли брендів у меню побільшає: розміри нижче підібрані під поточну їх кількість. */
 .brands-nav {
 	display: flex;
 	align-items: stretch;
 	flex: 1;
+	min-width: 0;
 	overflow: visible;
 }
 
+/* flex-basis: auto (а не 0) — щоб при нестачі місця стискалися пропорційно довжині назви:
+   інакше всі пункти рівні й трикрапка зʼїдає навіть короткі («Apple» → «A…»). */
 .brands-nav__item {
 	position: relative;
 	display: flex;
-	flex: 1;
+	flex: 1 1 auto;
+	min-width: 0;
 	align-items: center;
 	justify-content: center;
 }
@@ -631,6 +639,7 @@ onMounted(() => {
 	align-items: center;
 	gap: 6px;
 	height: 38px;
+	min-width: 0;
 	padding: 0 15px;
 	font-size: 14px;
 	font-weight: 600;
@@ -640,7 +649,15 @@ onMounted(() => {
 	transition: background 0.18s, color 0.18s, box-shadow 0.18s;
 }
 
+/* Назва бренда — єдине, що віддає ширину: обрізається трикрапкою, каретка лишається на місці */
+.brands-nav__title {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
 .brands-nav__link svg {
+	flex-shrink: 0;
 	opacity: 0.55;
 	transition: transform 0.18s;
 }
@@ -872,6 +889,37 @@ onMounted(() => {
 	background: var(--accent-hover);
 }
 
+/* Вузькі десктопи/планшети: смуга брендів не влазить у повному розмірі, тож тиснемо
+   службовий простір (паддинги, проміжки, ширину «Каталогу») — щоб трикрапка з'їдала
+   якнайменше назв. Те, що все одно не влізло, обрізається через .brands-nav__title. */
+@media (max-width: 1319px) {
+	.header__nav-inner {
+		gap: 6px;
+	}
+
+	.departments__toggle {
+		min-width: 210px;
+		padding: 0 16px;
+	}
+
+	.brands-nav__link {
+		gap: 4px;
+		padding: 0 8px;
+		font-size: 13px;
+	}
+}
+
+/* Найвужчий десктоп (1024–1099): ще трохи тиснемо, щоб усі бренди лишилися з повними назвами */
+@media (max-width: 1099px) {
+	.departments__toggle {
+		min-width: 186px;
+	}
+
+	.brands-nav__link {
+		padding: 0 6px;
+	}
+}
+
 @media (max-width: 1023px) {
 	.header__topbar .topbar-links {
 		display: none;
@@ -916,6 +964,30 @@ onMounted(() => {
 	.header__search {
 		flex: 0 0 auto;
 		margin-left: auto;
+	}
+
+	/* Бургер + лого + пошук + 3 дії не влазять у 360–390px: тиснемо проміжки й кнопки дій */
+	.header__main-inner {
+		gap: 8px;
+	}
+
+	.header__actions {
+		gap: 2px;
+	}
+
+	.action-btn {
+		width: 38px;
+	}
+
+	/* Страховка на найвужчих екранах: лого віддає ширину першим і стискається
+	   (SVG вписується по viewBox), інакше хедер виштовхує сторінку за екран */
+	.logo {
+		flex-shrink: 1;
+		min-width: 0;
+	}
+
+	.logo :deep(.logo-floy) {
+		max-width: 100%;
 	}
 }
 </style>
