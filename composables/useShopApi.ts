@@ -43,6 +43,19 @@ export interface ISearchSuggest {
 	total: number | null
 }
 
+// Відстеження замовлення: одне поле — номер замовлення / телефон / ТТН
+export interface ITrackOrder {
+	found: boolean
+	order_number?: number
+	status_code?: string // alias статусу (перекладаємо через i18n)
+	status?: string // людська назва з бекенда — фолбек
+	created?: string
+	items_count?: number
+	has_track?: boolean
+	track?: string
+	tracking_url?: string // сторінка відстеження на сайті перевізника
+}
+
 // Готовий дизайн для друку (атрибут type=neo_print), прив'язаний до фільтра-теми
 export interface INeoPrint {
 	id: number
@@ -195,6 +208,9 @@ export function useShopApi() {
 			const res = await api<{ data: any }>('orders/send', { order: JSON.stringify(order) })
 			return res?.data ?? null
 		},
+
+		// Відстеження замовлення (номер замовлення / телефон / ТТН)
+		trackOrder: (q: string) => api<ITrackOrder>('orders/track', { q }),
 
 		// Посилання на оплату MonoPay
 		genMonopayLink: (orderId: string | number) =>

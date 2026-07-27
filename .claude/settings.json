@@ -63,7 +63,10 @@
       "PowerShell($env:PATH = \"D:\\\\Web-SERVER\\\\domains\\\\FLOY-NEW\\\\.node\\\\node-v22.14.0-win-x64;$env:PATH\"; $sp = \"C:\\\\Users\\\\slavi\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--Web-SERVER-domains-FLOY-NEW\\\\fea19bb6-1834-44ef-a2a2-310ba7335cdc\\\\scratchpad\"; foreach \\($w in 1100,1150,1200,1250,1320,1366\\) { node \"$sp\\\\shot2.mjs\" \"http://localhost:3000/neoprint/iphone-13/3921\" $w \"cg$w\" \"$sp\\\\g$w.png\" })",
       "PowerShell($env:PATH = \"D:\\\\Web-SERVER\\\\domains\\\\FLOY-NEW\\\\.node\\\\node-v22.14.0-win-x64;$env:PATH\"; $sp = \"C:\\\\Users\\\\slavi\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--Web-SERVER-domains-FLOY-NEW\\\\fea19bb6-1834-44ef-a2a2-310ba7335cdc\\\\scratchpad\"; foreach \\($w in 1024,1060,1099,1100,1280,1440,1920\\) { node \"$sp\\\\shot2.mjs\" \"http://localhost:3000/neoprint/iphone-13/3921\" $w \"ch$w\" \"$sp\\\\h$w.png\" })",
       "PowerShell($env:PATH = \"D:\\\\Web-SERVER\\\\domains\\\\FLOY-NEW\\\\.node\\\\node-v22.14.0-win-x64;$env:PATH\"; $sp = \"C:\\\\Users\\\\slavi\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--Web-SERVER-domains-FLOY-NEW\\\\fea19bb6-1834-44ef-a2a2-310ba7335cdc\\\\scratchpad\"; foreach \\($w in 320,360,390,414,480,640,768,900,1000\\) { node \"$sp\\\\probe2.mjs\" \"http://localhost:3000/neoprint/iphone-13/3921\" $w \"cd$w\" 0 })",
-      "Bash(git --no-pager diff -- components/AppHeader.vue \"pages/neoprint/[category]/[id].vue\")"
+      "Bash(git --no-pager diff -- components/AppHeader.vue \"pages/neoprint/[category]/[id].vue\")",
+      "Bash(kill %1)",
+      "Bash(curl -s -m 6 \"http://localhost:8000/apisite/orders/track?q=380501234567&lang=uk&site=floy\" -w \"\\\\nHTTP:%{http_code}\\\\n\")",
+      "Bash(php -l app/Http/Controllers/ApiSite/OrderController.php)"
     ]
   }
 }
