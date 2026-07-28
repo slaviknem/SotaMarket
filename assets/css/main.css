@@ -280,6 +280,60 @@ textarea.form-control {
 	color: var(--danger);
 }
 
+/* Підказка / текст помилки під полем — щоб користувач бачив причину, а не лише червону рамку */
+.field-hint,
+.field-error {
+	margin-top: 5px;
+	font-size: 12.5px;
+	line-height: 1.35;
+}
+
+.field-hint {
+	color: var(--text-muted);
+}
+
+.field-error {
+	color: var(--danger);
+}
+
+/* Текстова кнопка-посилання у формах («ввести вручну», «змінити» тощо) */
+.link-btn {
+	margin-top: 6px;
+	font-size: 12.5px;
+	color: var(--accent);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+.link-btn:hover {
+	color: var(--accent-hover);
+}
+
+/* ---------- Spinner ---------- */
+.spinner {
+	display: inline-block;
+	width: 14px;
+	height: 14px;
+	border: 2px solid currentColor;
+	border-top-color: transparent;
+	border-radius: 50%;
+	animation: spin 0.7s linear infinite;
+	vertical-align: -2px;
+	flex-shrink: 0;
+}
+
+.spinner--lg {
+	width: 24px;
+	height: 24px;
+	border-width: 3px;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
 /* ---------- Qty stepper (mini-cart + сторінка кошика) ---------- */
 .qty-stepper {
 	display: inline-flex;

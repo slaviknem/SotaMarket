@@ -4,50 +4,59 @@
 
 		<h1>{{ t('other.comparison') }}</h1>
 
-		<div v-if="!compare.items.value.length" class="list-empty">
-			<AppIcon name="compare" :size="60" :stroke-width="1.2" />
-			<p>{{ t('other.compareListEmpty') }}</p>
-			<NuxtLink :to="localePath('/')" class="btn btn-primary">{{ t('cart.continueShopping') }}</NuxtLink>
-		</div>
+		<!-- Список живе лише в localStorage → на SSR він порожній. Без ClientOnly Vue гідратує
+		     гілку «є товари» поверх серверної гілки «порожньо» (обидві — div) і на контейнері
+		     лишається клас .list-empty замість таблиці порівняння. -->
+		<ClientOnly>
+			<div v-if="!compare.items.value.length" class="list-empty">
+				<AppIcon name="compare" :size="60" :stroke-width="1.2" />
+				<p>{{ t('other.compareListEmpty') }}</p>
+				<NuxtLink :to="localePath('/')" class="btn btn-primary">{{ t('cart.continueShopping') }}</NuxtLink>
+			</div>
 
-		<div v-else class="compare-table-wrap">
-			<table class="compare-table">
-				<tbody>
-					<tr>
-						<th>{{ t('product.product') }}</th>
-						<td v-for="p in compare.items.value" :key="p.id">
-							<button class="compare-remove" :title="t('other.remove')" @click="compare.remove(p.id)">
-								<AppIcon name="close" :size="13" />
-							</button>
-							<NuxtLink :to="url.product(p)" class="compare-product">
-								<AppImage :src="url.productThumb(p.image_file)" :alt="p.title" :width="110" :height="110" />
-								<span>{{ p.title }}</span>
-							</NuxtLink>
-						</td>
-					</tr>
-					<tr>
-						<th>{{ t('product.price') }}</th>
-						<td v-for="p in compare.items.value" :key="p.id" class="compare-price">
-							{{ formatPrice(p.price) }}
-						</td>
-					</tr>
-					<tr>
-						<th>{{ t('product.stock') }}</th>
-						<td v-for="p in compare.items.value" :key="p.id">
-							<span :class="p.available ? 'text-accent' : 'text-muted'">
-								{{ p.available ? t('product.inStock') : t('product.notStock') }}
-							</span>
-						</td>
-					</tr>
-					<tr>
-						<th>{{ t('product.description') }}</th>
-						<td v-for="p in compare.items.value" :key="p.id" class="compare-desc">
-							{{ p.description_short }}
-						</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
+			<div v-else class="compare-table-wrap">
+				<table class="compare-table">
+					<tbody>
+						<tr>
+							<th>{{ t('product.product') }}</th>
+							<td v-for="p in compare.items.value" :key="p.id">
+								<button class="compare-remove" :title="t('other.remove')" @click="compare.remove(p.id)">
+									<AppIcon name="close" :size="13" />
+								</button>
+								<NuxtLink :to="url.product(p)" class="compare-product">
+									<AppImage :src="url.productThumb(p.image_file)" :alt="p.title" :width="110" :height="110" />
+									<span>{{ p.title }}</span>
+								</NuxtLink>
+							</td>
+						</tr>
+						<tr>
+							<th>{{ t('product.price') }}</th>
+							<td v-for="p in compare.items.value" :key="p.id" class="compare-price">
+								{{ formatPrice(p.price) }}
+							</td>
+						</tr>
+						<tr>
+							<th>{{ t('product.stock') }}</th>
+							<td v-for="p in compare.items.value" :key="p.id">
+								<span :class="p.available ? 'text-accent' : 'text-muted'">
+									{{ p.available ? t('product.inStock') : t('product.notStock') }}
+								</span>
+							</td>
+						</tr>
+						<tr>
+							<th>{{ t('product.description') }}</th>
+							<td v-for="p in compare.items.value" :key="p.id" class="compare-desc">
+								{{ p.description_short }}
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<template #fallback>
+				<div class="skeleton compare-skeleton" />
+			</template>
+		</ClientOnly>
 	</div>
 </template>
 
@@ -73,6 +82,12 @@ usePageSeo({ title: () => t('other.comparison'), noindex: true })
 .compare-table-wrap {
 	overflow-x: auto;
 	padding-bottom: 40px;
+}
+
+/* Каркас до монтування клієнта (візуал — глобальний .skeleton у main.css) */
+.compare-skeleton {
+	height: 420px;
+	border-radius: var(--radius);
 }
 
 .compare-table {

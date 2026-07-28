@@ -22,9 +22,11 @@
 								v-model="phone"
 								class="form-control"
 								type="tel"
+								inputmode="tel"
+								autocomplete="tel-national"
 								placeholder="099-999-99-99"
 								maxlength="13"
-								@input="maskPhone"
+								@input="onPhoneInput"
 							/>
 						</div>
 
@@ -48,6 +50,7 @@ const props = defineProps<{
 
 const { t, locale } = useI18n()
 const shopApi = useShopApi()
+const { maskPhone, isValidPhone } = usePhone()
 const { notify } = useNotify()
 const router = useRouter()
 const localePath = useLocalePath()
@@ -56,15 +59,12 @@ const open = ref(false)
 const phone = ref('')
 const sending = ref(false)
 
-// Маска 0XX-XXX-XX-XX
-function maskPhone() {
-	let digits = phone.value.replace(/\D/g, '').slice(0, 10)
-	const parts = [digits.slice(0, 3), digits.slice(3, 6), digits.slice(6, 8), digits.slice(8, 10)]
-	phone.value = parts.filter(Boolean).join('-')
+function onPhoneInput() {
+	phone.value = maskPhone(phone.value)
 }
 
 async function send() {
-	if (phone.value.length < 13 || phone.value.startsWith('038')) {
+	if (!isValidPhone(phone.value)) {
 		notify('error', t('cart.phoneNoCorrect'))
 		return
 	}

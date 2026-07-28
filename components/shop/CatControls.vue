@@ -9,10 +9,10 @@
 				:disabled="isLoadingMore"
 				@click="$emit('load-more')"
 			>
-				<span v-if="isLoadingMore" class="cat-controls__spinner" />
+				<span v-if="isLoadingMore" class="spinner" />
 				{{ isLoadingMore ? t('category.loading') : t('category.showMore') }}
 			</button>
-			<span v-else-if="isLoadingMore" class="cat-controls__spinner cat-controls__spinner--lg" />
+			<span v-else-if="isLoadingMore" class="spinner spinner--lg" />
 
 			<label class="cat-controls__toggle">
 				<input v-model="autoOn" type="checkbox" class="cat-controls__switch" />
@@ -80,29 +80,13 @@ const { t } = useI18n()
 	min-width: 200px;
 }
 
-.cat-controls__spinner {
-	display: inline-block;
-	width: 14px;
-	height: 14px;
+/* Візуал спінера — глобальний .spinner у main.css, тут лише відступ у кнопці та колір */
+.cat-controls__btn .spinner {
 	margin-right: 6px;
-	border: 2px solid currentColor;
-	border-top-color: transparent;
-	border-radius: 50%;
-	animation: cat-spin 0.7s linear infinite;
-	vertical-align: -2px;
 }
 
-/* Спінер під час авто-підвантаження (без кнопки) */
-.cat-controls__spinner--lg {
-	width: 24px;
-	height: 24px;
-	margin-right: 0;
-	border-width: 3px;
+.spinner--lg {
 	color: var(--accent);
-}
-
-@keyframes cat-spin {
-	to { transform: rotate(360deg); }
 }
 
 /* Ползунок «Авто-підвантаження» */

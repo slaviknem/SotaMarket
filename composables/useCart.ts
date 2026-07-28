@@ -48,8 +48,13 @@ export function useCart() {
 	const quantity = computed(() => state.value.items.reduce((q, i) => q + i.quantity, 0))
 	const subtotal = computed(() => state.value.items.reduce((s, i) => s + i.total, 0))
 	const total = computed(() => subtotal.value - state.value.discount)
+
+	// Комісія за накладений платіж є лише при оплаті під час отримання —
+	// для перед-/онлайн-оплати її не має бути в підсумку.
+	const codFee = (payment = 'nal_plateg') => (payment === 'nal_plateg' ? SHIPPING.nalogka : 0)
 	// Орієнтовний підсумок із доставкою (показуємо з «≈»)
-	const grandTotal = computed(() => total.value + SHIPPING.delivery + SHIPPING.nalogka)
+	const grandTotalFor = (payment = 'nal_plateg') => total.value + SHIPPING.delivery + codFee(payment)
+	const grandTotal = computed(() => grandTotalFor())
 
 	function add(payload: {
 		product: any
@@ -115,7 +120,7 @@ export function useCart() {
 		state.value.discount = discount
 	}
 
-	return { state, quantity, subtotal, total, grandTotal, shipping: SHIPPING, add, remove, removeAll, updateQuantity, setDiscount }
+	return { state, quantity, subtotal, total, grandTotal, grandTotalFor, codFee, shipping: SHIPPING, add, remove, removeAll, updateQuantity, setDiscount }
 }
 
 // Слайдер-кошик (mini-cart): глобальний стан відкриття.
