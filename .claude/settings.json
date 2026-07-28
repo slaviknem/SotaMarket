@@ -90,7 +90,14 @@
       "D:\\Web-SERVER\\domains\\FLOY-NEW",
       "D:\\Web-SERVER\\domains\\FLOY-ADMIN",
       "D:\\Web-SERVER\\domains\\FLOY",
-      "C:\\Users\\slavi\\AppData\\Local\\Temp\\claude"
+      "C:\\Users\\slavi\\AppData\\Local\\Temp\\claude",
+      "d:\\Web-SERVER\\domains\\FLOY-ADMIN\\app\\Actions\\Helpers",
+      "d:\\Web-SERVER\\domains\\FLOY-ADMIN\\app\\Models",
+      "d:\\Web-SERVER\\domains\\FLOY-ADMIN\\app\\Actions\\Generate",
+      "d:\\Web-SERVER\\domains\\FLOY-ADMIN\\app\\Actions\\ImportExport\\Itsell",
+      "d:\\Web-SERVER\\domains\\FLOY-ADMIN\\app\\Http\\Controllers\\DO",
+      "d:\\Web-SERVER\\domains\\FLOY-ADMIN\\app\\Console\\Commands",
+      "d:\\Web-SERVER\\domains\\FLOY-ADMIN\\NOTES"
     ]
   },
   "enableAllProjectMcpServers": true,

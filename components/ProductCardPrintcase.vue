@@ -2,8 +2,8 @@
 	<article class="p-card pc-card">
 		<div class="p-card__media">
 			<NuxtLink :to="url.printcase(category.alias)" class="p-card__img-link">
-				<img src="/images/printcase/printcase_product.webp" :alt="title" :title="title" loading="lazy" width="280"
-					height="280" />
+				<AppImage src="/images/printcase/printcase_product.webp" :alt="title" :title="title" :width="280"
+					:height="280" />
 			</NuxtLink>
 
 			<div class="p-card__badges">

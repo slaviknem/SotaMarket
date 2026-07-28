@@ -1,5 +1,9 @@
 // Хелпери для URL та зображень (дзеркалять старий plugins/url.ts)
 
+// products/thumb/<файл>.jpg -> products/thumb/<файл>.webp
+// Так само іменує файли адмінська генерація (ImageH::makeWebpThumb / artisan images:webp)
+const toWebp = (file: string) => file.replace(/\.[^.\/]+$/, '') + '.webp'
+
 export function useUrl() {
 	const config = useRuntimeConfig()
 	const localePath = useLocalePath()
@@ -8,14 +12,18 @@ export function useUrl() {
 		// Зображення зі сховища адмінки: products/thumb/..., attributes/..., articles/...
 		img: (path: string) => config.public.urlStorage + 'images/' + path.replace(/^\//, ''),
 
+		// Прев'ю товару — одразу готовий стиснений webp (у сховищі лежить поруч із jpg).
+		// Віддаємо його напряму, без IPX: файл уже потрібного розміру, зайве перекодування
+		// лише додало б проксі-запит і втрату якості (див. AppImage).
 		// Абсолютний URL (напр. акційні товари) лишаємо як є; інакше — шлях у сховищі
 		productThumb: (imageFile?: string | null) =>
 			imageFile
 				? /^https?:\/\//.test(imageFile)
 					? imageFile
-					: config.public.urlStorage + 'images/products/thumb/' + imageFile
+					: config.public.urlStorage + 'images/products/thumb/' + toWebp(imageFile)
 				: '/images/no-photo.svg',
 
+		// Велике фото — поки що тільки jpg (стиснених копій ще немає)
 		productBig: (imageFile?: string | null) =>
 			imageFile ? config.public.urlStorage + 'images/products/big/' + imageFile : '/images/no-photo.svg',
 
