@@ -14,7 +14,11 @@ const props = defineProps<{
 const { t } = useI18n()
 const url = useUrl()
 
-const catTitle = computed(() => props.category?.title_full || props.category?.title || '')
+// Три форми назви: повна — у заголовку й ключових питаннях, кирилиця — у питаннях
+// «де купити / скільки коштує» (так формулюють запит), коротка — у повторних згадках
+const names = useCatNames(() => props.category)
+const catTitle = computed(() => names.value.full)
+
 const year = new Date().getFullYear()
 
 // Топ-5 товарів (дефолтне сортування API — за популярністю)
@@ -28,7 +32,7 @@ const priceRange = computed(() => {
 })
 
 const items = computed(() => {
-	const p = { category_title: catTitle.value }
+	const p = { category_title: catTitle.value, category_alt: names.value.alt_, category_short: names.value.short_ }
 	const list: { q: string; a: string; links?: { title: string; to: string; price?: number }[] }[] = [
 		{ q: t('faq.model.faq_1.question', p), a: t('faq.model.faq_1.answer', p) },
 	]

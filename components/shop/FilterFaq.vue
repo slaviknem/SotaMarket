@@ -20,7 +20,11 @@ const props = defineProps<{
 const { t } = useI18n()
 const url = useUrl()
 
-const catTitle = computed(() => props.category?.title_full || props.category?.title || '')
+// Три форми назви моделі: повна — заголовок і перші питання, кирилиця — «де купити /
+// скільки коштує», коротка — повторні згадки в довгих відповідях
+const names = useCatNames(() => props.category)
+const catTitle = computed(() => names.value.full)
+
 const isTheme = computed(() => props.filterPage?.type === 'theme')
 
 // Топ-5 варіантів з URL /attr/ — унікальні анкори «Товар (Принт)»
@@ -50,7 +54,12 @@ const title = computed(() =>
 )
 
 const items = computed(() => {
-	const p = { filter: props.filterPage?.title, category_title: catTitle.value }
+	const p = {
+		filter: props.filterPage?.title,
+		category_title: catTitle.value,
+		category_alt: names.value.alt_,
+		category_short: names.value.short_,
+	}
 	const key = isTheme.value ? 'faq.theme' : 'faq.filter'
 	const list: { q: string; a: string; links?: { title: string; to: string; price?: number }[] }[] = []
 

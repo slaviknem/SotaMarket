@@ -50,8 +50,9 @@
 					</div>
 				</header>
 
-				<!-- Короткий унікальний лід сторінки фільтра — фолбек, коли у фільтра ще немає власної статті -->
-				<p v-if="filterLead" class="filter-desc">{{ filterLead }}</p>
+				<!-- Короткий унікальний лід: на сторінці моделі — завжди, на фільтрі — фолбек,
+				     коли у нього ще немає власної статті -->
+				<p v-if="pageLead" class="filter-desc">{{ pageLead }}</p>
 
 				<!-- /chekhly: плитки брендів з логотипами + повний каталог бренд→серії→моделі -->
 				<template v-if="brandsLanding">
@@ -119,7 +120,7 @@
 						</div>
 
 						<p class="cat-neoprints__note text-muted">
-							{{ t('neoprint.sectionNote', { model: modelName, count: neoprints.length }) }}
+							{{ t('neoprint.sectionNote', { model: names.short_, count: neoprints.length }) }}
 						</p>
 
 						<div class="products-grid products-grid--left">
@@ -175,7 +176,7 @@
 					:reviews="reviewsList"
 					type="category"
 					:target-id="category.id"
-					:title="t('reviews.aboutTitle', { title: category.title_full || category.title })"
+					:title="t('reviews.aboutTitle', { title: names.short_ })"
 					class="cat-reviews"
 				/>
 
@@ -318,6 +319,11 @@ if (props.filterAlias && !filterPage.value) {
 	await navigateTo(url.category(props.categoryAlias), { redirectCode: 301 })
 }
 
+// Три форми назви (повна / кирилиця / без бренду) — розподіл по блоках описаний у composable
+const names = useCatNames(category)
+const catName = computed(() => names.value.full)
+const catAlt = computed(() => names.value.alt)
+
 // Сторінка бренду: тягнемо його серії+моделі для блоку каталогу зверху (як на /chekhly, але один бренд)
 let brandSeriesData = ref<any[]>([])
 if (!props.brandsLanding && !props.filterAlias && category.value && category.value.type === 'brend') {
@@ -330,7 +336,7 @@ const brandTree = computed(() => {
 	const series = brandSeriesData.value
 	if (!series?.length) return []
 	return [{
-		title: category.value?.title_full || category.value?.title,
+		title: catName.value,
 		url: props.categoryAlias,
 		image_file: category.value?.image_file,
 		children: series,
@@ -477,7 +483,7 @@ const pageItems = computed<{ product: any; attribute: any | null }[]>(() =>
 const pricesTitle = computed(() => {
 	const params = {
 		filter: filterPage.value?.title,
-		category_title: category.value?.title_full || category.value?.title || '',
+		category_title: catName.value,
 	}
 	if (!props.filterAlias) return t('faq.prices.title', params)
 	return t(filterPage.value?.type === 'theme' ? 'faq.prices.titleTheme' : 'faq.prices.titleFilter', params)
@@ -549,17 +555,34 @@ function pageLink(page: number) {
 // Унікальний H1/title сторінки фільтра за типом (тема → «Чохли з тематикою…», інші → «{filter} на {cat}»)
 const filterHeading = computed(() => {
 	if (!filterPage.value) return ''
-	const cat = category.value?.title_full || category.value?.title_rus || ''
 	const key = filterPage.value.type === 'theme' ? 'pageTitle.filters.theme' : 'pageTitle.filters.main'
-	return t(key, { filter: filterPage.value.title, category: cat })
+	return t(key, { filter: filterPage.value.title, category: catName.value })
 })
 
-const pageTitle = computed(() => {
-	if (filterPage.value) return filterHeading.value
-	return category.value?.title_rus || category.value?.title_full || category.value?.title || ''
+// H1 категорії без фільтра — шаблон за типом сутності (як на старому сайті):
+// модель → «Чохли для iPhone 17», бренд → «Чохли для телефонів Apple та … на Айфон»,
+// решта (розділ, серія, техніка) → власна назва. Назву, що вже містить «чохли»
+// (розділ /chekhly, категорії аксесуарів), у шаблон не загортаємо — щоб не дублювати слово.
+const catHeading = computed(() => {
+	const name = catName.value
+	if (!name || /чохл|чехл/i.test(name)) return name
+
+	const type = category.value?.type
+	if (type === 'model') return t('pageTitle.model', { title_full: name })
+
+	if (type === 'brend') {
+		// Кирилична назва бренду («Айфон») — другий ключ у заголовку; якщо її немає,
+		// падаємо на коротку форму, щоб не отримати «Samsung … на Samsung».
+		const alt = category.value?.title_rus
+		return alt && alt !== name
+			? t('pageTitle.brend', { title_full: name, title_rus: alt })
+			: t('pageTitle.model', { title_full: name })
+	}
+
+	return name
 })
 
-const modelName = computed(() => category.value?.title_full || category.value?.title || '')
+const pageTitle = computed(() => (filterPage.value ? filterHeading.value : catHeading.value))
 
 // Стаття сторінки фільтра. Бекенд уже віддає «специфічна (filters_expands) ⟶ інакше
 // шаблон фільтра (filters)» одним полем description — тут лише підставляємо модель
@@ -574,7 +597,7 @@ const filterLeadText = computed(() =>
 	props.filterAlias
 		? t(filterPage.value?.type === 'theme' ? 'filterLead.theme' : 'filterLead.main', {
 				filter: filterPage.value?.title,
-				category_title: modelName.value,
+				category_title: catName.value,
 				count: displayTotal.value,
 			})
 		: ''
@@ -583,15 +606,43 @@ const filterLeadText = computed(() =>
 // Видимий лід — лише як фолбек, коли повної статті фільтра немає (щоб не дублювати статтю моделі)
 const filterLead = computed(() => (filterArticle.value ? '' : filterLeadText.value))
 
+// Мінімальна ціна серед завантажених товарів — «ціни від» у ліді (той самий підхід,
+// що й у діапазоні цін FAQ: рахуємо з даних сторінки, без зайвих запитів)
+const minPrice = computed(() => {
+	const prices = products.value.map((p: any) => p.price).filter(Boolean)
+	return prices.length ? Math.min(...prices) : 0
+})
+
+// Лід сторінки моделі: коротке SSR-речення з живими даними (кількість, ціна від) і
+// кириличною назвою — унікальний текст для кожної моделі + фолбек meta description,
+// коли опис у адмінці не заповнений.
+const modelLeadText = computed(() => {
+	// Без цін фраза «ціни від» була б порожньою — тоді ліду просто немає
+	if (category.value?.type !== 'model' || props.filterAlias || !minPrice.value) return ''
+	return t(catAlt.value ? 'modelLead.alt' : 'modelLead.main', {
+		model: catName.value,
+		model_alt: catAlt.value,
+		count: displayTotal.value,
+		price: formatPrice(minPrice.value),
+	})
+})
+
+// Видимий лід сторінки: фільтр → лід фільтра, модель → лід моделі (там само, де решта
+// SEO-блоків: 1-ша сторінка без ?filter_*, щоб не дублювати текст на пагінації)
+const pageLead = computed(() => (props.filterAlias ? filterLead.value : showSeoBlocks.value ? modelLeadText.value : ''))
+
 const breadcrumbs = computed(() => {
 	const crumbs: { title: string; url?: string }[] = []
 
-	if (category.value?.brend && category.value.brend.alias !== props.categoryAlias) {
+	// Бренд уже окремою крихтою — модель поруч даємо без нього («Samsung / Galaxy S25 Ultra»,
+	// а не «Samsung / Samsung Galaxy S25 Ultra»)
+	const hasBrandCrumb = !!category.value?.brend && category.value.brend.alias !== props.categoryAlias
+	if (hasBrandCrumb) {
 		crumbs.push({ title: category.value.brend.title, url: url.category(category.value.brend.alias) })
 	}
 
 	crumbs.push({
-		title: category.value?.title_full || category.value?.title || '',
+		title: hasBrandCrumb ? names.value.short_ : catName.value,
 		url: props.filterAlias ? url.category(props.categoryAlias) : undefined,
 	})
 
@@ -610,7 +661,7 @@ usePageSeo({
 	description: () =>
 		filterPage.value
 			? filterLeadText.value
-			: category.value?.meta_description || '',
+			: category.value?.meta_description || modelLeadText.value,
 	// Мультивибір-комбінації (?filter_*) не індексуємо — canonical веде на базову категорію
 	noindex: () => hasFilterQuery.value,
 })
@@ -623,6 +674,12 @@ const neoPrintListItems = computed(() =>
 				url: url.absolute(url.neoprint(props.categoryAlias, np.id)),
 			}))
 		: []
+)
+
+// Друга назва списку кирилицею («Чохли для Айфон 17») — підказка пошуковикам/AI, що
+// сторінка відповідає й на транслітерований запит. Лише там, де форми реально різні.
+const listAltName = computed(() =>
+	catAlt.value && !props.filterAlias ? { alternateName: t('pageTitle.model', { title_full: catAlt.value }) } : {}
 )
 
 // JSON-LD: список товарів. На сторінці фільтра — картки-варіанти з URL /attr/
@@ -656,6 +713,7 @@ useJsonLd(() => {
 		'@context': 'https://schema.org',
 		'@type': 'ItemList',
 		name: pageTitle.value,
+		...listAltName.value,
 		numberOfItems: total.value,
 		itemListElement: products.value.slice(0, 24).map((p: any, i: number) => ({
 			'@type': 'ListItem',
@@ -805,6 +863,23 @@ function scrollToNeoprints() {
 .filter-desc {
 	margin: 10px 0;
 	font-size: 14px;
+}
+
+/* На телефоні лід не має відсувати товари: дрібніший шрифт і стеля у 2 рядки.
+   12px — нижня межа читабельності (менше Lighthouse рахує помилкою мобільної зручності).
+   Ховати лід не можна — індексація mobile-first, текст потрібен у мобільному HTML;
+   тут він обрізаний лише візуально, у розмітці лишається повністю. */
+@media (max-width: 640px) {
+	.filter-desc {
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		margin: 2px 0 10px;
+		font-size: 12px;
+		line-height: 1.4;
+		color: var(--text-muted);
+	}
 }
 
 /* Контроли шапки (сортування + кнопка фільтрів). Десктоп: праворуч біля заголовка. */

@@ -56,7 +56,7 @@
 						{{ t('neoprint.allTheme', { filter: activeThemeTitle }) }}
 					</NuxtLink>
 					<NuxtLink :to="url.category(category.alias)" class="chip">
-						{{ t('neoprint.allModel', { model: modelName }) }}
+						{{ t('neoprint.allModel', { model: names.short_ }) }}
 					</NuxtLink>
 					<NuxtLink v-if="category.brend" :to="url.category(category.brend.alias)" class="chip">
 						{{ t('neoprint.allBrand', { brend: category.brend.title }) }}
@@ -221,6 +221,9 @@ const { data } = await useAsyncData(
 				alias: category.alias,
 				title: category.title,
 				title_full: category.title_full,
+				// Кирилична назва: потрібна для #model_ru# в описах, які підвантажуються
+				// при перемиканні дизайну вже на клієнті (SSR-опис її отримує з повної категорії)
+				title_rus: category.title_rus,
 				brend: category.brend ? { alias: category.brend.alias, title: category.brend.title } : null,
 			},
 			themeTree,
@@ -246,7 +249,10 @@ const themeTree = data.value!.themeTree as ThemeNode[]
 // Показані зараз дизайни (галерея + рейл). Реф, бо меню тем перемикає набір без навігації.
 const designs = ref<NpDesign[]>([...data.value!.designs])
 
-const modelName = computed(() => category.value.title_full || category.value.title || '')
+// Форми назви моделі: повна — у назві товару, крихтах і meta; коротка — у перелінковці
+// («Усі чохли для Galaxy S25 Ultra»), щоб повна не повторювалась поспіль у сусідніх рядках
+const names = useCatNames(category)
+const modelName = computed(() => names.value.full)
 
 // ---------- Активний дизайн (перемикання без навігації, як вибір принта на сторінці товару) ----------
 const activeId = ref<number>(data.value!.landingId)
@@ -413,10 +419,14 @@ watch(activeId, (nv: number) => {
 const breadcrumbs = computed(() => {
 	const crumbs: { title: string; url?: string }[] = []
 
+	// Модель без бренду, коли бренд уже окремою крихтою («Samsung / Galaxy S25 Ultra»)
 	if (category.value.brend) {
 		crumbs.push({ title: category.value.brend.title, url: url.category(category.value.brend.alias) })
 	}
-	crumbs.push({ title: modelName.value, url: url.category(category.value.alias) })
+	crumbs.push({
+		title: category.value.brend ? names.value.short_ : modelName.value,
+		url: url.category(category.value.alias),
+	})
 
 	if (activeThemeAlias.value) {
 		crumbs.push({ title: activeThemeTitle.value, url: url.category(category.value.alias, activeThemeAlias.value) })
