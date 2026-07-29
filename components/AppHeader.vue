@@ -36,7 +36,7 @@
 				<SearchBar class="header__search" />
 
 				<div class="header__actions">
-					<NuxtLink :to="localePath('/shop/compare')" class="action-btn" :title="$t('other.comparison')">
+					<NuxtLink :to="localePath('/shop/compare')" class="action-btn action-btn--compare" :title="$t('other.comparison')">
 						<AppIcon name="compare" />
 						<span v-if="compare.items.value.length" class="action-btn__count">{{ compare.items.value.length }}</span>
 					</NuxtLink>
@@ -951,6 +951,12 @@ onMounted(() => {
 	.header__main-inner {
 		gap: 12px;
 		height: 62px;
+		/* лівий відступ бургера = вертикальному (62 − 42) / 2 = 10px, а не 14px від .container */
+		padding-left: 10px;
+	}
+
+	.logo {
+		margin-left: 6px; /* трохи відсуваємо від кнопки-бургера */
 	}
 
 	.logo :deep(.logo-floy) {
@@ -966,17 +972,9 @@ onMounted(() => {
 		margin-left: auto;
 	}
 
-	/* Бургер + лого + пошук + 3 дії не влазять у 360–390px: тиснемо проміжки й кнопки дій */
+	/* Бургер + лого + пошук + дії — тримаємо проміжки компактними на 360–390px */
 	.header__main-inner {
 		gap: 8px;
-	}
-
-	.header__actions {
-		gap: 2px;
-	}
-
-	.action-btn {
-		width: 38px;
 	}
 
 	/* Страховка на найвужчих екранах: лого віддає ширину першим і стискається
@@ -988,6 +986,14 @@ onMounted(() => {
 
 	.logo :deep(.logo-floy) {
 		max-width: 100%;
+	}
+}
+
+/* Найвужчі телефони: порівняння ховаємо, щоб не тіснити пошук/обране/кошик
+   (той самий поріг 560px, що й для стиснутих макетів статей у main.css) */
+@media (max-width: 560px) {
+	.action-btn--compare {
+		display: none;
 	}
 }
 </style>
