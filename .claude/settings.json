@@ -94,7 +94,14 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" --max-time 20 \"https://www.ukrposhta.ua/address-classifier/get_postoffices_by_postindex?pi=36000\")",
       "Bash(curl -s -I --max-time 20 -H \"Origin: https://floy.com.ua\" \"https://www.ukrposhta.ua/address-classifier/get_postoffices_by_postindex?pi=36000\")",
       "Bash(curl -s --max-time 20 \"https://www.ukrposhta.ua/address-classifier/get_postoffices_by_postindex?pi=99999\")",
-      "Bash(curl -s --max-time 25 \"https://www.ukrposhta.ua/address-classifier/get_postoffices_by_postindex?pi=38701\")"
+      "Bash(curl -s --max-time 25 \"https://www.ukrposhta.ua/address-classifier/get_postoffices_by_postindex?pi=38701\")",
+      "Bash(curl -sI \"https://floy.com.ua/images/banners/nova_poshta.jpg\")",
+      "Bash(curl -sI \"https://floy.com.ua/images/banners/ukrposhta.jpg\")",
+      "Bash(sort -k2)",
+      "Bash(uniq -c -f1)",
+      "Bash(git --no-pager diff HEAD --stat)",
+      "Bash(git --no-pager diff HEAD -- components/blocks/BannerSlider.vue i18n/)",
+      "Bash(git --no-pager diff HEAD -- components/blocks/BannerSlider.vue)"
     ],
     "deny": [],
     "ask": [],

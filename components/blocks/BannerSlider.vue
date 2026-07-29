@@ -23,7 +23,7 @@
 									:alt="banner.title || 'FLOY'"
 									class="banner-slide__img"
 									width="1300"
-									height="400"
+									height="480"
 									:fetchpriority="i === 0 ? 'high' : 'auto'"
 									:loading="i === 0 ? 'eager' : 'lazy'"
 								/>
@@ -38,22 +38,18 @@
 
 				<!-- Бічні промо-плитки (доставка) -->
 				<aside class="banner-hero__side">
-					<NuxtLink :to="localePath('/dostavka')" class="promo-tile">
-						<span class="promo-tile__icon"><AppIcon name="truck" :size="28" /></span>
-						<span class="promo-tile__body">
-							<span class="promo-tile__title">{{ t('index.deliveryNova') }}</span>
-							<span class="promo-tile__sub">{{ t('index.deliveryNovaInfo') }}</span>
-						</span>
-						<AppIcon name="arrow-right" :size="18" class="promo-tile__go" />
-					</NuxtLink>
-
-					<NuxtLink :to="localePath('/dostavka')" class="promo-tile">
-						<span class="promo-tile__icon"><AppIcon name="map-pin" :size="28" /></span>
-						<span class="promo-tile__body">
-							<span class="promo-tile__title">{{ t('index.deliveryUkr') }}</span>
-							<span class="promo-tile__sub">{{ t('index.deliveryUkrInfo') }}</span>
-						</span>
-						<AppIcon name="arrow-right" :size="18" class="promo-tile__go" />
+					<NuxtLink
+						v-for="carrier in CARRIERS"
+						:key="carrier.logo"
+						:to="localePath('/dostavka')"
+						class="promo-tile"
+					>
+						<!-- пробіл перед <br> потрібен для мобільної версії, де перенос вимикається -->
+						<span class="promo-tile__title">{{ t('index.delivery') }} <br />{{ t(carrier.name) }}</span>
+						<CarrierLogo :name="carrier.logo" class="promo-tile__logo" />
+						<span class="promo-tile__line" />
+						<span class="promo-tile__sub">{{ t(carrier.info) }}</span>
+						<span class="promo-tile__go"><AppIcon name="arrow-right" :size="16" /></span>
 					</NuxtLink>
 				</aside>
 			</div>
@@ -69,6 +65,12 @@ import 'swiper/css/pagination'
 
 defineProps<{ banners: any[] | null }>()
 
+// Промо-плитки доставки: відрізняються лише знаком перевізника та ключами перекладу
+const CARRIERS = [
+	{ logo: 'nova-poshta', name: 'index.deliveryNova', info: 'index.deliveryNovaInfo' },
+	{ logo: 'ukrposhta', name: 'index.deliveryUkr', info: 'index.deliveryUkrInfo' },
+]
+
 const url = useUrl()
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -83,7 +85,8 @@ const modules = [Autoplay, Pagination]
 /* Слайдер (зліва) + колонка плиток (справа) */
 .banner-hero__grid {
 	display: grid;
-	grid-template-columns: minmax(0, 1fr) clamp(250px, 26%, 330px);
+	/* ширша колонка плиток → банер зліва відповідно вужчий і нижчий (висота від aspect-ratio) */
+	grid-template-columns: minmax(0, 1fr) clamp(280px, 30%, 380px);
 	gap: 14px;
 	align-items: stretch;
 }
@@ -107,7 +110,8 @@ const modules = [Autoplay, Pagination]
 
 .banner-slide__img {
 	width: 100%;
-	aspect-ratio: 1300 / 400;
+	/* менш панорамна пропорція (було 1300/400) — щоб на широких екранах менше обрізало верх/низ фото */
+	aspect-ratio: 1300 / 480;
 	object-fit: cover;
 }
 
@@ -149,13 +153,21 @@ const modules = [Autoplay, Pagination]
 	gap: 14px;
 }
 
+/* Три «поверхи» (назва+лого / хайрлайн / уточнення+стрілка), рознесені по висоті плитки —
+   простір заповнений структурно, без порожнечі посередині. */
 .promo-tile {
 	position: relative;
 	flex: 1;
-	display: flex;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas:
+		'title logo'
+		'line  line'
+		'sub   go';
+	align-content: space-between;
 	align-items: center;
-	gap: 14px;
-	padding: 16px 18px;
+	gap: 12px 14px;
+	padding: 24px 26px;
 	background: var(--bg-card);
 	border: 1px solid var(--border);
 	border-radius: var(--radius-lg);
@@ -163,17 +175,23 @@ const modules = [Autoplay, Pagination]
 	transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
 }
 
-/* М'який помаранчевий ореол у кутку */
+/* М'який помаранчевий ореол у кутку — навпроти лого: у знаку Нової Пошти «Н» це просвіт
+   фону, тож підфарбований фон під ним зіпсував би її (на десктопі лого справа вгорі). */
 .promo-tile::after {
 	content: '';
 	position: absolute;
-	right: -34px;
-	top: -34px;
+	left: -34px;
+	bottom: -34px;
 	width: 130px;
 	height: 130px;
 	border-radius: 50%;
 	background: radial-gradient(circle, var(--accent-soft), transparent 70%);
 	pointer-events: none;
+}
+
+/* Вміст — над декоративним ореолом */
+.promo-tile > * {
+	position: relative;
 }
 
 .promo-tile:hover {
@@ -182,49 +200,59 @@ const modules = [Autoplay, Pagination]
 	box-shadow: var(--shadow-pop);
 }
 
-.promo-tile__icon {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 52px;
-	height: 52px;
-	border-radius: 14px;
-	background: var(--accent-soft);
-	color: var(--accent);
-	flex-shrink: 0;
+/* Лого перевізника — головний акцент плитки, праворуч від назви */
+.promo-tile__logo {
+	grid-area: logo;
+	/* негативний простір «Н» у знаку Нової Пошти потребує достатнього розміру */
+	width: 88px;
+	height: 88px;
+	justify-self: end;
+	transition: transform 0.18s;
 }
 
-.promo-tile__body {
-	display: flex;
-	flex-direction: column;
-	gap: 3px;
-	min-width: 0;
+.promo-tile:hover .promo-tile__logo {
+	transform: scale(1.05);
 }
 
+/* «Доставка» + назва перевізника у два рядки (розділені <br>) */
 .promo-tile__title {
+	grid-area: title;
 	font-weight: 700;
-	font-size: 14.5px;
+	font-size: 19px;
 	color: var(--text);
-	line-height: 1.25;
-}
-
-.promo-tile__sub {
-	font-size: 12.5px;
-	color: var(--text-muted);
 	line-height: 1.3;
 }
 
-.promo-tile__go {
-	margin-left: auto;
+/* Хайрлайн, що тримає середину плитки */
+.promo-tile__line {
+	grid-area: line;
+	height: 1px;
+	background: var(--border);
+}
+
+.promo-tile__sub {
+	grid-area: sub;
+	font-size: 14.5px;
 	color: var(--text-muted);
-	opacity: 0.5;
-	flex-shrink: 0;
-	transition: color 0.18s, opacity 0.18s, transform 0.18s;
+	line-height: 1.4;
+}
+
+.promo-tile__go {
+	grid-area: go;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	background: var(--bg-elevated);
+	color: var(--text-muted);
+	transition: background-color 0.18s, color 0.18s, transform 0.18s;
 }
 
 .promo-tile:hover .promo-tile__go {
-	color: var(--accent);
-	opacity: 1;
+	background: var(--accent);
+	color: var(--on-accent);
 	transform: translateX(3px);
 }
 
@@ -238,8 +266,44 @@ const modules = [Autoplay, Pagination]
 		flex-direction: row;
 	}
 
+	/* Плитки нижчі — лого зліва, текст праворуч, хайрлайн зайвий */
 	.promo-tile {
-		flex: 1;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		grid-template-areas:
+			'logo title go'
+			'logo sub   go';
+		align-content: center;
+		gap: 2px 14px;
+		padding: 16px 18px;
+	}
+
+	/* лого переїхало ліворуч — ореол відповідно праворуч */
+	.promo-tile::after {
+		left: auto;
+		right: -34px;
+	}
+
+	.promo-tile__line {
+		display: none;
+	}
+
+	.promo-tile__logo {
+		width: 66px;
+		height: 66px;
+		justify-self: start;
+	}
+
+	/* назва в один рядок — місця по ширині вистачає, перенос лише зайво піднімає плитку */
+	.promo-tile__title {
+		font-size: 17px;
+	}
+
+	.promo-tile__title br {
+		display: none;
+	}
+
+	.promo-tile__sub {
+		font-size: 13.5px;
 	}
 
 	/* Банер на всю ширину: висота плавно масштабується разом із шириною,
@@ -261,6 +325,13 @@ const modules = [Autoplay, Pagination]
 @media (max-width: 560px) {
 	.banner-hero__side {
 		flex-direction: column;
+	}
+
+	.promo-tile {
+		grid-template-columns: auto minmax(0, 1fr);
+		grid-template-areas:
+			'logo title'
+			'logo sub';
 	}
 
 	.promo-tile__go {
