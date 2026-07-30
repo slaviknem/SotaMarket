@@ -317,6 +317,10 @@ const pageTitle = computed(() => {
 	return base
 })
 
+// Заголовок для <title>/description: без діагоналі в дужках — «(6.3")» з'їдає 7 знаків
+// із ~58 видимих у сніпеті, а в запитах діагональ не пишуть. H1 і крихти лишаються повними.
+const seoTitle = computed(() => pageTitle.value.replace(/\s*\(\d+(?:[.,]\d+)?\s*(?:["”″]|''|')\)/g, ''))
+
 // ---------- Кошик ----------
 function addToCart() {
 	if (attributes.value.length && !selectedAttributeId.value) {
@@ -354,10 +358,10 @@ const canonicalPath = computed(() =>
 )
 
 usePageSeo({
-	title: () => `${pageTitle.value} — ${formatPrice(product.value?.price)}`,
+	title: () => `${seoTitle.value} — ${formatPrice(product.value?.price)}`,
 	description: () =>
 		product.value?.description_short ||
-		`${pageTitle.value}. ${t('product.inStock')}. ${formatPrice(product.value?.price)}.`,
+		t('metaDescription.product', { title: seoTitle.value, price: formatPrice(product.value?.price) }),
 	image: () => (currentImageFile.value ? url.productBig(currentImageFile.value) : undefined),
 	path: () => canonicalPath.value,
 })

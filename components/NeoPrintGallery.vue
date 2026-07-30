@@ -18,7 +18,6 @@
 					:alias="slide.alias"
 					:category-alias="categoryAlias"
 					:alt="slide.alt"
-					:size="540"
 					big
 					:eager="i === initialIndex"
 					class="np-gallery__img"

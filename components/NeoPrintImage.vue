@@ -1,53 +1,39 @@
 <template>
-	<div class="np-img" :class="{ 'np-img--big': big }">
-		<!-- Шаблон принта -->
-		<AppImage
-			:src="url.neoprintTemplate(alias, !big)"
-			:alt="alt"
-			:title="alt"
-			:width="printWidth"
-			class="np-img__print"
-			:loading="eager ? 'eager' : 'lazy'"
-			:fetchpriority="eager ? 'high' : undefined"
-			:preload="eager"
-		/>
-
-		<!-- Маска моделі (PNG з прозорістю) — декоративна, лягає зверху -->
-		<AppImage
-			:src="url.neoprintMask(categoryAlias)"
-			alt=""
-			:width="size"
-			class="np-img__mask"
-			:loading="eager ? 'eager' : 'lazy'"
-			:fetchpriority="eager ? 'high' : undefined"
-		/>
-	</div>
+	<AppImage
+		:src="frame.src"
+		:srcset="frame.srcset"
+		:alt="alt"
+		:title="alt"
+		:width="frame.width"
+		:height="frame.height"
+		class="np-img"
+		:class="{ 'np-img--big': big }"
+		:loading="eager ? 'eager' : 'lazy'"
+		:fetchpriority="eager ? 'high' : undefined"
+		:preload="eager"
+	/>
 </template>
 
 <script setup lang="ts">
-// Композиція «готовий дизайн на моделі» БЕЗ canvas: шаблон принта + маска моделі поверх.
-// Точний CSS-еквівалент бекендового ImageH::composeAlphaprint (білий квадрат → шаблон по
-// висоті, по центру → маска по висоті, по центру). Рендериться на SSR, тож дизайни бачать
-// і пошуковики, і AI-боти. Маска в межах сторінки одна — браузер тягне її раз.
+// Готовий дизайн на моделі — ОДНЕ зображення з /img/neoprint (шаблон принта + маска моделі,
+// збирає Nitro-роут і кешує на диску). Раніше композицію робив CSS двома шарами: виглядало
+// так само, але в HTML лежав прямокутний принт — і в індекс потрапляв він, а не чохол.
+// Бонусом зникла маска (окремі 80 КБ на сторінку) і другий запит на кожну картку.
 const props = withDefaults(
 	defineProps<{
 		// alias дизайну (== його id) і alias моделі
 		alias: string | number
 		categoryAlias: string
 		alt?: string
-		// Сторона квадрата у CSS-пікселях (для srcset)
-		size?: number
-		// Повний шаблон замість thumb — для головного фото сторінки дизайну
+		// Кадр 4:5 замість квадрата — головне фото сторінки дизайну
 		big?: boolean
 		// LCP-зображення: без lazy, з пріоритетом
 		eager?: boolean
 	}>(),
-	{ alt: '', size: 280 }
+	{ alt: '' }
 )
 
 const url = useUrl()
 
-// Шаблони друку — вертикальні (1100×2100), тож у квадраті принт займає ~53% ширини.
-// Задаємо лише ширину: IPX збереже пропорції, висоту тримає CSS (height: 100%).
-const printWidth = computed(() => Math.round(props.size * 0.53))
+const frame = computed(() => url.neoprintFrame(props.categoryAlias, props.alias, props.big ? 'hero' : 'card'))
 </script>

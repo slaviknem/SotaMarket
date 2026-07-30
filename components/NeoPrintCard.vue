@@ -2,12 +2,7 @@
 	<article class="p-card np-card">
 		<div class="p-card__media">
 			<NuxtLink :to="link" class="p-card__img-link">
-				<NeoPrintImage
-					:alias="neoprint.alias"
-					:category-alias="category.alias"
-					:alt="cardTitle"
-					:size="252"
-				/>
+				<NeoPrintImage :alias="neoprint.alias" :category-alias="category.alias" :alt="cardTitle" />
 			</NuxtLink>
 
 			<div class="p-card__badges">

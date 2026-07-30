@@ -24,14 +24,17 @@
 </template>
 
 <script setup lang="ts">
-const { locale } = useI18n()
+const { t, locale } = useI18n()
 const head = useLocaleHead({ identifierAttribute: 'id', seo: true, lang: true, dir: true })
 
 useHead(() => ({
 	htmlAttrs: { lang: head.value.htmlAttrs?.lang || locale.value },
 	link: head.value.link || [],
 	meta: head.value.meta || [],
-	titleTemplate: (chunk?: string) => (chunk ? `${chunk} — floy.com.ua` : 'floy.com.ua'),
+	// Бренд-суфікс у title не додаємо: домен Google і так показує окремим рядком над заголовком,
+	// а назва магазину є в og:site_name та Organization — весь бюджет довжини йде на ключі.
+	// Запасний title — лише для сторінок, які не викликали usePageSeo.
+	titleTemplate: (chunk?: string) => chunk || `FLOY — ${t('metaTitle.index')}`,
 }))
 
 // Меню вантажиться один раз на SSR і шариться між сторінками

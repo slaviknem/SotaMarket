@@ -198,9 +198,10 @@ const shopApi = useShopApi()
 const cart = useCart()
 const { notify } = useNotify()
 const localePath = useLocalePath()
+const url = useUrl()
 
 usePageSeo({
-	title: () => t('printcase.constructor') + ' — FLOY',
+	title: () => t('printcase.constructor'),
 	description: () => t('metaDescription.index'),
 })
 
@@ -525,7 +526,8 @@ async function loadNeoPrint(alias: string) {
 			return
 		}
 	} catch { /* fallback нижче */ }
-	pushImage(`${config.public.urlStorage}images/templates/${alias}.jpg`)
+	// Саме оригінальний jpg: полотно конструктора йде у друк, webp дав би друге стиснення
+	pushImage(url.neoprintTemplateSource(alias))
 }
 
 // ---------- Canvas-генерація ----------

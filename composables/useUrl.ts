@@ -4,6 +4,18 @@
 // Так само іменує файли адмінська генерація (ImageH::makeWebpThumb / artisan images:webp)
 const toWebp = (file: string) => file.replace(/\.[^.\/]+$/, '') + '.webp'
 
+// Кадри готового чохла — whitelist на боці Nitro-роуту (server/routes/img/neoprint).
+// Без пресета роут віддає квадрат 600×600 jpg (og:image, JSON-LD, кошик)
+type NeoprintPreset = 'card' | 'card2x' | 'hero' | 'hero2x'
+
+const neoprintUrl = (categoryAlias: string, alias: string | number, preset?: NeoprintPreset) =>
+	preset
+		? `/img/neoprint/${categoryAlias}/${alias}-${preset}.webp`
+		: `/img/neoprint/${categoryAlias}/${alias}.jpg`
+
+// Пропорції кадрів мусять збігатися з PRESETS у server/routes/img/neoprint
+const NEOPRINT_FRAMES = { card: { width: 252, height: 252 }, hero: { width: 402, height: 502 } }
+
 export function useUrl() {
 	const config = useRuntimeConfig()
 	const localePath = useLocalePath()
@@ -40,18 +52,22 @@ export function useUrl() {
 		},
 
 		// ---------- NeoPrint (готовий дизайн) ----------
-		// Шаблон принта: thumb — для карток, повний — для сторінки та для друку
-		neoprintTemplate: (alias: string | number, thumb = false) =>
-			config.public.urlStorage + 'images/templates/' + (thumb ? 'thumb/' : '') + alias + '.jpg',
+		// Оригінал шаблона (jpg 1100×2100) — те, що йде В ДРУК: у замовлення й у конструктор.
+		// Тут webp недоречний: це друге стиснення поверх уже стисненого jpg.
+		neoprintTemplateSource: (alias: string | number) =>
+			config.public.urlStorage + 'images/templates/' + alias + '.jpg',
 
-		// Маска моделі (PNG з прозорістю) — накладається ПОВЕРХ шаблона
-		neoprintMask: (categoryAlias: string) =>
-			config.public.urlStorage + 'images/printcase/masks/' + categoryAlias + '.png',
+		// Готовий чохол «шаблон + маска» одним файлом — збирає Nitro-роут /img/neoprint.
+		// Без пресета — квадрат jpg для og:image, JSON-LD і кошика (соцмережі webp досі
+		// перетравлюють через раз, а посилання лежать у старих замовленнях).
+		neoprintImage: neoprintUrl,
 
-		// Готова композиція «шаблон + маска» одним файлом (og:image, JSON-LD, кошик).
-		// Збирає наш Nitro-роут; у верстці композицію робить CSS (див. NeoPrintImage).
-		neoprintImage: (categoryAlias: string, alias: string | number) =>
-			`/img/neoprint/${categoryAlias}/${alias}.jpg`,
+		// Готовий до вставки кадр чохла: src + retina-кандидат + розміри проти CLS
+		neoprintFrame: (categoryAlias: string, alias: string | number, kind: 'card' | 'hero' = 'card') => ({
+			src: neoprintUrl(categoryAlias, alias, kind),
+			srcset: `${neoprintUrl(categoryAlias, alias, kind)} 1x, ${neoprintUrl(categoryAlias, alias, `${kind}2x`)} 2x`,
+			...NEOPRINT_FRAMES[kind],
+		}),
 
 		categoryImg: (imageFile?: string | null) =>
 			imageFile ? config.public.urlStorage + 'images/categories/' + imageFile : '/images/no-photo.svg',

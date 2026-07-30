@@ -548,41 +548,21 @@ textarea.form-control {
    Дзеркалить бекендовий ImageH::composeAlphaprint: білий квадрат, обидва шари
    вписані по висоті й центровані. Так замість canvas-малювання отримуємо
    готове зображення прямо в SSR-HTML. */
+/* Готовий чохол із /img/neoprint — кадр уже потрібної пропорції, CSS лише тягне його
+   на всю ширину місця. Мініатюри-картки квадратні (щільна сітка). */
 .np-img {
-	position: relative;
+	display: block;
+	width: 100%;
+	height: auto;
 	aspect-ratio: 1;
+	object-fit: contain;
 	background: var(--img-bg);
-	overflow: hidden;
 }
 
-/* Головне фото (hero): вертикальний кадр під пропорції телефона — шари масштабуються
-   по висоті, тож у прямокутнику телефон займає більше ширини й менше «порожнього» білого,
-   ніж у квадраті. Мініатюри-картки лишаються квадратними (щільна сітка). */
+/* Головне фото (hero): вертикальний кадр 4:5 під пропорції телефона — чохол займає
+   більше кадру й менше «порожнього» білого, ніж у квадраті */
 .np-img--big {
 	aspect-ratio: 4 / 5;
-}
-
-.np-img__print,
-.np-img__mask {
-	position: absolute;
-	top: 0;
-	left: 50%;
-	transform: translateX(-50%);
-	height: 100%;
-	width: auto;
-	max-width: none;
-}
-
-/* Маска — верхній шар, кліки крізь неї йдуть на посилання картки */
-.np-img__mask {
-	pointer-events: none;
-}
-
-/* Hover-зум картки (.p-card:hover ... img { scale }) інакше затирає центрування
-   принта/маски (translateX(-50%)) — композиція «зїжджає» вправо. Тримаємо центр + той самий зум. */
-.p-card:hover .p-card__img-link .np-img__print,
-.p-card:hover .p-card__img-link .np-img__mask {
-	transform: translateX(-50%) scale(1.04);
 }
 
 /* ---------- Badges ---------- */

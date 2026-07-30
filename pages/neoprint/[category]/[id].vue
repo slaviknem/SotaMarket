@@ -121,7 +121,6 @@
 							:alias="d.alias"
 							:category-alias="category.alias"
 							:alt="d.alt"
-							:size="150"
 							class="np-thumb__img"
 						/>
 						<span class="np-thumb__title">{{ d.title }}</span>

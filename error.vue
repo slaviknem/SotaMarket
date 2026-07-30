@@ -16,9 +16,16 @@
 <script setup lang="ts">
 import type { NuxtError } from '#app'
 
-defineProps<{ error: NuxtError }>()
+const props = defineProps<{ error: NuxtError }>()
 
 const { t } = useI18n()
+
+// Сторінки помилок теж мають осмислений title (інакше — запасний з app.vue) і не індексуються
+usePageSeo({
+	title: () => (props.error?.statusCode === 404 ? t('error404.pageNotFound') : t('error404.error')),
+	description: () => t('error404.message'),
+	noindex: true,
+})
 
 const handleError = () => clearError({ redirect: '/' })
 </script>

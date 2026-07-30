@@ -2,7 +2,8 @@
 	<!-- Готові файли (SVG-плейсхолдери, стиснені webp-прев'ю) віддаємо як є, повз IPX -->
 	<img
 		v-if="isRaw"
-		:src="rawSrc"
+		:src="finalSrc"
+		:srcset="srcset"
 		:alt="alt"
 		:title="title"
 		:width="width"
@@ -10,11 +11,11 @@
 		:loading="loading"
 		:fetchpriority="fetchpriority"
 		decoding="async"
-		@error="onRawError"
+		@error="onError"
 	/>
 	<NuxtImg
 		v-else
-		:src="src"
+		:src="finalSrc"
 		:alt="alt"
 		:title="title"
 		:width="width"
@@ -25,6 +26,7 @@
 		:fetchpriority="fetchpriority"
 		:preload="preload"
 		decoding="async"
+		@error="onError"
 	/>
 </template>
 
@@ -39,30 +41,49 @@ const props = withDefaults(
 		width?: number | string
 		height?: number | string
 		sizes?: string
+		// Готовий srcset для файлів повз IPX (кадри чохла 1x/2x із /img/neoprint)
+		srcset?: string
 		loading?: 'lazy' | 'eager'
 		fetchpriority?: 'high' | 'low' | 'auto'
 		preload?: boolean
+		// webp-джерело, яке все одно треба зменшити (повнорозмірний шаблон принта
+		// 1100×2100) — пускаємо через IPX попри розширення
+		resize?: boolean
 	}>(),
 	{ alt: '', loading: 'lazy' }
 )
 
 // .svg — плейсхолдери, .webp — уже стиснені прев'ю зі сховища: IPX для них лише зайвий крок
-const isRaw = computed(() => /\.(svg|webp)(\?|$)/i.test(props.src))
+const isRaw = computed(
+	() => /\.svg(\?|$)/i.test(props.src) || (/\.webp(\?|$)/i.test(props.src) && !props.resize)
+)
 
-// Прев'ю-webp може бути ще не згенероване в адмінці — разово падаємо назад на вихідний jpg
+// Стиснений webp може бути ще не згенерований в адмінці — разово падаємо назад на вихідний jpg.
+// Сховище на неіснуючий файл віддає HTML зі статусом 200, тож ловимо саме помилку декодування
 const fallback = ref(false)
 watch(() => props.src, () => (fallback.value = false))
 
-const rawSrc = computed(() =>
+const finalSrc = computed(() =>
 	fallback.value ? props.src.replace(/\.webp(\?|$)/i, '.jpg$1') : props.src
 )
 
-function onRawError() {
+function onError() {
 	if (/\.webp(\?|$)/i.test(props.src)) fallback.value = true
 }
 
-// NuxtImg робить preload сам; для raw-гілки додаємо його вручну (LCP-зображення)
+// NuxtImg робить preload сам; для raw-гілки додаємо його вручну (LCP-зображення).
+// imagesrcset обов'язковий за наявності srcset — інакше на retina браузер завантажить
+// і preload-кандидата 1x, і потрібний йому 2x
 if (props.preload && isRaw.value) {
-	useHead({ link: [{ rel: 'preload', as: 'image', href: props.src }] })
+	useHead({
+		link: [
+			{
+				rel: 'preload',
+				as: 'image',
+				href: props.src,
+				...(props.srcset ? { imagesrcset: props.srcset } : {}),
+			},
+		],
+	})
 }
 </script>

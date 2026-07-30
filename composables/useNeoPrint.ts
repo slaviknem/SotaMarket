@@ -46,7 +46,7 @@ export function useNeoPrint() {
 
 	// У кошик: віртуальний товар (product_id = 0), але з реальним attribute_id дизайну —
 	// так замовлення прив'язується до конкретного принта в БД адмінки.
-	// printcase — повний шаблон (1100×2100), саме він іде у друк.
+	// printcase — оригінальний jpg повного шаблона (1100×2100), саме він іде у друк.
 	function addToCart(np: { id: number; alias: string | number; title: string }, category: any) {
 		cart.add({
 			product: {
@@ -59,7 +59,7 @@ export function useNeoPrint() {
 			},
 			attribute: np.id,
 			image: url.neoprintImage(category.alias, np.alias),
-			printcase: url.neoprintTemplate(np.alias),
+			printcase: url.neoprintTemplateSource(np.alias),
 			categoryId: category.id,
 		})
 
