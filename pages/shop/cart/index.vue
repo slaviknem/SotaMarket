@@ -1,8 +1,8 @@
 <template>
 	<div class="container">
-		<Breadcrumbs :items="[{ title: t('cart.cart') }]" />
+		<Breadcrumbs :items="[{ title: t('cart.checkoutTitle') }]" />
 
-		<h1>{{ t('cart.cart') }}</h1>
+		<h1>{{ t('cart.checkoutTitle') }}</h1>
 
 		<!-- Вміст кошика живе лише в localStorage, тож на SSR він завжди порожній.
 		     Без ClientOnly Vue гідратує гілку «є товари» поверх серверної гілки «кошик порожній»:
@@ -338,7 +338,7 @@ const { notify } = useNotify()
 
 definePageMeta({ name: 'shop-cart' })
 
-usePageSeo({ title: () => t('cart.cart'), noindex: true })
+usePageSeo({ title: () => t('cart.checkoutTitle'), noindex: true })
 
 // ---------- Форма ----------
 // delivery порожній навмисно: перевізник не вибраний наперед, поля доставки з'являються після вибору

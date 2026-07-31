@@ -54,8 +54,7 @@
 					<div class="footer__schedule-block">
 						<div class="footer__title">{{ t('footer.schedule') }}</div>
 						<ul class="footer__schedule">
-							<li><span>{{ t('footer.monFri') }}:</span> 9:00 – 19:00</li>
-							<li><span>{{ t('footer.saturday') }}:</span> 10:00 – 16:00</li>
+							<li><span>{{ t('footer.monSat') }}:</span> 9:00 – 18:00</li>
 							<li><span>{{ t('footer.sunday') }}:</span> {{ t('footer.dayOff') }}</li>
 						</ul>
 					</div>

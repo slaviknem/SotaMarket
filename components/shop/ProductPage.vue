@@ -5,6 +5,7 @@
 		<div class="product">
 			<!-- Галерея (гортання фото = вибір принта/кольору) -->
 			<ShopProductGallery
+				ref="galleryEl"
 				:slides="slides"
 				:active-index="activeIndex"
 				class="product__gallery"
@@ -25,13 +26,13 @@
 				<p v-if="product.description_short" class="product__short">{{ product.description_short }}</p>
 
 				<!-- Атрибути (кольори / принти) -->
-				<div v-if="attributes.length" class="product__attrs">
-					<div class="product__attrs-label">
-						{{ t('product.selectAttribute') }}:
+				<div v-if="attributes.length" ref="attrsEl" class="product__attrs">
+					<div id="product-attrs-label" class="product__attrs-label">
+						{{ attrsLabel }}:
 						<b v-if="selectedAttribute">{{ selectedAttribute.title }}</b>
 					</div>
 
-					<div class="product__attrs-list">
+					<div class="product__attrs-list" role="group" aria-labelledby="product-attrs-label">
 						<button
 							v-for="attr in attributes"
 							:key="attr.id"
@@ -123,9 +124,10 @@
 					</div>
 				</div>
 
-				<!-- Конструктор чохлів для моделі (на всю ширину колонки) -->
+				<!-- Конструктор чохлів для моделі (на всю ширину колонки).
+					 Тільки на чохлах: на склі/плівках та іншій техніці для цієї ж моделі пропозиція недоречна -->
 				<NuxtLink
-					v-if="modelCategory?.alphaprint_available === 'available' || modelCategory?.printcase"
+					v-if="product.type === 'chekhly' && (modelCategory?.alphaprint_available === 'available' || modelCategory?.printcase)"
 					:to="url.printcase(modelCategory.alias)"
 					class="product__printcase"
 				>
@@ -244,7 +246,43 @@ const selectedAttribute = computed(() =>
 
 function selectAttribute(attr: any) {
 	selectedAttributeId.value = attr.id
+	revealGallery()
 }
+
+// На мобільному (одна колонка) чіпи стоять далеко під фото: перемкнувши принт, юзер може
+// не побачити, що чохол на фото змінився. Підтягуємо галерею у вʼюпорт, вирівнюючи чіпи
+// по нижньому краю — так видно і нове фото, і сам ряд чіпів, щоб перебирати далі без скролу назад.
+const galleryEl = ref<any>(null)
+const attrsEl = ref<HTMLElement | null>(null)
+
+function revealGallery() {
+	if (!import.meta.client) return
+	// Ширше 900px — дві колонки, фото й чіпи і так поруч (див. стилі нижче)
+	if (window.matchMedia('(min-width: 901px)').matches) return
+
+	// Міряємо саме головне фото, а не всю галерею: смуга мініатюр показує набір,
+	// а не вибраний дизайн великим планом — коли з галереї видно лише її, скрол потрібен
+	const photo = galleryEl.value?.$el?.querySelector('.gallery__main') as HTMLElement | null
+	if (!photo || !attrsEl.value) return
+
+	// Скролимо, тільки коли фото видно менше ніж наполовину — інакше сторінка смикалась би на кожен клік
+	const rect = photo.getBoundingClientRect()
+	const visible = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0)
+	if (visible > rect.height / 2) return
+
+	attrsEl.value.scrollIntoView({
+		block: 'end',
+		behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+	})
+}
+
+// Підпис за суттю варіантів: усі принти → «принт», усі кольори → «колір», мішані → нейтральне «варіант»
+const attrsLabel = computed(() => {
+	const list = attributes.value
+	if (list.every(isPrintAttribute)) return t('product.selectPrint')
+	if (!list.some(isPrintAttribute)) return t('product.selectColor')
+	return t('product.selectAttribute')
+})
 
 // Принти/альфапринти показуємо картинкою; кольори — текстом із кружечком кольору
 // (кружечок: завантажений свотч → явний колір → превʼю за alias — див. url.attrDot)

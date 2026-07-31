@@ -63,8 +63,8 @@ export default defineNuxtConfig({
 	i18n: {
 		baseUrl: process.env.SITE_URL || 'https://floy.com.ua',
 		locales: [
-			{ code: 'ru', language: 'ru', file: 'ru.json', name: 'Рус' },
 			{ code: 'uk', language: 'uk', file: 'uk.json', name: 'Укр' },
+			{ code: 'ru', language: 'ru', file: 'ru.json', name: 'Рус' },
 		],
 		defaultLocale: 'ru',
 		strategy: 'prefix_except_default',

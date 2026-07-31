@@ -726,7 +726,7 @@ useJsonLd(() => {
 
 // JSON-LD: хлібні крихти (Категорія → Фільтр) для розуміння структури пошуковиками/AI
 useJsonLd(() => {
-	const crumbs = [{ title: 'FLOY', url: '/' }, ...breadcrumbs.value]
+	const crumbs = [{ title: config.public.siteName as string, url: localePath('/') }, ...breadcrumbs.value]
 	return {
 		'@context': 'https://schema.org',
 		'@type': 'BreadcrumbList',

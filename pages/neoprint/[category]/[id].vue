@@ -148,6 +148,7 @@ import type { IFilterNode } from '~/composables/useFilters'
 const route = useRoute()
 const { t, locale } = useI18n()
 const config = useRuntimeConfig()
+const localePath = useLocalePath()
 const url = useUrl()
 const shopApi = useShopApi()
 const { price, priceOld, title, description: npDescription, addToCart } = useNeoPrint()
@@ -470,7 +471,7 @@ useJsonLd(() => ({
 }))
 
 useJsonLd(() => {
-	const crumbs = [{ title: config.public.siteName, url: '/' }, ...breadcrumbs.value]
+	const crumbs = [{ title: config.public.siteName, url: localePath('/') }, ...breadcrumbs.value]
 	return {
 		'@context': 'https://schema.org',
 		'@type': 'BreadcrumbList',

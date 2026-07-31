@@ -1,5 +1,5 @@
 <template>
-	<nav :aria-label="t('header.bread.home')">
+	<nav :aria-label="t('header.bread.nav')">
 		<ol class="breadcrumbs" itemscope itemtype="https://schema.org/BreadcrumbList">
 			<li
 				v-for="(item, i) in allItems"
@@ -8,7 +8,13 @@
 				itemscope
 				itemtype="https://schema.org/ListItem"
 			>
-				<NuxtLink v-if="item.url" :to="item.url" itemprop="item">
+				<NuxtLink
+					v-if="item.url"
+					:to="item.url"
+					:aria-label="i === 0 ? t('header.topbar.home') : undefined"
+					itemprop="item"
+				>
+					<AppIcon v-if="i === 0" name="home" :size="14" class="crumb-home" />
 					<span itemprop="name">{{ item.title }}</span>
 				</NuxtLink>
 				<span v-else itemprop="name">{{ item.title }}</span>
@@ -29,9 +35,12 @@ const props = defineProps<{ items: Crumb[] }>()
 
 const { t } = useI18n()
 const localePath = useLocalePath()
+const config = useRuntimeConfig()
 
+// Перший крихт — назва бренду (а не «Головна»): брендовий анкор на головну
+// і збіг із BreadcrumbList у JSON-LD.
 const allItems = computed<Crumb[]>(() => [
-	{ title: t('header.topbar.home'), url: localePath('/') },
+	{ title: config.public.siteName as string, url: localePath('/') },
 	...props.items,
 ])
 </script>
@@ -41,5 +50,16 @@ li {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
+}
+
+a {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.crumb-home {
+	flex: none;
+	opacity: 0.75;
 }
 </style>

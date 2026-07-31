@@ -217,19 +217,19 @@ onMounted(() => {
 	flex-wrap: wrap;
 }
 
+/* Завжди один рядок: картки ділять ширину порівну, залишок (коли вперлись у max) — у проміжки */
 .promo__items {
 	flex: 1 1 auto;
 	display: flex;
 	align-items: center;
-	gap: 4px;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
+	justify-content: space-between;
 }
 
 .promo__plus {
 	color: var(--text-muted);
 	font-size: 20px;
 	font-weight: 300;
-	padding: 0 2px;
 }
 
 /* Картка-товар (клік по всій картці = вибір) */
@@ -238,7 +238,9 @@ onMounted(() => {
 	flex-direction: column;
 	align-items: center;
 	gap: 8px;
-	width: 96px;
+	flex: 1 1 0;
+	min-width: 0;
+	max-width: 160px;
 	padding: 6px;
 	border-radius: var(--radius-sm);
 	cursor: pointer;
@@ -258,8 +260,9 @@ onMounted(() => {
 
 .promo__media {
 	position: relative;
-	width: 80px;
-	height: 80px;
+	width: 100%;
+	max-width: 80px;
+	aspect-ratio: 1;
 	border-radius: var(--radius-sm);
 	overflow: hidden;
 	background: var(--img-bg);
@@ -377,12 +380,36 @@ onMounted(() => {
 
 @container (max-width: 440px) {
 	.promo__item {
-		width: 78px;
+		max-width: 78px;
+		padding: 4px 2px;
 	}
 
 	.promo__media {
-		width: 66px;
-		height: 66px;
+		max-width: 66px;
+	}
+
+	.promo__plus {
+		font-size: 15px;
+	}
+
+	/* Галочка пропорційна меншій картинці */
+	.promo__check {
+		top: 3px;
+		left: 3px;
+		width: 19px;
+		height: 19px;
+	}
+
+	.promo__prices {
+		max-width: 100%;
+	}
+
+	.promo__old {
+		font-size: 10.5px;
+	}
+
+	.promo__new {
+		font-size: 12.5px;
 	}
 
 	.promo__summary {

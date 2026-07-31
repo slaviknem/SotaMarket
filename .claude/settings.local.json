@@ -35,7 +35,10 @@
       "Bash(python -c \"import json;json.load\\(open\\('.claude/settings.local.json'\\)\\);print\\('settings.local.json OK'\\)\")",
       "Bash(curl -s -L https://floy.com.ua/uk/iphone-xi/filter/bmw -o C:/Users/slavi/AppData/Local/Temp/claude/d--Web-SERVER-domains-FLOY-NEW/a1a5ebfb-9402-4c71-afe9-cae9a006aa8e/scratchpad/old-filter-bmw.html -w 'filter/bmw -> %{http_code} %{size_download}b\\\\n')",
       "Bash(curl -s -L https://floy.com.ua/uk/neoprint/iphone-xi/3925 -o C:/Users/slavi/AppData/Local/Temp/claude/d--Web-SERVER-domains-FLOY-NEW/a1a5ebfb-9402-4c71-afe9-cae9a006aa8e/scratchpad/old-neoprint.html -w 'neoprint page -> %{http_code} %{size_download}b\\\\n')",
-      "Bash(awk -F/ '{print \"/\"$2\"/\"$3}')"
+      "Bash(awk -F/ '{print \"/\"$2\"/\"$3}')",
+      "PowerShell($r = Invoke-RestMethod -Uri 'https://admin.floy.com.ua/apisite/products?category=motorola-edge-50-fusion&limit=60' -TimeoutSec 30; $r.data | Select-Object -First 60 alias, type, group, title | Group-Object type, group | Select-Object Name, Count)",
+      "PowerShell(try { $r = Invoke-RestMethod -Uri 'https://admin.floy.com.ua/apisite/products?category=motorola-edge-50-fusion' -TimeoutSec 40 } catch { \"ERR: $\\($_.Exception.Message\\)\" }; if \\($r\\) { \"count: $\\($r.data.Count\\)\"; $r.data | Select-Object -First 15 | ForEach-Object { \"$\\($_.type\\) | $\\($_.group\\) | $\\($_.alias\\) | $\\($_.title\\)\" } })",
+      "PowerShell($r = Invoke-RestMethod -Uri 'https://admin.floy.com.ua/apisite/products?category=motorola-edge-50-fusion&filters=&perPage=100' -TimeoutSec 60; \"count: $\\($r.data.Count\\) / total: $\\($r.meta.total\\)\"; $r.data | Group-Object {\"$\\($_.type\\)|$\\($_.group\\)\"} | ForEach-Object { \"$\\($_.Name\\) => $\\($_.Count\\)\" })"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [
