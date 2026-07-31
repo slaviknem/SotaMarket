@@ -7,7 +7,6 @@
 		:width="frame.width"
 		:height="frame.height"
 		class="np-img"
-		:class="{ 'np-img--big': big }"
 		:loading="eager ? 'eager' : 'lazy'"
 		:fetchpriority="eager ? 'high' : undefined"
 		:preload="eager"
@@ -25,7 +24,7 @@ const props = withDefaults(
 		alias: string | number
 		categoryAlias: string
 		alt?: string
-		// Кадр 4:5 замість квадрата — головне фото сторінки дизайну
+		// Той самий кадр 4:5, але у більшій роздільності — головне фото сторінки дизайну
 		big?: boolean
 		// LCP-зображення: без lazy, з пріоритетом
 		eager?: boolean

@@ -18,7 +18,7 @@
 			</div>
 
 			<div v-if="loading" class="products-grid products-grid--wide">
-				<div v-for="i in 10" :key="i" class="skeleton" style="aspect-ratio: 0.62" />
+				<div v-for="i in 10" :key="i" class="skeleton skeleton--card" />
 			</div>
 
 			<div v-else class="products-grid products-grid--wide">

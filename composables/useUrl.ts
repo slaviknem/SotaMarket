@@ -20,7 +20,7 @@ const neoprintUrl = (categoryAlias: string, alias: string | number, preset?: Neo
 		: `/img/neoprint/${categoryAlias}/${alias}.jpg`
 
 // Пропорції кадрів мусять збігатися з PRESETS у server/routes/img/neoprint
-const NEOPRINT_FRAMES = { card: { width: 252, height: 252 }, hero: { width: 402, height: 502 } }
+const NEOPRINT_FRAMES = { card: { width: 252, height: 315 }, hero: { width: 402, height: 502 } }
 
 export function useUrl() {
 	const config = useRuntimeConfig()

@@ -17,6 +17,7 @@
 								:is="banner.url ? 'a' : 'div'"
 								:href="banner.url || undefined"
 								class="banner-slide"
+								:class="{ 'banner-slide--scrim': banner.title || banner.description }"
 							>
 								<img
 									:src="url.bannerImg(banner.image_file)"
@@ -115,29 +116,44 @@ const modules = [Autoplay, Pagination]
 	object-fit: cover;
 }
 
+/* Затемнення зліва направо — без нього світлий текст тоне у строкатому фото.
+   Лише на слайдах із написом, щоб не приглушувати «чисті» банери. */
+.banner-slide--scrim::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: var(--scrim);
+	pointer-events: none;
+}
+
 .banner-slide__content {
 	position: absolute;
 	left: 6%;
 	top: 50%;
 	transform: translateY(-50%);
 	max-width: 46%;
-	text-shadow: 0 2px 14px rgba(0, 0, 0, 0.6);
+	/* над підкладкою (::after малюється останнім) */
+	z-index: 1;
+	text-shadow: var(--text-shadow-on-img);
 }
 
 .banner-slide__title {
 	font-size: clamp(18px, 3vw, 38px);
 	font-weight: 800;
+	line-height: 1.15;
 	margin: 0 0 8px;
+	color: var(--text);
 }
 
 .banner-slide__desc {
 	font-size: clamp(12px, 1.5vw, 17px);
-	color: var(--text-soft);
+	/* світліше за --text-soft: підпис на фото має лишатися читабельним */
+	color: var(--text);
 	margin: 0;
 }
 
 :deep(.swiper-pagination-bullet) {
-	background: #fff;
+	background: var(--text);
 	opacity: 0.5;
 }
 
@@ -318,6 +334,11 @@ const modules = [Autoplay, Pagination]
 	.banner-slide__content {
 		left: 5%;
 		max-width: 70%;
+	}
+
+	/* ширший текст → підкладка теж має тягнутися далі вправо */
+	.banner-slide--scrim::after {
+		background: var(--scrim-wide);
 	}
 }
 

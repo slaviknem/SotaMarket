@@ -22,6 +22,14 @@ export function isPrintAttribute(attr: any): boolean {
 	return PRINT_TYPES.includes(attr.type) || !!attr.image_file
 }
 
+// Товар-alphaprint: фото зібране на бекенді (ImageH::composeAlphaprint) — чохол по центру
+// квадратного полотна, з боків ~27% порожнього білого, згори/знизу ~5%. Тому такій картці
+// віддаємо всю площу кадру (.p-card__img-link--fill), а от різати такі фото не можна:
+// у частини шаблонів (напр. vprint_glaza-v-cvetah) чохол доходить до самого низу полотна.
+export function isAlphaprint(product: any): boolean {
+	return product?.group === 'alphaprint'
+}
+
 // Назва атрибута за id
 export function getAttributeTitle(attributes: any[] | undefined, attributeId?: number): string {
 	if (!attributes?.length || !attributeId) return ''

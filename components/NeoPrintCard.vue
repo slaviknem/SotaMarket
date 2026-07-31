@@ -48,9 +48,11 @@ const discount = computed(() => discountPercent(price.value, priceOld.value))
 
 <style scoped>
 /* База .p-card — у assets/css/main.css. Тут лише специфіка картки дизайну.
-   Симетричний padding робить область фото квадратом — рівно під .np-img (aspect-ratio: 1). */
+   Квадратний кадр базової картки скасовуємо: висоту задає саме зображення (.np-img,
+   4:5 + width/height у розмітці), тож картка виходить вертикальною, як чохол, без CLS. */
 .p-card__img-link {
 	padding: 14px;
+	aspect-ratio: auto;
 }
 
 /* Компактний значок «готовий дизайн»: лише іконка принтера (сенс — у title/aria-label) */

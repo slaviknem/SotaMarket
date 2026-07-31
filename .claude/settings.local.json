@@ -39,11 +39,42 @@
       "PowerShell($r = Invoke-RestMethod -Uri 'https://admin.floy.com.ua/apisite/products?category=motorola-edge-50-fusion&limit=60' -TimeoutSec 30; $r.data | Select-Object -First 60 alias, type, group, title | Group-Object type, group | Select-Object Name, Count)",
       "PowerShell(try { $r = Invoke-RestMethod -Uri 'https://admin.floy.com.ua/apisite/products?category=motorola-edge-50-fusion' -TimeoutSec 40 } catch { \"ERR: $\\($_.Exception.Message\\)\" }; if \\($r\\) { \"count: $\\($r.data.Count\\)\"; $r.data | Select-Object -First 15 | ForEach-Object { \"$\\($_.type\\) | $\\($_.group\\) | $\\($_.alias\\) | $\\($_.title\\)\" } })",
       "PowerShell($r = Invoke-RestMethod -Uri 'https://admin.floy.com.ua/apisite/products?category=motorola-edge-50-fusion&filters=&perPage=100' -TimeoutSec 60; \"count: $\\($r.data.Count\\) / total: $\\($r.meta.total\\)\"; $r.data | Group-Object {\"$\\($_.type\\)|$\\($_.group\\)\"} | ForEach-Object { \"$\\($_.Name\\) => $\\($_.Count\\)\" })",
-      "Bash(node -e \"const o=require\\('./i18n/locales/uk.json'\\); console.log\\(Object.keys\\(o\\)\\); console.log\\(JSON.stringify\\(o.other,null,1\\).slice\\(0,800\\)\\)\")"
+      "Bash(node -e \"const o=require\\('./i18n/locales/uk.json'\\); console.log\\(Object.keys\\(o\\)\\); console.log\\(JSON.stringify\\(o.other,null,1\\).slice\\(0,800\\)\\)\")",
+      "Bash(cd \"d:/Web-SERVER/domains/FLOY-NEW\" && ls .cache/neoprint/*/*-card*.webp | wc -l && rm -f .cache/neoprint/*/*-card*.webp && echo \"видалено, лишилось:\" && ls .cache/neoprint/*/*.webp | wc -l)",
+      "Bash(cp \"C:/Users/slavi/AppData/Local/Temp/claude/d--Web-SERVER-domains-FLOY-NEW/f857fd0f-1a3e-4837-a90c-440f1bb9e01b/scratchpad/np-frame-check.mjs\" \"d:/Web-SERVER/domains/FLOY-NEW/np-frame-check.mjs\")",
+      "Bash(\"D:/Web-SERVER/domains/FLOY-NEW/.node/node-v22.14.0-win-x64/node.exe\" np-frame-check.mjs 3682)",
+      "Bash(\"D:/Web-SERVER/domains/FLOY-NEW/.node/node-v22.14.0-win-x64/node.exe\" -e \"const s=require\\('d:/Web-SERVER/domains/FLOY-NEW/node_modules/sharp'\\);\\(async\\(\\)=>{for\\(const f of ['printcase_product.webp']\\){try{const m=await s\\(f\\).metadata\\(\\);console.log\\(f,m.width+'x'+m.height\\)}catch\\(e\\){console.log\\(f,'ERR',e.message\\)}}}\\)\\(\\)\")",
+      "Bash(D:/Web-SERVER/domains/FLOY-NEW/.node/node-v22.14.0-win-x64/node.exe -e ' *)",
+      "Bash(\"D:/Web-SERVER/domains/FLOY-NEW/.node/node-v22.14.0-win-x64/node.exe\" -e \"console.log\\('sharp', require\\('d:/Web-SERVER/domains/FLOY-NEW/node_modules/sharp/package.json'\\).version\\)\")",
+      "Bash(curl -s \"https://admin.floy.com.ua/apisite/products?category=samsung-galaxy-a07&per_page=8\")",
+      "Bash(\"D:/Web-SERVER/domains/FLOY-NEW/.node/node-v22.14.0-win-x64/node.exe\" -e \"let s='';process.stdin.on\\('data',d=>s+=d\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(s\\);console.log\\('total:',j.meta?.total\\);for\\(const p of \\(j.data||[]\\).slice\\(0,8\\)\\)console.log\\(String\\(p.group\\).padEnd\\(12\\),String\\(p.type\\).padEnd\\(10\\),p.image_file,'|',p.title?.slice\\(0,45\\)\\)}\\)\")",
+      "Bash(curl -s \"https://admin.floy.com.ua/apisite/products?category=samsung-galaxy-a36-5g&filters=&per_page=10\")",
+      "Bash(\"D:/Web-SERVER/domains/FLOY-NEW/.node/node-v22.14.0-win-x64/node.exe\" -e \"let s='';process.stdin.on\\('data',d=>s+=d\\).on\\('end',\\(\\)=>{try{const j=JSON.parse\\(s\\);console.log\\('total:',j.meta?.total\\);for\\(const p of \\(j.data||[]\\).slice\\(0,10\\)\\)console.log\\(String\\(p.group\\).padEnd\\(12\\),String\\(p.type\\).padEnd\\(10\\),String\\(p.image_file\\).padEnd\\(28\\),'|',\\(p.title||''\\).slice\\(0,42\\)\\)}catch\\(e\\){console.log\\(s.slice\\(0,300\\)\\)}}\\)\")",
+      "Bash(curl -s \"https://admin.floy.com.ua/apisite/products?category=samsung-galaxy-a36-5g&filters=&per_page=6&lang=uk&site=floy\")",
+      "Bash(\"D:/Web-SERVER/domains/FLOY-NEW/.node/node-v22.14.0-win-x64/node.exe\" -e \"let s='';process.stdin.on\\('data',d=>s+=d\\).on\\('end',\\(\\)=>{try{const j=JSON.parse\\(s\\);console.log\\('total:',j.meta?.total\\);for\\(const p of \\(j.data||[]\\).slice\\(0,6\\)\\)console.log\\(String\\(p.group\\).padEnd\\(12\\),String\\(p.type\\).padEnd\\(10\\),String\\(p.image_file\\).padEnd\\(30\\),'|',\\(p.title||''\\).slice\\(0,40\\)\\)}catch\\(e\\){console.log\\(s.slice\\(0,200\\)\\)}}\\)\")",
+      "Bash(\"D:/Web-SERVER/domains/FLOY-NEW/.node/node-v22.14.0-win-x64/node.exe\" np-bbox-check.mjs \"samsung-galaxy-a36-5g/chohol-z-bantikami-na-modeluk_veliki-bantiki.jpg\" \"samsung-galaxy-a36-5g/6733638.jpg\" \"samsung-galaxy-a36-5g/6755562.jpg\" \"book_case/6630242.jpg\")",
+      "Bash(mv -f printcase_product.4x5.webp printcase_product.webp)",
+      "Bash(mv -f printcase_product.4x5.jpg printcase_product.jpg)",
+      "Bash(cd \"d:/Web-SERVER/domains/FLOY-NEW\" && rm -f np-bbox-check.mjs bbox-*.webp crop-preview.png && git status --short && echo \"--- diff ---\" && git diff --stat)",
+      "Bash(curl -s \"https://admin.floy.com.ua/apisite/products?category=xiaomi-redmi-k80&filters=&per_page=30&lang=uk&site=floy\")",
+      "Bash(\"D:/Web-SERVER/domains/FLOY-NEW/.node/node-v22.14.0-win-x64/node.exe\" -e \"let s='';process.stdin.on\\('data',d=>s+=d\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(s\\);const a=\\(j.data||[]\\).filter\\(p=>p.group==='alphaprint'\\).slice\\(0,6\\).map\\(p=>p.image_file\\);console.log\\(a.join\\(' '\\)\\)}\\) \")",
+      "Bash(\"D:/Web-SERVER/domains/FLOY-NEW/.node/node-v22.14.0-win-x64/node.exe\" np-bbox-check.mjs xiaomi-redmi-k80/chehol-moda-alphaprint_koronavirus.jpg xiaomi-redmi-k80/chehol-s-printom-russkiy-korabl-dlya-brandtitle-modeltitle-alphaprint_shchelban-korablyu.jpg xiaomi-redmi-k80/chehly-art-cvety-na-brandtitle-modeltitle-vprint_glaza-v-cvetah.jpg xiaomi-redmi-k80/chehly-s-tematikoy-kibersport-dlya-brandtitle-modeltitle-vprint_pleystation-logo.jpg xiaomi-redmi-k80/mramornyy-chehol-na-brandtitle-modeltitle-vprint_salatny-mramor.jpg xiaomi-redmi-k80/chohli-dlya-mami-na-model_mama-kolazh.jpg samsung-galaxy-a36-5g/chohol-z-bantikami-na-modeluk_veliki-bantiki.jpg)",
+      "Bash(curl -s -o outlier.webp \"https://admin.floy.com.ua/storage/images/products/thumb/xiaomi-redmi-k80/chehly-art-cvety-na-brandtitle-modeltitle-vprint_glaza-v-cvetah.webp\")",
+      "Bash(git checkout *)",
+      "Bash(\"D:/Web-SERVER/domains/FLOY-NEW/.node/node-v22.14.0-win-x64/node.exe\" -e \"let s='';process.stdin.on\\('data',d=>s+=d\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(s\\);for\\(const p of \\(j.data||[]\\).filter\\(p=>p.group!=='alphaprint'\\).slice\\(0,5\\)\\)console.log\\(p.image_file,'|',\\(p.title||''\\).slice\\(0,45\\)\\)}\\)\")",
+      "Bash(curl -s --max-time 45 -o k80.json \"https://admin.floy.com.ua/apisite/products?category=xiaomi-redmi-k80&filters=&per_page=30&lang=uk&site=floy\")",
+      "Bash(\"D:/Web-SERVER/domains/FLOY-NEW/.node/node-v22.14.0-win-x64/node.exe\" -e \"const j=require\\('./k80.json'\\);for\\(const p of \\(j.data||[]\\).filter\\(p=>p.group!=='alphaprint'\\).slice\\(0,5\\)\\)console.log\\(p.image_file,'|',\\(p.title||''\\).slice\\(0,42\\)\\)\")",
+      "Bash(curl -s --max-time 60 -o k80.json -w \"http %{http_code} | %{size_download} байт | %{time_total}s\\\\n\" \"https://admin.floy.com.ua/apisite/products?category=xiaomi-redmi-k80&filters=&per_page=20&lang=uk&site=floy\")",
+      "Bash(curl -s --max-time 30 -o glass.webp \"https://admin.floy.com.ua/storage/images/products/thumb/samsung-galaxy-a36-5g/6755562.webp\")",
+      "Bash(curl -s --max-time 40 -o k80.json -w \"http %{http_code} | %{size_download} байт\\\\n\" \"https://admin.floy.com.ua/apisite/products?category=xiaomi-redmi-k80&filters=&per_page=10&lang=uk&site=floy\")",
+      "Bash(\"D:/Web-SERVER/domains/FLOY-NEW/.node/node-v22.14.0-win-x64/node.exe\" -e \"const j=require\\('./k80.json'\\);for\\(const p of \\(j.data||[]\\).filter\\(p=>p.group!=='alphaprint'\\)\\)console.log\\(p.image_file,'|',\\(p.title||''\\).slice\\(0,40\\)\\)\")",
+      "Bash(curl -s --max-time 30 -o film.webp \"https://admin.floy.com.ua/storage/images/products/thumb/hydrogel/6612557.webp\")"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [
-      "d:\\Web-SERVER\\domains\\FLOY-ADMIN"
+      "d:\\Web-SERVER\\domains\\FLOY-ADMIN",
+      "D:\\Web-SERVER\\domains\\FLOY-NEW\\.cache\\neoprint\\samsung-galaxy-a36-5g\\.cache\\neoprint\\*",
+      "D:\\Web-SERVER\\domains\\FLOY-NEW"
     ]
   }
 }

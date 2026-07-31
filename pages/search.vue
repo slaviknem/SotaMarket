@@ -35,7 +35,7 @@
 		</section>
 
 		<div v-if="pending" class="products-grid products-grid--six">
-			<div v-for="i in 18" :key="i" class="skeleton" style="aspect-ratio: 0.62" />
+			<div v-for="i in 18" :key="i" class="skeleton skeleton--card" />
 		</div>
 
 		<template v-else-if="items.length">

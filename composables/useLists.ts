@@ -46,6 +46,8 @@ function productCard(p: any) {
 		price: p.price,
 		price_old: p.price_old,
 		image_file: p.image_file,
+		// потрібен картці: alphaprint-фото показуємо на всю площу кадру (див. isAlphaprint)
+		group: p.group,
 		available: p.available,
 		description_short: p.description_short,
 	}

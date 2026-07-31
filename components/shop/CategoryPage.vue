@@ -65,7 +65,7 @@
 
 				<!-- Товари (на лендінгу /chekhly — 6 у ряд) -->
 				<div v-if="pending" class="products-grid" :class="{ 'products-grid--six': brandsLanding }">
-					<div v-for="i in 24" :key="i" class="skeleton" style="aspect-ratio: 0.62" />
+					<div v-for="i in 24" :key="i" class="skeleton skeleton--card" />
 				</div>
 
 				<template v-else-if="hasItems">
@@ -1040,6 +1040,41 @@ function scrollToNeoprints() {
 		display: inline-flex;
 	}
 
+	/* Контроли — окремим рядком на всю ширину. Grid з рівних колонок замість flex:
+	   minmax(0, 1fr) не залежить від вмісту (іконка + «Фільтри» проти вузького селекта),
+	   тож половини завжди однакові. grid-auto-flow: column — щоб на лендінгу брендів,
+	   де кнопки фільтрів немає, селект зайняв усю ширину без дірки. */
+	.cat-head__controls {
+		flex-basis: 100%;
+		display: grid;
+		grid-auto-flow: column;
+		grid-auto-columns: minmax(0, 1fr);
+		margin-left: 0;
+		margin-top: 2px;
+		gap: 14px; /* той самий gap, що й у .products-grid (на телефоні — 10px, нижче) */
+	}
+
+	.cat-head__filters-btn,
+	.cat-head__sort {
+		min-width: 0;
+		height: 40px;
+	}
+
+	.cat-head__filters-btn {
+		padding: 0 12px;
+	}
+
+	.cat-head__sort select {
+		width: 100%;
+		height: 40px;
+		padding: 0 30px 0 12px;
+	}
+
+	/* Текст «Сортувати за:» прибираємо — лишається лише селект на всю свою половину */
+	.cat-head__sort-label {
+		display: none;
+	}
+
 	.cat-layout__sidebar {
 		position: fixed;
 		inset: 0;
@@ -1084,6 +1119,14 @@ function scrollToNeoprints() {
 	}
 }
 
+/* З цієї ж межі .products-grid стає 2 колонки з gap 10px — контроли мають
+   лягати рівно на ті самі колонки, тож gap беремо той самий. */
+@media (max-width: 760px) {
+	.cat-head__controls {
+		gap: 10px;
+	}
+}
+
 /* Компактна шапка категорії на телефонах */
 @media (max-width: 640px) {
 	.cat-head {
@@ -1095,38 +1138,10 @@ function scrollToNeoprints() {
 		font-size: 19px;
 	}
 
-	/* Контроли — окремим рядком на всю ширину; фільтри + сортування порівну, без дірок */
-	.cat-head__controls {
-		flex-basis: 100%;
-		margin-left: 0;
-		gap: 8px;
-		margin-top: 2px;
-	}
-
-	/* Фільтри + сортування — рівно по половині ширини (basis 0, без впливу вмісту) */
+	/* Ширини контролів вирівняні вище (≤1023px), тут лише дрібніший текст */
 	.cat-head__filters-btn,
-	.cat-head__sort {
-		flex: 1 1 0;
-		min-width: 0;
-		box-sizing: border-box;
-		height: 40px;
-	}
-
-	.cat-head__filters-btn {
-		padding: 0 12px;
-		font-size: 13px;
-	}
-
 	.cat-head__sort select {
-		width: 100%;
-		height: 40px;
-		padding: 0 30px 0 12px;
 		font-size: 13px;
-	}
-
-	/* Текст «Сортировать по:» на телефоні прибираємо — лишається лише селект */
-	.cat-head__sort-label {
-		display: none;
 	}
 }
 </style>
