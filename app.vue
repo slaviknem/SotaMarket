@@ -10,6 +10,9 @@
 
 		<AppNotifications />
 
+		<!-- Разова підказка про українську версію — лише тим, хто ще не обирав мову -->
+		<LazyLangBanner v-if="langPromptMounted" />
+
 		<!-- Оверлеї монтуємо лениво — лише коли їх уперше відкрили (не тягнемо в стартовий JS) -->
 		<LazyMobileMenu v-if="mobileMenuMounted" :menu="menu" />
 		<LazyCartDrawer v-if="cartMounted" />
@@ -56,6 +59,14 @@ const mobileMenuOpen = useState('mobileMenuOpen', () => false)
 const mobileMenuMounted = ref(false)
 watch(mobileMenuOpen, (v: boolean) => {
 	if (v) mobileMenuMounted.value = true
+})
+
+// Підказка про мову: чанк вантажиться лише для тих, хто ще не робив вибір і зайшов на ru-версію.
+// З паузою — щоб не конкурувати з LCP і не смикати сторінку одразу після відкриття.
+const { needsPrompt } = useLocalePref()
+const langPromptMounted = ref(false)
+onMounted(() => {
+	if (needsPrompt.value) setTimeout(() => (langPromptMounted.value = true), 1500)
 })
 
 // Відкладений монтаж онлайн-чату: не тягнемо його JS у критичний шлях.

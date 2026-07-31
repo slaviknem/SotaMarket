@@ -38,7 +38,8 @@
       "Bash(awk -F/ '{print \"/\"$2\"/\"$3}')",
       "PowerShell($r = Invoke-RestMethod -Uri 'https://admin.floy.com.ua/apisite/products?category=motorola-edge-50-fusion&limit=60' -TimeoutSec 30; $r.data | Select-Object -First 60 alias, type, group, title | Group-Object type, group | Select-Object Name, Count)",
       "PowerShell(try { $r = Invoke-RestMethod -Uri 'https://admin.floy.com.ua/apisite/products?category=motorola-edge-50-fusion' -TimeoutSec 40 } catch { \"ERR: $\\($_.Exception.Message\\)\" }; if \\($r\\) { \"count: $\\($r.data.Count\\)\"; $r.data | Select-Object -First 15 | ForEach-Object { \"$\\($_.type\\) | $\\($_.group\\) | $\\($_.alias\\) | $\\($_.title\\)\" } })",
-      "PowerShell($r = Invoke-RestMethod -Uri 'https://admin.floy.com.ua/apisite/products?category=motorola-edge-50-fusion&filters=&perPage=100' -TimeoutSec 60; \"count: $\\($r.data.Count\\) / total: $\\($r.meta.total\\)\"; $r.data | Group-Object {\"$\\($_.type\\)|$\\($_.group\\)\"} | ForEach-Object { \"$\\($_.Name\\) => $\\($_.Count\\)\" })"
+      "PowerShell($r = Invoke-RestMethod -Uri 'https://admin.floy.com.ua/apisite/products?category=motorola-edge-50-fusion&filters=&perPage=100' -TimeoutSec 60; \"count: $\\($r.data.Count\\) / total: $\\($r.meta.total\\)\"; $r.data | Group-Object {\"$\\($_.type\\)|$\\($_.group\\)\"} | ForEach-Object { \"$\\($_.Name\\) => $\\($_.Count\\)\" })",
+      "Bash(node -e \"const o=require\\('./i18n/locales/uk.json'\\); console.log\\(Object.keys\\(o\\)\\); console.log\\(JSON.stringify\\(o.other,null,1\\).slice\\(0,800\\)\\)\")"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [

@@ -6,6 +6,7 @@
 			:to="switchLocalePath(loc.code)"
 			class="lang__item"
 			:class="{ 'is-active': loc.code === locale }"
+			@click="remember(loc.code as SiteLocale)"
 		>
 			{{ loc.name }}
 		</NuxtLink>
@@ -15,6 +16,8 @@
 <script setup lang="ts">
 const { locale, locales } = useI18n()
 const switchLocalePath = useSwitchLocalePath()
+// Явний вибір мови запам'ятовуємо — наступні заходи на сайт відкриються нею
+const { remember } = useLocalePref()
 </script>
 
 <style scoped>
