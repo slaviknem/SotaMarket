@@ -12,7 +12,7 @@ export function useProductJsonLd(opts: {
 	attributes: ComputedRef<any[]>
 	selectedAttribute: ComputedRef<any>
 	// URL показує конкретний варіант: сторінка /attr/… або вибір принта на сторінці товару
-	isVariantPage: Ref<boolean>
+	isVariantPage: ComputedRef<boolean>
 	pageTitle: ComputedRef<string>
 	images: ComputedRef<string[]>
 	variantImages: ComputedRef<string[]>
@@ -21,7 +21,7 @@ export function useProductJsonLd(opts: {
 	const config = useRuntimeConfig()
 	const localePath = useLocalePath()
 	const url = useUrl()
-	const { variantTitle } = useProductNaming(opts.product)
+	const { variantTitle, variantLead } = useProductNaming(opts.product)
 
 	// Абсолютний URL товару (з мовним префіксом), опційно — конкретного варіанта
 	const linkTo = (attr?: any) => url.absolute(url.product(opts.product.value, attr?.alias))
@@ -67,6 +67,8 @@ export function useProductJsonLd(opts: {
 		if (opts.isVariantPage.value && attr) {
 			return {
 				...base,
+				// Опис — власний лід варіанта, а не спільний description_short товару
+				description: variantLead(attr),
 				'@type': 'Product',
 				name: opts.pageTitle.value,
 				image: opts.variantImages.value,

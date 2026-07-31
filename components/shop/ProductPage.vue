@@ -32,8 +32,12 @@
 						<b v-if="selectedAttribute">{{ selectedAttribute.title }}</b>
 					</div>
 
+					<!-- Чіпи — справжні посилання на /attr/{alias}: сусідні варіанти перелінковані
+						 прямо зі сторінки товару (анкор = назва принта). Звичайний клік лишається
+						 JS-перемиканням без перемонтування сторінки (як і переписування URL нижче),
+						 .exact — щоб Ctrl/⌘-клік відкривав варіант у новій вкладці, як у будь-якого посилання -->
 					<div class="product__attrs-list" role="group" aria-labelledby="product-attrs-label">
-						<button
+						<a
 							v-for="attr in attributes"
 							:key="attr.id"
 							class="attr-chip"
@@ -42,8 +46,9 @@
 								'is-unavailable': !isAttrInStock(product, attr),
 								'attr-chip--img': isPrintAttribute(attr),
 							}"
+							:href="url.product(product, attr.alias)"
 							:title="attr.title"
-							@click="selectAttribute(attr)"
+							@click.exact.prevent="selectAttribute(attr)"
 						>
 							<AppImage
 								v-if="isPrintAttribute(attr)"
@@ -56,7 +61,7 @@
 								<span class="attr-chip__dot" :style="url.attrDot(attr)" aria-hidden="true" />
 								<span class="attr-chip__name">{{ attr.title }}</span>
 							</template>
-						</button>
+						</a>
 					</div>
 				</div>
 
@@ -164,10 +169,20 @@
 			</div>
 
 			<div class="product-tabs__body">
+				<!-- Сторінка варіанта отримує ВЛАСНИЙ текст замість спільного опису товару:
+					 однаковий опис на десятках принтів робив би їх near-duplicate. Повний опис —
+					 за посиланням на канонічну сторінку товару (вона ж батько в крихтах). -->
 				<div v-show="activeTab === 'description'" class="typography">
-					<div v-if="product.description" v-html="product.description" />
-					<p v-else class="text-muted">—</p>
-					<div v-if="product.linked_text" v-html="product.linked_text" />
+					<template v-if="isVariant">
+						<p>{{ variantLead(selectedAttribute) }}</p>
+						<div v-if="selectedAttribute.description" v-html="selectedAttribute.description" />
+						<p><NuxtLink :to="url.product(product)">{{ t('product.lead.full') }} →</NuxtLink></p>
+					</template>
+					<template v-else>
+						<div v-if="product.description" v-html="product.description" />
+						<p v-else class="text-muted">—</p>
+						<div v-if="product.linked_text" v-html="product.linked_text" />
+					</template>
 				</div>
 
 				<div v-show="activeTab === 'specification'" class="typography">
@@ -225,6 +240,9 @@ const { data: relatedProducts } = await useAsyncData(
 	() => shopApi.getRelatedProducts(props.productAlias),
 	{ server: false, lazy: true, default: () => [] }
 )
+
+// Назва та лід варіанта — єдина формула з галереєю і schema.org
+const { variantTitle, variantLead } = useProductNaming(product)
 
 // ---------- Атрибути ----------
 const attributes = computed(() => sortedAttributes(product.value?.attributes))
@@ -322,7 +340,15 @@ const breadcrumbs = computed(() => {
 		crumbs.push({ title: cat.name_full || cat.name, url: url.category(cat.alias) })
 	}
 
-	crumbs.push({ title: pageTitle.value })
+	// Сторінка варіанта: товар — окрема крихта з посиланням, тож кожен принт лінкує на
+	// канонічного «батька», а BreadcrumbList показує реальну ієрархію Бренд → Модель → Товар → Принт
+	if (isVariant.value) {
+		crumbs.push({ title: product.value.title, url: url.product(product.value) })
+		crumbs.push({ title: selectedAttribute.value.title })
+	} else {
+		crumbs.push({ title: pageTitle.value })
+	}
+
 	return crumbs
 })
 
@@ -335,6 +361,9 @@ const breadcrumbs = computed(() => {
 // скролу), а pushState засмічував би історію новим записом на кожен свайп галереї.
 const attributeInUrl = ref(!!props.attributeAlias)
 
+// Сторінка варіанта: свій H1, свій текст, своя крихта, свій Product у schema.org
+const isVariant = computed(() => attributeInUrl.value && !!selectedAttribute.value)
+
 watch(selectedAttributeId, () => {
 	const alias = selectedAttribute.value?.alias
 	if (!import.meta.client || !alias || !product.value) return
@@ -345,14 +374,12 @@ watch(selectedAttributeId, () => {
 	history.replaceState({ ...history.state, current: href }, '', href)
 })
 
-// ---------- Заголовок (з атрибутом на сторінці варіанта) ----------
-const pageTitle = computed(() => {
-	const base = product.value?.title || ''
-	if (attributeInUrl.value && selectedAttribute.value) {
-		return `${base} (${selectedAttribute.value.title})`
-	}
-	return base
-})
+// ---------- Заголовок ----------
+// На варіанті — назва за формулою принт+модель («Чохол з принтом «Маквін 95» для Samsung Galaxy M11»),
+// а не «Товар (Маквін 95)»: це і є пошуковий запит, і H1 стає унікальним серед сусідніх варіантів
+const pageTitle = computed(() =>
+	isVariant.value ? variantTitle(selectedAttribute.value) : product.value?.title || ''
+)
 
 // Заголовок для <title>/description: без діагоналі в дужках — «(6.3")» з'їдає 7 знаків
 // із ~58 видимих у сніпеті, а в запитах діагональ не пишуть. H1 і крихти лишаються повними.
@@ -389,15 +416,15 @@ const activeTab = ref('description')
 // ---------- SEO ----------
 // canonical/og ідуть за URL: на сторінці варіанта (або після вибору принта) це /attr/{alias}
 const canonicalPath = computed(() =>
-	product.value
-		? url.product(product.value, attributeInUrl.value ? selectedAttribute.value?.alias : undefined)
-		: ''
+	product.value ? url.product(product.value, isVariant.value ? selectedAttribute.value.alias : undefined) : ''
 )
 
 usePageSeo({
 	title: () => `${seoTitle.value} — ${formatPrice(product.value?.price)}`,
+	// description_short спільний для всіх варіантів — на сторінці принта беремо шаблон
+	// із його власною назвою, інакше десятки сніпетів були б однакові
 	description: () =>
-		product.value?.description_short ||
+		(!isVariant.value && product.value?.description_short) ||
 		t('metaDescription.product', { title: seoTitle.value, price: formatPrice(product.value?.price) }),
 	image: () => (currentImageFile.value ? url.productBig(currentImageFile.value) : undefined),
 	path: () => canonicalPath.value,
@@ -408,7 +435,7 @@ useProductJsonLd({
 	product,
 	attributes,
 	selectedAttribute,
-	isVariantPage: attributeInUrl,
+	isVariantPage: isVariant,
 	pageTitle,
 	images: seoImages,
 	variantImages,
@@ -518,6 +545,7 @@ onMounted(() => {
 .attr-chip {
 	display: inline-flex;
 	align-items: center;
+	cursor: pointer;
 	gap: 8px;
 	padding: 8px 14px;
 	border-radius: var(--radius-sm);

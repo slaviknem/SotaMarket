@@ -130,7 +130,9 @@
       "Bash(curl -s 'https://admin.floy.com.ua/apisite/products/latest/all/60?site=floy&lang=uk' -o C:/Users/slavi/AppData/Local/Temp/claude/d--Web-SERVER-domains-FLOY-NEW/46fbedda-63bf-4fd6-85ae-e7c908a8b79c/scratchpad/p.json)",
       "Bash(node -e ' *)",
       "Bash(git --no-pager diff --stat)",
-      "Bash(git --no-pager diff)"
+      "Bash(git --no-pager diff)",
+      "PowerShell(foreach \\($f in @\\('i18n\\\\locales\\\\uk.json','i18n\\\\locales\\\\ru.json'\\)\\) { try { Get-Content $f -Raw -Encoding utf8 | ConvertFrom-Json -ErrorAction Stop | Out-Null; \"$f OK\" } catch { \"$f FAIL: $_\" } })",
+      "PowerShell(foreach \\($f in @\\('i18n\\\\locales\\\\uk.json','i18n\\\\locales\\\\ru.json'\\)\\) { try { Get-Content $f -Raw -Encoding utf8 | ConvertFrom-Json -ErrorAction Stop | Out-Null; \"$f OK\" } catch { \"$f FAIL: $_\" } }; git --no-pager diff -- i18n/locales/uk.json)"
     ],
     "deny": [],
     "ask": [],
