@@ -248,8 +248,7 @@ function selectAttribute(attr: any) {
 
 // Принти/альфапринти показуємо картинкою; кольори — текстом із кружечком кольору
 // (кружечок: завантажений свотч → явний колір → превʼю за alias — див. url.attrDot)
-const attrImageSrc = (attr: any) =>
-	attr.image_file ? url.img('attributes/' + attr.image_file) : url.attributeImg(attr.alias)
+const attrImageSrc = (attr: any) => url.attributeImg(attr)
 
 // ---------- Галерея ----------
 const { slides, activeIndex, seoImages, variantImages } = useProductGallery(product, selectedAttributeId)

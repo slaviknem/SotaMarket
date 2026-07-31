@@ -77,14 +77,15 @@ if (!article.value) {
 usePageSeo({
 	title: () => article.value?.meta_title || article.value?.title || '',
 	description: () => article.value?.meta_description || '',
-	image: () => (article.value?.image_file ? url.articleImg(article.value.image_file) : undefined),
+	image: () =>
+		article.value?.image_file ? url.articleImgSource(article.value.image_file) : undefined,
 })
 
 useJsonLd(() => ({
 	'@context': 'https://schema.org',
 	'@type': 'Article',
 	headline: article.value?.title || '',
-	image: article.value?.image_file ? [url.articleImg(article.value.image_file)] : [],
+	image: article.value?.image_file ? [url.articleImgSource(article.value.image_file)] : [],
 	datePublished: article.value?.date || '',
 	publisher: {
 		'@type': 'Organization',
