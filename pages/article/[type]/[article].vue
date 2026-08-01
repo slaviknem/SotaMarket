@@ -37,7 +37,7 @@
 					:height="430"
 				/>
 
-				<div class="post__content typography" v-html="article.text" />
+				<div class="post__content typography" v-html="contentHtml(article.text)" />
 
 				<!-- Коментарі (єдиний компонент відгуків) -->
 				<div class="post__reviews">

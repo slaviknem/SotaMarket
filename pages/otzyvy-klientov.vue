@@ -12,7 +12,7 @@
 
 			<article class="side-layout__content info-page">
 				<h1>{{ article.title }}</h1>
-				<div v-if="article.text" class="typography" v-html="article.text" />
+				<div v-if="article.text" class="typography" v-html="contentHtml(article.text)" />
 
 				<!-- Останні відгуки з усього сайту (лише з зірочками 4-5) + форма.
 				     Нові відгуки прив'язуються до цієї сторінки (стаття). -->

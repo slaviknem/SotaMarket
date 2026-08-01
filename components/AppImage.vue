@@ -24,7 +24,7 @@
 		format="webp"
 		:loading="loading"
 		:fetchpriority="fetchpriority"
-		:preload="preload"
+		:preload="preloadOptions"
 		decoding="async"
 		@error="onError"
 	/>
@@ -71,7 +71,14 @@ function onError() {
 	if (/\.webp(\?|$)/i.test(props.src)) fallback.value = true
 }
 
-// NuxtImg робить preload сам; для raw-гілки додаємо його вручну (LCP-зображення).
+// Preload зображення БЕЗ fetchpriority браузер ставить у чергу з низьким пріоритетом —
+// і саме він виграє гонку, а `fetchpriority="high"` на самому <img> вже нічого не піднімає
+// (запит один і той самий). Тому preload завжди йде з високим пріоритетом.
+const preloadOptions = computed(() =>
+	props.preload ? { fetchPriority: props.fetchpriority || 'high' } : false
+)
+
+// NuxtImg робить preload сам (preloadOptions вище); для raw-гілки додаємо його вручну.
 // imagesrcset обов'язковий за наявності srcset — інакше на retina браузер завантажить
 // і preload-кандидата 1x, і потрібний йому 2x
 if (props.preload && isRaw.value) {
@@ -81,6 +88,7 @@ if (props.preload && isRaw.value) {
 				rel: 'preload',
 				as: 'image',
 				href: props.src,
+				fetchpriority: props.fetchpriority || 'high',
 				...(props.srcset ? { imagesrcset: props.srcset } : {}),
 			},
 		],

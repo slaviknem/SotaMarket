@@ -160,7 +160,7 @@
 		</div>
 
 		<!-- SEO-текст -->
-		<article v-if="article?.text" class="block typography" v-html="article.text" />
+		<article v-if="article?.text" class="block typography" v-html="contentHtml(article.text)" />
 
 		<!-- Відгуки про конструктор (прив'язані до статті сторінки) -->
 		<ShopReviewsBlock

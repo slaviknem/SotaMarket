@@ -12,7 +12,7 @@
 
 			<article class="side-layout__content info-page">
 				<h1>{{ article.title }}</h1>
-				<div class="typography" v-html="article.text" />
+				<div class="typography" v-html="contentHtml(article.text)" />
 
 				<slot />
 			</article>

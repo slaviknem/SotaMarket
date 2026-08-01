@@ -175,18 +175,18 @@
 				<div v-show="activeTab === 'description'" class="typography">
 					<template v-if="isVariant">
 						<p>{{ variantLead(selectedAttribute) }}</p>
-						<div v-if="selectedAttribute.description" v-html="selectedAttribute.description" />
+						<div v-if="selectedAttribute.description" v-html="contentHtml(selectedAttribute.description)" />
 						<p><NuxtLink :to="url.product(product)">{{ t('product.lead.full') }} →</NuxtLink></p>
 					</template>
 					<template v-else>
-						<div v-if="product.description" v-html="product.description" />
+						<div v-if="product.description" v-html="contentHtml(product.description)" />
 						<p v-else class="text-muted">—</p>
-						<div v-if="product.linked_text" v-html="product.linked_text" />
+						<div v-if="product.linked_text" v-html="contentHtml(product.linked_text)" />
 					</template>
 				</div>
 
 				<div v-show="activeTab === 'specification'" class="typography">
-					<div v-if="product.characteristics" v-html="product.characteristics" />
+					<div v-if="product.characteristics" v-html="contentHtml(product.characteristics)" />
 					<p v-else class="text-muted">—</p>
 					<p class="text-muted product-tabs__disclaimer">{{ t('product.specificationDisclaimer') }}</p>
 				</div>

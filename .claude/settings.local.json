@@ -83,7 +83,9 @@
       "Bash(curl -s --max-time 40 -H 'User-Agent: __TRACKED_VAR__' https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa0ZL7SUc.woff2 -o public/fonts/inter-cyrillic.woff2)",
       "Bash(curl -s --max-time 40 -H 'User-Agent: __TRACKED_VAR__' https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7SUc.woff2 -o public/fonts/inter-cyrillic-ext.woff2)",
       "Bash(node -e *)",
-      "Bash(git --no-pager diff)"
+      "Bash(git --no-pager diff)",
+      "Bash(curl -s -A \"Mozilla/5.0\" --max-time 40 \"https://test.floy.com.ua/uk/motorola-edge-50-fusion\" -o page2.html)",
+      "Bash(curl -s --max-time 40 \"https://test.floy.com.ua/_nuxt/Cu4OhweI.js\" -o entry2.js)"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [

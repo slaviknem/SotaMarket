@@ -185,8 +185,8 @@
 				<!-- SEO-стаття низом: на сторінці фільтра — стаття фільтра (специфічна або шаблон
 				     фільтра з підставленою моделлю); на сторінці моделі/категорії — стаття моделі.
 				     Повну статтю моделі на сторінках фільтрів не дублюємо (там стаття фільтра або лід вище). -->
-				<div v-if="filterArticle" class="cat-desc typography" v-html="filterArticle" />
-				<div v-else-if="!filterAlias && category?.description" class="cat-desc typography" v-html="category.description" />
+				<div v-if="filterArticle" class="cat-desc typography" v-html="contentHtml(filterArticle)" />
+				<div v-else-if="!filterAlias && category?.description" class="cat-desc typography" v-html="contentHtml(category.description)" />
 			</div>
 		</div>
 	</div>

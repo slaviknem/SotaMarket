@@ -23,7 +23,7 @@
 		<section class="block">
 			<div class="container">
 				<h1 class="seo-title">{{ t('pageTitle.index') }}</h1>
-				<div v-if="article?.text" class="typography seo-text" v-html="article.text" />
+				<div v-if="article?.text" class="typography seo-text" v-html="contentHtml(article.text)" />
 			</div>
 		</section>
 	</div>
