@@ -87,7 +87,10 @@
       "Bash(curl -s -A \"Mozilla/5.0\" --max-time 40 \"https://test.floy.com.ua/uk/motorola-edge-50-fusion\" -o page2.html)",
       "Bash(curl -s --max-time 40 \"https://test.floy.com.ua/_nuxt/Cu4OhweI.js\" -o entry2.js)",
       "Bash(git --no-pager diff --stat)",
-      "Bash(git --no-pager diff -- components/ProductCard.vue)"
+      "Bash(git --no-pager diff -- components/ProductCard.vue)",
+      "Bash(node -e \"['uk','ru'].forEach\\(l=>{JSON.parse\\(require\\('fs'\\).readFileSync\\('i18n/locales/'+l+'.json','utf8'\\)\\);console.log\\(l,'JSON ok'\\)}\\)\")",
+      "Bash(python -c \"import json;[print\\(l,'JSON ok'\\) or json.load\\(open\\('i18n/locales/%s.json'%l,encoding='utf-8'\\)\\) for l in ['uk','ru']]\")",
+      "Bash(git --no-pager diff -- components/AppPagination.vue)"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [

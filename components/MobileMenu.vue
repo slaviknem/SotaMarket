@@ -10,7 +10,7 @@
 							<LogoFloy />
 						</NuxtLink>
 						<LangSwitcher />
-						<button class="mobile-menu__close" aria-label="Close" @click="open = false">
+						<button class="mobile-menu__close" :aria-label="t('other.close')" @click="open = false">
 							<AppIcon name="close" :size="20" />
 						</button>
 					</div>

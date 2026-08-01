@@ -1,11 +1,29 @@
 <template>
-	<nav v-if="totalPages > 1" class="pagination" aria-label="Pagination">
-		<!-- Назад -->
-		<NuxtLink v-if="current > 1 && to" :to="to(current - 1)" class="pagination__btn" :rel="current - 1 === 1 ? undefined : 'prev'" @click="scrollTop">
+	<nav v-if="totalPages > 1" class="pagination" :aria-label="t('category.pagination')">
+		<!-- Назад.
+		     aria-label дублює підпис: на планшеті й вужче він ховається, а без нього
+		     лишається сама стрілка — кнопка без імені для скрінрідерів і AI-агентів.
+		     aria-current-value: сторінки пагінації різняться лише query, тож роутер
+		     вважає всі ці посилання «точно активними» й вішає aria-current="page" -->
+		<NuxtLink
+			v-if="current > 1 && to"
+			:to="to(current - 1)"
+			class="pagination__btn"
+			:rel="current - 1 === 1 ? undefined : 'prev'"
+			:aria-label="t('category.prev')"
+			aria-current-value="false"
+			@click="scrollTop"
+		>
 			<svg width="12" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1L2 6l5 5"/></svg>
 			<span class="pagination__btn-text">{{ t('category.prev') }}</span>
 		</NuxtLink>
-		<button v-else-if="current > 1" type="button" class="pagination__btn" @click="emit('change', current - 1)">
+		<button
+			v-else-if="current > 1"
+			type="button"
+			class="pagination__btn"
+			:aria-label="t('category.prev')"
+			@click="emit('change', current - 1)"
+		>
 			<svg width="12" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1L2 6l5 5"/></svg>
 			<span class="pagination__btn-text">{{ t('category.prev') }}</span>
 		</button>
@@ -18,17 +36,31 @@
 			<template v-for="p in pages" :key="p.key">
 				<span v-if="!p.num" class="pagination__page is-dots">…</span>
 				<span v-else-if="p.num === current" class="pagination__page is-current" aria-current="page">{{ p.num }}</span>
-				<NuxtLink v-else-if="to" :to="to(p.num)" class="pagination__page" :class="{ 'is-loaded': isLoaded(p.num) }" @click="scrollTop">{{ p.num }}</NuxtLink>
+				<NuxtLink v-else-if="to" :to="to(p.num)" class="pagination__page" :class="{ 'is-loaded': isLoaded(p.num) }" aria-current-value="false" @click="scrollTop">{{ p.num }}</NuxtLink>
 				<button v-else type="button" class="pagination__page" @click="emit('change', p.num)">{{ p.num }}</button>
 			</template>
 		</div>
 
 		<!-- Вперед -->
-		<NuxtLink v-if="current < totalPages && to" :to="to(current + 1)" class="pagination__btn" rel="next" @click="scrollTop">
+		<NuxtLink
+			v-if="current < totalPages && to"
+			:to="to(current + 1)"
+			class="pagination__btn"
+			rel="next"
+			:aria-label="t('category.next')"
+			aria-current-value="false"
+			@click="scrollTop"
+		>
 			<span class="pagination__btn-text">{{ t('category.next') }}</span>
 			<svg width="12" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l5 5-5 5"/></svg>
 		</NuxtLink>
-		<button v-else-if="current < totalPages" type="button" class="pagination__btn" @click="emit('change', current + 1)">
+		<button
+			v-else-if="current < totalPages"
+			type="button"
+			class="pagination__btn"
+			:aria-label="t('category.next')"
+			@click="emit('change', current + 1)"
+		>
 			<span class="pagination__btn-text">{{ t('category.next') }}</span>
 			<svg width="12" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l5 5-5 5"/></svg>
 		</button>

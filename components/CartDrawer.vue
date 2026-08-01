@@ -46,10 +46,10 @@
 
 									<div class="cart-drawer__item-row">
 										<div class="qty-stepper">
-											<button :aria-label="t('cart.delete')"
+											<button :aria-label="t('cart.qtyMinus')"
 												@click="cart.updateQuantity(item.id, item.quantity - 1)">−</button>
 											<span>{{ item.quantity }}</span>
-											<button aria-label="+"
+											<button :aria-label="t('cart.qtyPlus')"
 												@click="cart.updateQuantity(item.id, item.quantity + 1)">+</button>
 										</div>
 										<span class="cart-drawer__item-total">{{ formatPrice(item.total) }}</span>
