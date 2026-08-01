@@ -50,7 +50,7 @@
 			<!-- Кольори/атрибути (у режимі картки-варіанта не показуємо — колір уже в назві) -->
 			<div v-if="colorAttributes.length" class="p-card__attrs">
 				<NuxtLink
-					v-for="attr in colorAttributes.slice(0, 6)"
+					v-for="attr in colorAttributes.slice(0, MAX_DOTS)"
 					:key="attr.id"
 					:to="url.product(product, attr.alias)"
 					class="p-card__attr"
@@ -58,8 +58,8 @@
 					:title="attr.title"
 					:style="url.attrDot(attr)"
 				/>
-				<span v-if="colorAttributes.length > 6" class="p-card__attr-more">
-					+{{ colorAttributes.length - 6 }}
+				<span v-if="colorAttributes.length > MAX_DOTS" class="p-card__attr-more">
+					+{{ colorAttributes.length - MAX_DOTS }}
 				</span>
 			</div>
 
@@ -104,6 +104,10 @@ const cardTitle = computed(() =>
 const cardLink = computed(() => url.product(props.product, props.attribute?.alias))
 
 const discount = computed(() => discountPercent(props.product.price, props.product.price_old))
+
+// Скільки кольорів показуємо крапками: 5 × 24px (крок зони дотику) + «+N» вміщуються
+// в найвужчу картку сітки (2 колонки на телефоні)
+const MAX_DOTS = 5
 
 const colorAttributes = computed(() =>
 	props.attribute
@@ -202,20 +206,31 @@ const toggleCompare = () => compare.toggle(props.product)
 .p-card__attrs {
 	display: flex;
 	align-items: center;
-	gap: 5px;
+	/* 16px крапка + 8px проміжок = крок 24px між центрами: зони дотику сусідніх
+	   кольорів стикаються, але не перекриваються (WCAG 2.5.8) */
+	gap: 8px;
 	margin-top: 8px;
 	min-height: 16px;
 }
 
 .p-card__attr {
-	width: 15px;
-	height: 15px;
+	position: relative;
+	flex: none;
+	width: 16px;
+	height: 16px;
 	border-radius: var(--radius-pill);
 	border: 1.5px solid var(--border-light);
 	background-color: var(--img-bg);
 	background-size: cover;
 	background-position: center;
 	transition: transform 0.12s, border-color 0.12s, opacity 0.12s;
+}
+
+/* Зона дотику 24×24 — пальцю, не змінюючи розмір самої крапки */
+.p-card__attr::before {
+	content: '';
+	position: absolute;
+	inset: -4px;
 }
 
 .p-card__attr:hover {

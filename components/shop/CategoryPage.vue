@@ -41,7 +41,13 @@
 
 						<label class="cat-head__sort">
 							<span class="cat-head__sort-label text-muted">{{ t('category.sortBy') }}:</span>
-							<select class="form-control" :value="options.sort" @change="changeSort">
+							<!-- aria-label дублює видиму мітку: на мобільному її текст ховається, а ім'я поля має лишатись -->
+							<select
+								class="form-control"
+								:value="options.sort"
+								:aria-label="t('category.sortBy')"
+								@change="changeSort"
+							>
 								<option value="default">—</option>
 								<option value="price-asc">{{ t('category.sortPrice1') }}</option>
 								<option value="price-desc">{{ t('category.sortPrice9') }}</option>

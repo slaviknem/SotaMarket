@@ -77,6 +77,9 @@
 
 	--success: #2ecc71;
 	--danger: #ff4757;
+	/* Той самий червоний, але притемнений — для суцільних плашок під білим текстом
+	   (#ff4757 з білим дає лише 3.3:1, цей — 4.8:1) */
+	--danger-strong: #d92b45;
 	--warning: #ffc048;
 
 	/* Layout */
@@ -639,7 +642,7 @@ img.np-img {
 }
 
 .badge-sale {
-	background: var(--danger);
+	background: var(--danger-strong);
 	color: #fff;
 }
 
@@ -699,12 +702,22 @@ img.np-img {
 	margin-top: 1.4em;
 }
 
+/* Підкреслення обов'язкове: у суцільному тексті посилання не можна відрізняти
+   самим лише кольором (акцент vs --text-soft дає 1.5:1) */
 .typography a {
 	color: var(--accent);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 2px;
 }
 
 .typography a:hover {
-	text-decoration: underline;
+	text-decoration-thickness: 2px;
+}
+
+/* Під картинкою-посиланням підкреслення недоречне */
+.typography a:has(img) {
+	text-decoration: none;
 }
 
 .typography img {

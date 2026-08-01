@@ -78,19 +78,19 @@
 
 					<div class="review-form__row">
 						<div class="form-group">
-							<label>{{ t('reviews.name') }} <b class="required-star">*</b></label>
-							<input v-model="author" class="form-control" type="text" :maxlength="60" />
+							<label for="review-author">{{ t('reviews.name') }} <b class="required-star">*</b></label>
+							<input id="review-author" v-model="author" class="form-control" type="text" :maxlength="60" />
 						</div>
 
 						<div class="form-group">
-							<label>{{ t('reviews.email') }}</label>
-							<input v-model="email" class="form-control" type="email" :maxlength="100" />
+							<label for="review-email">{{ t('reviews.email') }}</label>
+							<input id="review-email" v-model="email" class="form-control" type="email" :maxlength="100" />
 						</div>
 					</div>
 
 					<div class="form-group">
-						<label>{{ t('reviews.message') }} <b class="required-star">*</b></label>
-						<textarea v-model="text" class="form-control" rows="4" :maxlength="500" />
+						<label for="review-text">{{ t('reviews.message') }} <b class="required-star">*</b></label>
+						<textarea id="review-text" v-model="text" class="form-control" rows="4" :maxlength="500" />
 					</div>
 
 					<button class="btn btn-primary" type="submit" :disabled="sending">
