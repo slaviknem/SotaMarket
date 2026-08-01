@@ -11,6 +11,9 @@
 					:alt="cardTitle"
 					:width="280"
 					:height="280"
+					:loading="eager ? 'eager' : 'lazy'"
+					:fetchpriority="eager ? 'high' : undefined"
+					:preload="eager"
 				/>
 			</NuxtLink>
 
@@ -77,7 +80,8 @@
 <script setup lang="ts">
 // attribute — режим картки-варіанта (сторінки фільтрів): назва з кольором, фото
 // і посилання ведуть на сторінку атрибута /attr/{alias}
-const props = defineProps<{ product: any; attribute?: any }>()
+// eager — перша картка сітки, її фото і є LCP: без lazy, з пріоритетом і preload
+const props = defineProps<{ product: any; attribute?: any; eager?: boolean }>()
 
 const { t } = useI18n()
 const url = useUrl()

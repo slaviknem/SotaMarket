@@ -48,11 +48,21 @@ export default defineNuxtConfig({
 				{ rel: 'icon', type: 'image/png', href: '/favicon.png' },
 				{ rel: 'preconnect', href: 'https://admin.floy.com.ua' },
 				{ rel: 'dns-prefetch', href: 'https://admin.floy.com.ua' },
-				{ rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-				{ rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: 'anonymous' },
+				// Шрифт самохоститься (@font-face — у main.css). Два набори, потрібні на кожній
+				// сторінці, стартують одразу з HTML, не чекаючи розбору CSS.
 				{
-					rel: 'stylesheet',
-					href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap',
+					rel: 'preload',
+					as: 'font',
+					type: 'font/woff2',
+					href: '/fonts/inter-cyrillic.woff2',
+					crossorigin: 'anonymous',
+				},
+				{
+					rel: 'preload',
+					as: 'font',
+					type: 'font/woff2',
+					href: '/fonts/inter-latin.woff2',
+					crossorigin: 'anonymous',
 				},
 			],
 		},
@@ -72,6 +82,27 @@ export default defineNuxtConfig({
 		bundle: {
 			optimizeTranslationDirective: false,
 		},
+	},
+
+	// Стилі вже інлайняться в SSR-HTML (features.inlineStyles), але Nuxt додатково лишає
+	// <link rel="stylesheet"> на ті самі чанки — 6 запитів, що блокують рендер (~600 мс).
+	// Прибираємо їх з маніфесту: на першому екрані стилі й так у HTML, а при переході
+	// між сторінками CSS приїде разом зі своїм JS-чанком (deps Vite усередині бандла).
+	hooks: {
+		'build:manifest'(manifest) {
+			for (const chunk of Object.values(manifest)) {
+				if (!chunk.isEntry) chunk.css = []
+			}
+		},
+	},
+
+	// Статика з public/ віддавалась узагалі без Cache-Control — повторний візит
+	// перезавантажував і шрифти, і картинки. Імена без хеша, тож immutable — лише
+	// шрифтам (файл фіксований), решті — місяць.
+	routeRules: {
+		'/fonts/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
+		'/images/**': { headers: { 'cache-control': 'public, max-age=2592000' } },
+		'/favicon.png': { headers: { 'cache-control': 'public, max-age=2592000' } },
 	},
 
 	nitro: {

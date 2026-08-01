@@ -71,12 +71,14 @@
 				<template v-else-if="hasItems">
 					<div v-if="products.length" class="products-grid" :class="gridModifier">
 						<!-- Конструктор чохлів — перший товар (як на старому сайті) -->
-						<ProductCardPrintcase v-if="showPrintcaseCard" :category="category" />
+						<ProductCardPrintcase v-if="showPrintcaseCard" :category="category" eager />
+						<!-- Перше фото сітки — LCP сторінки: вантажимо його одразу, решту лениво -->
 						<ProductCard
-							v-for="item in displayItems"
+							v-for="(item, i) in displayItems"
 							:key="item.product.id + '-' + (item.attribute?.id || 0)"
 							:product="item.product"
 							:attribute="item.attribute || undefined"
+							:eager="i === 0 && !showPrintcaseCard"
 						/>
 
 						<!-- Місток у порожній «хвіст» останнього ряду: заповнює пустку і веде вниз

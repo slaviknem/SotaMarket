@@ -3,7 +3,8 @@
 		<div class="p-card__media">
 			<NuxtLink :to="url.printcase(category.alias)" class="p-card__img-link">
 				<AppImage src="/images/printcase/printcase_product.webp" :alt="title" :title="title" :width="280"
-					:height="280" />
+					:height="280" :loading="eager ? 'eager' : 'lazy'" :fetchpriority="eager ? 'high' : undefined"
+					:preload="eager" />
 			</NuxtLink>
 
 			<div class="p-card__badges">
@@ -31,7 +32,8 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ category: any }>()
+// eager — картка стоїть першою в сітці, її фото і є LCP: без lazy, з пріоритетом і preload
+const props = defineProps<{ category: any; eager?: boolean }>()
 
 const { t } = useI18n()
 const url = useUrl()

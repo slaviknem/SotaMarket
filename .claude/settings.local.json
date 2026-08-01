@@ -68,7 +68,22 @@
       "Bash(curl -s --max-time 30 -o glass.webp \"https://admin.floy.com.ua/storage/images/products/thumb/samsung-galaxy-a36-5g/6755562.webp\")",
       "Bash(curl -s --max-time 40 -o k80.json -w \"http %{http_code} | %{size_download} байт\\\\n\" \"https://admin.floy.com.ua/apisite/products?category=xiaomi-redmi-k80&filters=&per_page=10&lang=uk&site=floy\")",
       "Bash(\"D:/Web-SERVER/domains/FLOY-NEW/.node/node-v22.14.0-win-x64/node.exe\" -e \"const j=require\\('./k80.json'\\);for\\(const p of \\(j.data||[]\\).filter\\(p=>p.group!=='alphaprint'\\)\\)console.log\\(p.image_file,'|',\\(p.title||''\\).slice\\(0,40\\)\\)\")",
-      "Bash(curl -s --max-time 30 -o film.webp \"https://admin.floy.com.ua/storage/images/products/thumb/hydrogel/6612557.webp\")"
+      "Bash(curl -s --max-time 30 -o film.webp \"https://admin.floy.com.ua/storage/images/products/thumb/hydrogel/6612557.webp\")",
+      "Bash(curl -s -A \"Mozilla/5.0\" --max-time 40 \"https://test.floy.com.ua/uk/motorola-edge-50-fusion\" -o page.html -D headers.txt)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(sed -n 's/<\\\\/head>.*//p;' /dev/null)",
+      "Bash(python -c ' *)",
+      "Bash(node -e ' *)",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\(j.name,j.version\\)}\\)\")",
+      "Bash(curl -s --max-time 30 \"https://test.floy.com.ua/_nuxt/1iozfSNY.js\" -o entry.js)",
+      "Bash(curl -s --max-time 30 -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/131.0.0.0 Safari/537.36\" \"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap\" -o gf.css)",
+      "Bash(mkdir -p public/fonts)",
+      "Bash(curl -s --max-time 40 -H 'User-Agent: __TRACKED_VAR__' https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2 -o public/fonts/inter-latin.woff2)",
+      "Bash(curl -s --max-time 40 -H 'User-Agent: __TRACKED_VAR__' https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa25L7SUc.woff2 -o public/fonts/inter-latin-ext.woff2)",
+      "Bash(curl -s --max-time 40 -H 'User-Agent: __TRACKED_VAR__' https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa0ZL7SUc.woff2 -o public/fonts/inter-cyrillic.woff2)",
+      "Bash(curl -s --max-time 40 -H 'User-Agent: __TRACKED_VAR__' https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7SUc.woff2 -o public/fonts/inter-cyrillic-ext.woff2)",
+      "Bash(node -e *)",
+      "Bash(git --no-pager diff)"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [
