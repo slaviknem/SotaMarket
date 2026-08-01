@@ -17,7 +17,6 @@
 								:is="banner.url ? 'a' : 'div'"
 								:href="banner.url || undefined"
 								class="banner-slide"
-								:class="{ 'banner-slide--scrim': banner.title || banner.description }"
 							>
 								<img
 									:src="url.bannerImg(banner.image_file)"
@@ -116,25 +115,31 @@ const modules = [Autoplay, Pagination]
 	object-fit: cover;
 }
 
-/* Затемнення зліва направо — без нього світлий текст тоне у строкатому фото.
-   Лише на слайдах із написом, щоб не приглушувати «чисті» банери. */
-.banner-slide--scrim::after {
-	content: '';
-	position: absolute;
-	inset: 0;
-	background: var(--scrim);
-	pointer-events: none;
-}
-
+/* Жодного затемнення на все фото: усі слайди — і з написом, і без — показуються
+   у повній яскравості. Контраст тексту тримають тінь літер + локальний ореол нижче. */
 .banner-slide__content {
 	position: absolute;
 	left: 6%;
 	top: 50%;
 	transform: translateY(-50%);
 	max-width: 46%;
-	/* над підкладкою (::after малюється останнім) */
-	z-index: 1;
 	text-shadow: var(--text-shadow-on-img);
+}
+
+/* Ореол під написом — помітно ширший за сам текст, з нульовими краями,
+   тож приглушує лише ту ділянку фото, що прямо під літерами. */
+.banner-slide__content::before {
+	content: '';
+	position: absolute;
+	inset: -34px -64px;
+	background: var(--scrim-text);
+	pointer-events: none;
+}
+
+/* Текст — над ореолом (::before малюється першим) */
+.banner-slide__title,
+.banner-slide__desc {
+	position: relative;
 }
 
 .banner-slide__title {
@@ -330,15 +335,16 @@ const modules = [Autoplay, Pagination]
 		height: clamp(170px, 45vw, 320px);
 	}
 
-	/* Текст ширше, бо на вузькому екрані 46% замало */
+	/* Текст ширше, бо на вузькому екрані 46% замало.
+	   Ореол тягнеться за текстом сам (він прив'язаний до цього блоку), тож окремого правила не треба. */
 	.banner-slide__content {
 		left: 5%;
 		max-width: 70%;
 	}
 
-	/* ширший текст → підкладка теж має тягнутися далі вправо */
-	.banner-slide--scrim::after {
-		background: var(--scrim-wide);
+	/* Банер нижчий — ореол відповідно компактніший */
+	.banner-slide__content::before {
+		inset: -22px -40px;
 	}
 }
 
