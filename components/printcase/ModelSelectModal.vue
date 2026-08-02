@@ -8,8 +8,13 @@
 		/>
 
 		<div class="model-tree">
+			<!-- Дерево вантажиться при першому відкритті -->
+			<div v-if="loading" class="model-tree__loading">
+				<div v-for="i in 8" :key="i" class="skeleton model-tree__skeleton" />
+			</div>
+
 			<!-- Результати пошуку -->
-			<template v-if="query.trim().length >= 2">
+			<template v-else-if="query.trim().length >= 2">
 				<button
 					v-for="m in searchResults"
 					:key="m.id"
@@ -49,10 +54,10 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
-	modelValue: boolean
-	brands: any[]
-}>()
+// Дерево «бренд → серія → модель» потрібне тільки тут, тому вантажимо його при першому
+// відкритті модалки, а не на SSR: у payload сторінки конструктора воно важило ~85 КБ,
+// хоча в розмітці не було жодного його рядка.
+const props = defineProps<{ modelValue: boolean }>()
 
 const emit = defineEmits<{
 	'update:modelValue': [v: boolean]
@@ -60,9 +65,29 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const shopApi = useShopApi()
 
 const query = ref('')
 const openBrand = ref<number | null>(null)
+const brands = ref<any[]>([])
+const loading = ref(false)
+
+watch(
+	() => props.modelValue,
+	async (open: boolean) => {
+		if (!open || brands.value.length || loading.value) return
+		loading.value = true
+		try {
+			const menu = await shopApi.getMenu(100)
+			const list = [...(menu?.brends || [])]
+			// Хвостовий елемент «ВСІ» без моделей — не бренд
+			if (list.length && !list[list.length - 1].children?.length) list.pop()
+			brands.value = list
+		} finally {
+			loading.value = false
+		}
+	}
+)
 
 const toggleBrand = (i: number) => {
 	openBrand.value = openBrand.value === i ? null : i
@@ -71,7 +96,7 @@ const toggleBrand = (i: number) => {
 // Всі моделі (для пошуку)
 const allModels = computed(() => {
 	const result: any[] = []
-	for (const brand of props.brands) {
+	for (const brand of brands.value) {
 		for (const serie of brand.children || []) {
 			for (const m of serie.children || []) result.push(m)
 		}
@@ -101,6 +126,17 @@ function select(model: any) {
 .model-tree {
 	max-height: 54vh;
 	overflow-y: auto;
+}
+
+.model-tree__loading {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.model-tree__skeleton {
+	height: 40px;
+	border-radius: var(--radius-sm);
 }
 
 .model-tree__brand-btn {

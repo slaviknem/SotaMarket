@@ -1,8 +1,9 @@
 <template>
 	<div class="container pc-container">
-		<Breadcrumbs :items="[{ title: t('printcase.constructor') }]" />
+		<Breadcrumbs :items="breadcrumbs" />
 
-		<h1 class="pc-title">{{ t('printcase.constructor') }}</h1>
+		<h1 class="pc-title">{{ h1 }}</h1>
+		<p v-if="lead" class="pc-lead">{{ lead }}</p>
 
 		<div class="pc-layout">
 			<!-- Робоча зона: макет + інструменти на одному білому блоці -->
@@ -62,8 +63,7 @@
 			<div class="pc-actions-col">
 				<!-- Вибрана модель -->
 				<button class="pc-model-btn" @click="modelModalOpen = true">
-					<span v-if="model">{{ model.brend }} {{ model.title }}</span>
-					<span v-else>{{ t('printcase.selectModel') }}</span>
+					<span>{{ model ? model.name : t('printcase.selectModel') }}</span>
 					<AppIcon name="edit" :size="15" />
 				</button>
 
@@ -141,13 +141,13 @@
 					<!-- Ціна та купівля -->
 					<div class="pc-buy">
 						<div class="pc-buy__prices">
-							<span class="pc-buy__price">{{ formatPrice(config.public.printcasePrice) }}</span>
-							<span class="pc-buy__price-old">{{ formatPrice(config.public.printcasePriceOld) }}</span>
+							<span class="pc-buy__price">{{ formatPrice(price) }}</span>
+							<span class="pc-buy__price-old">{{ formatPrice(priceOld) }}</span>
 						</div>
 
 						<button
 							class="btn btn-lg btn-block"
-							:class="isAvailableCase ? 'btn-primary' : 'btn-outline'"
+							:class="model.available ? 'btn-primary' : 'btn-outline'"
 							:disabled="generating || !elements.length"
 							@click="orderId ? addToExistingOrder() : addToCart()"
 						>
@@ -159,21 +159,65 @@
 			</div>
 		</div>
 
-		<!-- SEO-текст -->
-		<article v-if="article?.text" class="block typography" v-html="contentHtml(article.text)" />
+		<!-- Швидкий вхід у конструктор під конкретну модель (хаб): кожна модель — своя сторінка -->
+		<section v-if="popularModels.length" class="pc-block">
+			<div class="section-title">
+				<h2>{{ t('printcase.seo.pickModel') }}</h2>
+			</div>
+			<p class="pc-block__note text-muted">{{ t('printcase.seo.pickModelNote') }}</p>
+			<nav class="pc-models" :aria-label="t('printcase.seo.pickModel')">
+				<NuxtLink v-for="m in popularModels" :key="m.alias" :to="url.printcase(m.alias)" class="chip">
+					{{ m.title }}
+				</NuxtLink>
+				<button class="chip pc-models__more" @click="modelModalOpen = true">
+					{{ t('printcase.selectModel') }}
+				</button>
+			</nav>
+		</section>
 
-		<!-- Відгуки про конструктор (прив'язані до статті сторінки) -->
+		<!-- SEO-стаття: своя стаття моделі → шаблон із підставленою моделлю → (нічого) -->
+		<article v-if="articleHtml" class="pc-block typography" v-html="contentHtml(articleHtml)" />
+
+		<!-- Готові дизайни: той самий друк, але без малювання. Унікальний контент і
+		     перелінковка на /neoprint/{модель}/{дизайн}. -->
+		<section v-if="designs.length && category" class="pc-block">
+			<div class="section-title">
+				<h2>{{ t('printcase.seo.designs', { model: names.short_ }) }}</h2>
+			</div>
+			<p class="pc-block__note text-muted">{{ t('printcase.seo.designsNote', { model: names.short_ }) }}</p>
+
+			<div class="products-grid products-grid--left">
+				<NeoPrintCard v-for="np in designs" :key="np.id" :neoprint="np" :category="category" />
+			</div>
+		</section>
+
+		<!-- FAQ під модель: питання будуються з даних сторінки, JSON-LD — усередині ShopFaqList -->
+		<ShopFaqList v-if="faqItems.length" :title="t('printcase.seo.faq.title', { model: names.full })" :items="faqItems" />
+
+		<!-- Перелінковка: конструктор → каталог моделі та бренду -->
+		<nav v-if="category" class="pc-links" :aria-label="t('neoprint.seeAlso')">
+			<span class="pc-links__label">{{ t('neoprint.seeAlso') }}:</span>
+			<NuxtLink :to="url.category(category.alias)" class="chip">
+				{{ t('neoprint.allModel', { model: names.short_ }) }}
+			</NuxtLink>
+			<NuxtLink v-if="category.brend" :to="url.category(category.brend.alias)" class="chip">
+				{{ t('neoprint.allBrand', { brend: category.brend.title }) }}
+			</NuxtLink>
+		</nav>
+
+		<!-- Відгуки про сам конструктор — лише на хабі: на сторінках моделей це був би
+		     один і той самий блок на тисячі URL -->
 		<ShopReviewsBlock
-			v-if="article"
-			:reviews="article.reviews || []"
+			v-if="articleId"
+			:reviews="hubReviews"
 			type="article"
-			:target-id="article.id"
+			:target-id="articleId"
 			:title="t('reviews.title')"
-			class="block"
+			class="pc-block"
 		/>
 
 		<!-- Модалки -->
-		<PrintcaseModelSelectModal v-model="modelModalOpen" :brands="brands" @select="selectModel" />
+		<PrintcaseModelSelectModal v-model="modelModalOpen" @select="selectModel" />
 		<PrintcaseLibraryModal v-model="libraryOpen" @select="addImageFromLibrary" />
 		<PrintcaseTextModal
 			v-model="textModalOpen"
@@ -186,9 +230,23 @@
 </template>
 
 <script setup lang="ts">
+// Конструктор чохлів. Один компонент обслуговує два роути:
+//   /printcase           — хаб: велика стаття про послугу + вхід у конструктор
+//   /printcase/{модель}  — лендінг під модель: той самий конструктор + свій текст,
+//                          готові дизайни та FAQ саме цієї моделі
+//
+// ?model= лишається робочим коротким шляхом (внутрішні посилання, розсилки) і 301-иться
+// на /printcase/{модель} — у видачі має бути одна адреса.
+//
+// Вибір іншої моделі НЕ навігує роутером (це знищило б намальоване), а переписує URL через
+// history.replaceState і підвантажує контент нової моделі — як перемикання дизайну на
+// сторінці /neoprint.
+
 import type { StageEl } from '~/components/printcase/StageElement.vue'
 import type { TextForm } from '~/components/printcase/TextModal.vue'
 import { STAGE_W, STAGE_H } from '~/components/printcase/PrintcaseStage.vue'
+
+const props = defineProps<{ modelAlias?: string }>()
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -200,35 +258,123 @@ const { notify } = useNotify()
 const localePath = useLocalePath()
 const url = useUrl()
 
-usePageSeo({
-	title: () => t('printcase.constructor'),
-	description: () => t('metaDescription.index'),
-})
+const price = config.public.printcasePrice as number
+const priceOld = config.public.printcasePriceOld as number
 
-// ---------- Дані ----------
-const { data: menu } = await useAsyncData('printcase-menu-' + locale.value, () => shopApi.getMenu(100))
-const { data: article } = await useAsyncData(
-	'printcase-article-' + locale.value,
-	async () => (await shopApi.getArticleByAlias('printcase')) ?? false
+// Модель у конструкторі: рівно те, що потрібно сцені, кошику і текстам
+interface PcModel {
+	id: number
+	alias: string
+	name: string // повна назва: «Samsung Galaxy A07»
+	available: boolean // друк доступний одразу (інакше — передзамовлення)
+}
+
+// Статуси друку з адмінки, за яких чохол можна замовити одразу
+function printAvailable(cat: any): boolean {
+	const s = String(cat?.alphaprint_available || cat?.brend?.alphaprint_available || '')
+		.trim()
+		.toLowerCase()
+		.replace(/[-\s]+/g, '_')
+	return s === 'available' || s === 'available_not'
+}
+
+// ---------- Дані сторінки (SSR) ----------
+// Лендінг моделі: категорія + її стаття + шаблон статті + добірка дизайнів — одна хвиля.
+// Стаття своя (printcase-{модель}) має пріоритет над шаблоном (printcase-template),
+// у якому підставляються плейсхолдери моделі — та сама механіка, що на сторінках фільтрів.
+async function fetchModelBundle(alias: string) {
+	const [category, own, tpl, designs] = await Promise.all([
+		shopApi.getCategoryByAlias(alias),
+		shopApi.getArticleByAlias(`printcase-${alias}`),
+		shopApi.getArticleByAlias('printcase-template'),
+		$fetch<any[]>('/api/printcase/designs', { params: { lang: locale.value } }).catch(() => []),
+	])
+
+	if (!category?.id || category.type !== 'model') return null
+
+	// Плейсхолдери моделі підставляються і в текст шаблона, і в його meta — щоб title/description
+	// сторінок моделей теж керувались з адмінки, а не лише з i18n
+	const ownArticle = own?.publish ? own : null
+	const tplArticle = tpl?.publish ? tpl : null
+	const fromTpl = (field: string) => (tplArticle ? fillModelPlaceholders(tplArticle[field], category) : '')
+
+	const ownText = ownArticle?.text || ''
+	const tplText = fromTpl('text')
+
+	return {
+		model: {
+			id: category.id,
+			alias: category.alias,
+			name: category.title_full || category.title,
+			available: printAvailable(category),
+		} as PcModel,
+		// Для карток дизайнів, крихт і перелінковки — без відгуків і описів категорії:
+		// вони на цій сторінці не малюються, а в payload важили б найбільше
+		category: {
+			id: category.id,
+			alias: category.alias,
+			title: category.title,
+			title_full: category.title_full,
+			title_rus: category.title_rus,
+			printcase: category.printcase,
+			brend: category.brend ? { alias: category.brend.alias, title: category.brend.title } : null,
+		},
+		articleHtml: ownText || tplText,
+		metaTitle: ownArticle?.meta_title || fromTpl('meta_title'),
+		metaDescription: ownArticle?.meta_description || fromTpl('meta_description'),
+		designs: category.printcase ? designs : [],
+		articleId: 0,
+		hubReviews: [] as any[],
+		popularModels: [] as { alias: string; title: string }[],
+	}
+}
+
+// Хаб: велика стаття про послугу + популярні моделі як швидкий вхід.
+// Повний обхід усіх /printcase/{модель} краулер робить не звідси, а зі сторінок моделей —
+// там картка конструктора стоїть першою в сітці товарів.
+async function fetchHubBundle() {
+	const [article, popular] = await Promise.all([
+		shopApi.getArticleByAlias('printcase'),
+		shopApi.getPopularCategory({ type: 'model', limit: 8 }),
+	])
+
+	return {
+		model: null,
+		category: null,
+		articleHtml: article?.text || '',
+		metaTitle: article?.meta_title || '',
+		metaDescription: article?.meta_description || '',
+		designs: [] as any[],
+		articleId: article?.id || 0,
+		hubReviews: (article?.reviews || []) as any[],
+		popularModels: (popular || []).map((m: any) => ({ alias: m.alias, title: m.title_full || m.title })),
+	}
+}
+
+const { data } = await useAsyncData(
+	`printcase-${props.modelAlias || 'hub'}-${locale.value}`,
+	async () => (props.modelAlias ? await fetchModelBundle(props.modelAlias) : await fetchHubBundle())
 )
 
-// Бренди без останнього елемента «ВСІ» (як на старому сайті)
-const brands = computed(() => {
-	const list = [...(menu.value?.brends || [])]
-	if (list.length && !list[list.length - 1].children?.length) list.pop()
-	return list
-})
+if (props.modelAlias && !data.value) {
+	throw createError({ statusCode: 404, statusMessage: 'Model not found', fatal: true })
+}
+
+const category = computed(() => data.value?.category || null)
+const designs = computed(() => data.value?.designs || [])
+const articleHtml = computed(() => data.value?.articleHtml || '')
+const articleId = computed(() => data.value?.articleId || 0)
+const hubReviews = computed(() => data.value?.hubReviews || [])
+const popularModels = computed(() => data.value?.popularModels || [])
+
+const names = computed(() => catNames(category.value))
 
 // ---------- Модель та маска ----------
-const model = ref<any>(null)
-const maskUrl = ref<string | null>(null)
-const alphaprintStatus = ref('')
-const modelModalOpen = ref(false)
+const DEFAULT_MASK = '/images/printcase/default_mask.png'
 
-const isAvailableCase = computed(() => {
-	const s = String(alphaprintStatus.value || '').trim().toLowerCase().replace(/[-\s]+/g, '_')
-	return s === 'available' || s === 'available_not'
-})
+const model = ref<PcModel | null>(data.value?.model || null)
+const maskUrl = ref<string | null>(null)
+const modelModalOpen = ref(false)
 
 const orderId = computed(() => {
 	const v = route.query.order_id
@@ -238,59 +384,49 @@ const orderId = computed(() => {
 const buyLabel = computed(() => {
 	if (generating.value) return t('category.loading')
 	if (orderId.value) return `+ № ${orderId.value}`
-	return isAvailableCase.value ? t('product.inCart') : t('quick.quickPreOrder')
+	return model.value?.available ? t('product.inCart') : t('quick.quickPreOrder')
 })
 
-async function selectModel(m: any) {
-	model.value = m
-	router.replace({ query: { ...route.query, model: m.url } })
-
-	// Маска моделі з адмінки, fallback — стандартна
-	maskUrl.value = '/images/printcase/default_mask.png'
+// Маска моделі з адмінки, fallback — стандартна. Тільки клієнт: це base64-картинка,
+// у SSR-payload вона важила б сотні кілобайт.
+async function loadMask(alias: string) {
+	maskUrl.value = DEFAULT_MASK
 	try {
 		const res = await $fetch<{ base64Image?: string }>(
-			`${config.public.urlApi}printcase/get_image_b64/${m.url}.png/masks`
+			`${config.public.urlApi}printcase/get_image_b64/${alias}.png/masks`
 		)
 		if (res?.base64Image) maskUrl.value = res.base64Image
 	} catch {
 		/* стандартна маска */
 	}
-
-	// Статус доступності друку для моделі
-	try {
-		const cat = await shopApi.getCategoryByAlias(m.url)
-		alphaprintStatus.value = cat?.alphaprint_available || cat?.brend?.alphaprint_available || ''
-	} catch {
-		alphaprintStatus.value = ''
-	}
 }
 
-// Знаходимо модель за alias у дереві
-function findModel(urlOrId: string) {
-	for (const brand of brands.value) {
-		for (const serie of brand.children || []) {
-			for (const m of serie.children || []) {
-				if (m.url === urlOrId || String(m.id) === urlOrId) return m
-			}
-		}
+// Вибір моделі в модалці: URL і весь контент сторінки йдуть за моделлю, але без навігації —
+// інакше конструктор перемонтувався б і намальоване зникло
+async function selectModel(m: any) {
+	const alias = String(m.url)
+	if (alias === model.value?.alias) return
+
+	model.value = {
+		id: m.id,
+		alias,
+		name: [m.brend, m.title].filter(Boolean).join(' '),
+		available: false,
 	}
-	return null
+	loadMask(alias)
+
+	const href = url.printcase(alias) + location.search
+	history.replaceState({ ...history.state, current: href }, '', href)
+
+	const bundle = await fetchModelBundle(alias)
+	if (!bundle) return
+	data.value = bundle
+	model.value = bundle.model
 }
 
-// Ініціалізація з ?model= (і автопідбір при завантаженні меню)
-watch(
-	brands,
-	(list: any[]) => {
-		if (!list.length || model.value) return
-		const q = route.query.model
-		const alias = Array.isArray(q) ? q[0] : q
-		if (alias) {
-			const m = findModel(alias)
-			if (m) selectModel(m)
-		}
-	},
-	{ immediate: true }
-)
+onMounted(() => {
+	if (model.value) loadMask(model.value.alias)
+})
 
 // ---------- Елементи ----------
 const elements = ref<StageEl[]>([])
@@ -323,7 +459,7 @@ function removeElement(i: number | null) {
 }
 
 // Додаємо зображення (вписане в сцену, по центру)
-function pushImage(url: string) {
+function pushImage(src: string) {
 	const img = new Image()
 	img.onload = () => {
 		const aspect = img.width / img.height
@@ -332,7 +468,7 @@ function pushImage(url: string) {
 
 		elements.value.push({
 			type: 'image',
-			url,
+			url: src,
 			x: (STAGE_W - width) / 2,
 			y: (STAGE_H - height) / 2,
 			width,
@@ -342,7 +478,7 @@ function pushImage(url: string) {
 		})
 		setActive(elements.value.length - 1)
 	}
-	img.src = url
+	img.src = src
 }
 
 function addImagesFromDisk(e: Event) {
@@ -355,8 +491,8 @@ function addImagesFromDisk(e: Event) {
 	input.value = ''
 }
 
-function addImageFromLibrary(url: string) {
-	pushImage(url)
+function addImageFromLibrary(src: string) {
+	pushImage(src)
 }
 
 // ---------- Текст ----------
@@ -544,12 +680,12 @@ function loadImg(src: string, cors = true): Promise<HTMLImageElement> {
 }
 
 // Завантаження зображення з обходом CORS через бекенд (для бібліотеки)
-async function loadElementImage(url: string): Promise<HTMLImageElement> {
+async function loadElementImage(src: string): Promise<HTMLImageElement> {
 	try {
-		return await loadImg(url)
+		return await loadImg(src)
 	} catch {
 		// Якщо пряме завантаження не вдалося — тягнемо base64 через API
-		const m = url.match(/printcase\/library\/([^/]+)\/([^/]+)$/)
+		const m = src.match(/printcase\/library\/([^/]+)\/([^/]+)$/)
 		if (m) {
 			const res = await $fetch<{ base64Image?: string }>(
 				`${config.public.urlApi}printcase/get_image_b64/${m[2]}/library/${m[1]}`
@@ -637,7 +773,7 @@ async function generateAndUpload(): Promise<{ id: number; preview: string; sourc
 	}
 }
 
-// Додати в кошик (формат як на старому сайті)
+// Додати в кошик
 async function addToCart() {
 	if (!model.value || !elements.value.length) return
 
@@ -648,11 +784,12 @@ async function addToCart() {
 		cart.add({
 			product: {
 				id,
-				alias: `?model=${model.value.url}`,
+				// Посилання з кошика веде на сторінку конструктора цієї моделі
+				alias: model.value.alias,
 				alias_cat: 'printcase',
-				title: `ІНДИВІДУАЛЬНИЙ чохол для ${model.value.brend} ${model.value.title}`,
-				price: config.public.printcasePrice,
-				price_old: config.public.printcasePriceOld,
+				title: `ІНДИВІДУАЛЬНИЙ чохол для ${model.value.name}`,
+				price,
+				price_old: priceOld,
 			},
 			attribute: 0,
 			image: preview,
@@ -679,9 +816,9 @@ async function addToExistingOrder() {
 		await $fetch(config.public.urlApi + 'orders/add_order_printcase', {
 			query: {
 				order_item: JSON.stringify({
-					title: `ЧОХОЛ для ${model.value.brend} ${model.value.title}`,
+					title: `ЧОХОЛ для ${model.value.name}`,
 					count: 1,
-					price: config.public.printcasePrice,
+					price,
 					printcase: source,
 					image_file: preview,
 					order_id: orderId.value,
@@ -698,6 +835,111 @@ async function addToExistingOrder() {
 	}
 	generating.value = false
 }
+
+// ---------- Тексти сторінки ----------
+const isModelPage = computed(() => !!category.value)
+
+const h1 = computed(() =>
+	isModelPage.value ? t('printcase.seo.h1', { model: names.value.full }) : t('printcase.constructor')
+)
+
+// Лід над конструктором: коротко про послугу. На сторінці моделі — з її назвою,
+// тож навіть без статті сторінка має власний осмислений текст.
+const lead = computed(() =>
+	isModelPage.value
+		? t('printcase.seo.lead', { model: names.value.alt_, price })
+		: t('printcase.seo.hubLead', { price })
+)
+
+const faqItems = computed(() => {
+	if (!isModelPage.value) return []
+	const p = { model: names.value.full, model_short: names.value.short_, model_alt: names.value.alt_, price, priceOld }
+	return [1, 2, 3, 4, 5].map((i) => ({
+		q: t(`printcase.seo.faq.q${i}`, p),
+		a: t(`printcase.seo.faq.a${i}`, p),
+	}))
+})
+
+const breadcrumbs = computed(() => {
+	if (!category.value) return [{ title: t('printcase.constructor') }]
+
+	const crumbs: { title: string; url?: string }[] = []
+	if (category.value.brend) {
+		crumbs.push({ title: category.value.brend.title, url: url.category(category.value.brend.alias) })
+	}
+	crumbs.push({
+		title: category.value.brend ? names.value.short_ : names.value.full,
+		url: url.category(category.value.alias),
+	})
+	crumbs.push({ title: t('printcase.constructor') })
+	return crumbs
+})
+
+// ---------- SEO ----------
+// Сторінка моделі йде в індекс лише коли їй є що сказати: модель підтримує друк І
+// є текст (своя стаття або шаблон із підставленою моделлю). Інакше noindex, follow —
+// сторінка працює й лишається точкою обходу, але в індексі не плодить порожніх дублів.
+// canonical завжди самопосилальний: canonical на /printcase був би вказівкою на інший
+// контент, і пошуковики його б однаково проігнорували.
+const indexable = computed(() => !!category.value?.printcase && !!articleHtml.value)
+
+const shareImage = computed(() => url.absolute('/images/printcase/printcase_product.jpg'))
+
+usePageSeo({
+	title: () =>
+		data.value?.metaTitle ||
+		(isModelPage.value ? t('printcase.seo.metaTitle', { model: names.value.full }) : t('printcase.constructor')),
+	description: () =>
+		data.value?.metaDescription ||
+		(isModelPage.value
+			? t('printcase.seo.metaDescription', { model: names.value.full, price })
+			: t('printcase.seo.hubMetaDescription', { price })),
+	image: () => shareImage.value,
+	noindex: () => (isModelPage.value ? !indexable.value : false) || !!orderId.value,
+	// URL змінюється без навігації роутера (вибір іншої моделі) — canonical тримаємо на ній
+	path: () => url.printcase(model.value?.alias),
+})
+
+// Товар: для пошуковиків і AI це повноцінна позиція зі своєю ціною
+useJsonLd(() => ({
+	'@context': 'https://schema.org',
+	'@type': 'Product',
+	name: isModelPage.value
+		? t('printcase.seo.productName', { model: names.value.full })
+		: t('printcase.seo.productNameHub'),
+	description: isModelPage.value
+		? t('printcase.seo.metaDescription', { model: names.value.full, price })
+		: t('printcase.seo.hubMetaDescription', { price }),
+	image: [shareImage.value],
+	...(category.value ? { sku: `PC-${category.value.id}` } : {}),
+	brand: { '@type': 'Brand', name: config.public.siteName },
+	offers: {
+		'@type': 'Offer',
+		url: url.absolute(url.printcase(model.value?.alias)),
+		priceCurrency: 'UAH',
+		price,
+		itemCondition: 'https://schema.org/NewCondition',
+		availability: 'https://schema.org/InStock',
+	},
+}))
+
+// Хаб — ще й інструкція: AI-системам це найзрозуміліший опис самої послуги.
+// Реєструємо лише на хабі (режим сторінки відомий на момент SSR і далі не змінюється).
+if (!isModelPage.value) {
+	useJsonLd(() => ({
+		'@context': 'https://schema.org',
+		'@type': 'HowTo',
+		name: t('printcase.seo.howTo.title'),
+		totalTime: 'PT5M',
+		estimatedCost: { '@type': 'MonetaryAmount', currency: 'UAH', value: price },
+		step: [1, 2, 3, 4].map((i) => ({
+			'@type': 'HowToStep',
+			position: i,
+			name: t(`printcase.seo.howTo.step${i}.name`),
+			text: t(`printcase.seo.howTo.step${i}.text`),
+		})),
+	}))
+}
 </script>
 
 <style scoped>
@@ -707,7 +949,15 @@ async function addToExistingOrder() {
 }
 
 .pc-title {
-	margin-bottom: 14px;
+	margin-bottom: 10px;
+}
+
+.pc-lead {
+	margin-bottom: 18px;
+	max-width: 760px;
+	font-size: 14.5px;
+	line-height: 1.55;
+	color: var(--text-soft);
 }
 
 .pc-layout {
@@ -1067,6 +1317,44 @@ async function addToExistingOrder() {
 	font-size: 15px;
 	color: var(--text-muted);
 	text-decoration: line-through;
+}
+
+/* ---------- SEO-блоки під конструктором ---------- */
+.pc-block {
+	margin-top: 34px;
+}
+
+.pc-block__note {
+	margin: -6px 0 16px;
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.pc-models {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.pc-models__more {
+	font-weight: 700;
+	color: var(--accent);
+}
+
+.pc-links {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 30px;
+	padding-top: 18px;
+	border-top: 1px solid var(--border);
+}
+
+.pc-links__label {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--text-muted);
 }
 
 @media (max-width: 1100px) {

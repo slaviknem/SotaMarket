@@ -25,10 +25,13 @@ const { blogMenu } = useSiteMenus()
 
 const type = computed(() => String(route.params.type))
 
-const knownTypes = ['new', 'akcii', 'review', 'info']
-const typeTitle = computed(() =>
-	knownTypes.includes(type.value) ? t('blogCategory.' + type.value) : type.value
-)
+// Сторінка є лише у категорій блогу. Раніше сюди проходив будь-який рядок (і службові типи,
+// і випадкове сміття) — віддавалось 200 з сирим типом у <h1>, тобто індексований дубль ні про що.
+if (!BLOG_TYPES.includes(type.value)) {
+	throw createError({ statusCode: 404, statusMessage: 'Blog category not found', fatal: true })
+}
+
+const typeTitle = computed(() => t('blogCategory.' + type.value))
 
 const { data: posts } = await useAsyncData(`articles-${type.value}-${locale.value}`, () =>
 	shopApi.getArticles(type.value)

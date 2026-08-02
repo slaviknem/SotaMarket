@@ -112,12 +112,12 @@ export function useUrl() {
 		neoprint: (categoryAlias: string, id: string | number) =>
 			localePath(`/neoprint/${categoryAlias}/${id}`),
 
-		// Конструктор. З neoPrintAlias — відкривається з уже завантаженим дизайном (правка готового)
-		printcase: (modelAlias?: string, neoPrintAlias?: string | number) => {
-			if (!modelAlias) return localePath('/printcase')
-			const np = neoPrintAlias ? `&neo_print_id=${neoPrintAlias}` : ''
-			return localePath(`/printcase?model=${modelAlias}${np}`)
-		},
+		// Конструктор. Модель — окремим сегментом шляху (індексована сторінка-лендінг),
+		// а не ?model=: параметричний варіант лишається робочим, але 301-иться сюди.
+		// З neoPrintAlias — відкривається з уже завантаженим дизайном (правка готового).
+		printcase: (modelAlias?: string, neoPrintAlias?: string | number) =>
+			localePath(modelAlias ? `/printcase/${modelAlias}` : '/printcase') +
+			(neoPrintAlias ? `?neo_print_id=${neoPrintAlias}` : ''),
 
 		blogPost: (post: { type: string; alias: string }) =>
 			localePath(`/article/${post.type}/${post.alias}`),

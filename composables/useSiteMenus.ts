@@ -13,13 +13,17 @@ export interface SideMenu {
 	items: SideMenuItem[]
 }
 
+// Категорії блогу — єдиний перелік типів статей, які мають сторінку /article/{тип}.
+// Решта типів у таблиці articles службові (main, template, printcase): їх беруть за alias,
+// лістингу в них немає, тож /article/{такий тип} має віддавати 404, а не порожню сторінку.
+export const BLOG_TYPES = ['new', 'akcii', 'review', 'info']
+
 export function useSiteMenus() {
 	const { t } = useI18n()
 	const localePath = useLocalePath()
 	const route = useRoute()
 
-	// Категорії блогу (як у /article)
-	const blogTypes = ['new', 'akcii', 'review', 'info']
+	const blogTypes = BLOG_TYPES
 
 	// Меню розділів блогу: активний — і на сторінці категорії, і на статті всередині неї
 	const blogMenu = computed<SideMenu>(() => ({

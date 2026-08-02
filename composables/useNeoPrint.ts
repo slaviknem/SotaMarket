@@ -23,6 +23,17 @@ export function fillModelPlaceholders(text: string | null | undefined, category:
 		.replace(/#brend#/g, category?.brend?.title || '')
 }
 
+// Перемежовуємо кілька списків по колу — щоб добірка показувала різні теми/бренди,
+// а не всі дизайни одного бренду поспіль. Спільне для сторінки фільтра, дизайну і конструктора.
+export function interleave<T>(lists: T[][]): T[] {
+	const out: T[] = []
+	const longest = Math.max(0, ...lists.map((l) => l.length))
+	for (let i = 0; i < longest; i++) {
+		for (const list of lists) if (i < list.length) out.push(list[i])
+	}
+	return out
+}
+
 export function useNeoPrint() {
 	const { t } = useI18n()
 	const url = useUrl()

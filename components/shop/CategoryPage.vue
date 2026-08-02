@@ -278,17 +278,6 @@ const brands = computed(() =>
 // Понад це — користувач іде глибше в конкретну підтему (у кожної свій повний список).
 const NEOPRINT_MAX = 240
 
-// Перемежовуємо списки дизайнів підтем по колу — щоб перша сторінка показувала різні
-// бренди (BMW, Mercedes…), а не 24 однакових поспіль.
-function interleave<T>(lists: T[][]): T[] {
-	const out: T[] = []
-	const longest = Math.max(0, ...lists.map((l) => l.length))
-	for (let i = 0; i < longest; i++) {
-		for (const list of lists) if (i < list.length) out.push(list[i])
-	}
-	return out
-}
-
 // Дані фільтра потрібні тільки на сторінках /filter/ (гілка стабільна для роута).
 // Разом із фільтром тягнемо готові дизайни (NeoPrint) його теми — віртуальні товари,
 // яких немає в products: принт із бібліотеки, надрукований на чохлі цієї моделі.

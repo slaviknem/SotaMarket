@@ -25,7 +25,8 @@
 | `/shop/cart`, `/shop/cart/success` | Кошик / успішне замовлення (+ MonoPay) |
 | `/shop/wishlist`, `/shop/compare`, `/shop/track-order` | Обране / порівняння / трекінг |
 | `/about`, `/dostavka`, `/povernennya`, `/otzyvy-klientov` | Інфо-сторінки (контент з API) |
-| `/printcase?model=...` | Конструктор чохлів |
+| `/printcase` | Конструктор чохлів (хаб) |
+| `/printcase/{model}` | Конструктор під модель — індексована сторінка (`?model=` 301-иться сюди) |
 
 Параметри листингу теж збережені: `?page=2&limit=12&sort=price-asc&filter_{group}=a,b`.
 
