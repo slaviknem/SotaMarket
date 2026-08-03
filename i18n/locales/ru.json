@@ -179,7 +179,8 @@
 	},
 	"message": {
 		"beforeSelectAttribute": "Чтобы добавить товар в корзину, сначала выберите атрибут!",
-		"productAddedCart": "Товар добавлен в корзину!"
+		"productAddedCart": "Товар добавлен в корзину!",
+		"printcaseFailed": "Не удалось сохранить макет. Попробуйте ещё раз."
 	},
 	"cart": {
 		"cartProducts": "Корзина товаров",

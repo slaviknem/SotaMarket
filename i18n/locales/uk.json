@@ -179,7 +179,8 @@
 	},
 	"message": {
 		"beforeSelectAttribute": "Щоб додати товар до кошика, спочатку виберіть атрибут!",
-		"productAddedCart": "Товар додано до кошика!"
+		"productAddedCart": "Товар додано до кошика!",
+		"printcaseFailed": "Не вдалося зберегти макет. Спробуйте ще раз."
 	},
 	"cart": {
 		"cartProducts": "Кошик товарів",

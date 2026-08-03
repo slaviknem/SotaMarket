@@ -346,12 +346,11 @@ const props = defineProps<{ modelAlias?: string }>()
 
 const { t, locale } = useI18n()
 const route = useRoute()
-const router = useRouter()
 const config = useRuntimeConfig()
 const shopApi = useShopApi()
 const cart = useCart()
+const { openCart } = useCartDrawer()
 const { notify } = useNotify()
-const localePath = useLocalePath()
 const url = useUrl()
 
 const price = config.public.printcasePrice as number
@@ -889,20 +888,38 @@ function loadImg(src: string, cors = true): Promise<HTMLImageElement> {
 	})
 }
 
-// Завантаження зображення з обходом CORS через бекенд (для бібліотеки)
+// Сховище віддається без CORS-заголовків, тож crossOrigin-завантаження звідти завжди падає
+// (а без crossOrigin картинка «отруїла» б canvas і toDataURL кинув би SecurityError).
+// Тому для таких URL беремо base64 через API.
+async function imageB64(src: string): Promise<string | null> {
+	// Бібліотека конструктора
+	const lib = src.match(/printcase\/library\/([^/]+)\/([^/]+)$/)
+	if (lib) {
+		const res = await $fetch<{ base64Image?: string }>(
+			`${config.public.urlApi}printcase/get_image_b64/${lib[2]}/library/${lib[1]}`
+		).catch(() => null)
+		return res?.base64Image || null
+	}
+	// Шаблон готового дизайну (?neo_print_id=)
+	const tpl = src.match(/images\/templates\/([^/]+)\.\w+$/)
+	if (tpl) {
+		const res = await $fetch<{ base64Image?: string }>(
+			`${config.public.urlApi}attributes/image_b64/${tpl[1]}`,
+			{ query: { type: 'template' } }
+		).catch(() => null)
+		return res?.base64Image || null
+	}
+	return null
+}
+
+// Завантаження зображення з обходом CORS через бекенд
 async function loadElementImage(src: string): Promise<HTMLImageElement> {
 	try {
 		return await loadImg(src)
 	} catch {
-		// Якщо пряме завантаження не вдалося — тягнемо base64 через API
-		const m = src.match(/printcase\/library\/([^/]+)\/([^/]+)$/)
-		if (m) {
-			const res = await $fetch<{ base64Image?: string }>(
-				`${config.public.urlApi}printcase/get_image_b64/${m[2]}/library/${m[1]}`
-			)
-			if (res?.base64Image) return loadImg(res.base64Image, false)
-		}
-		throw new Error('image load failed')
+		const b64 = await imageB64(src)
+		if (b64) return loadImg(b64, false)
+		throw new Error(`не вдалося завантажити зображення: ${src}`)
 	}
 }
 
@@ -949,10 +966,15 @@ async function renderCanvas(width: number, withMask: boolean): Promise<string> {
 		ctx.restore()
 	}
 
-	// Маска поверх (тільки для превʼю)
+	// Маска поверх (тільки для превʼю) — вписуємо як background-size: cover на сцені.
+	// Розтяг на весь кадр спотворював би маску: дефолтна квадратна (1200×1200), а сцена 1:2,
+	// тож чохол у превʼю кошика виходив сплюснутим з боків.
 	if (withMask && maskUrl.value) {
 		const mask = await loadImg(maskUrl.value, false)
-		ctx.drawImage(mask, 0, 0, width, height)
+		const cover = Math.max(width / mask.width, height / mask.height)
+		const mw = mask.width * cover
+		const mh = mask.height * cover
+		ctx.drawImage(mask, (width - mw) / 2, (height - mh) / 2, mw, mh)
 	}
 
 	return canvas.toDataURL('image/jpeg', 0.85)
@@ -1007,10 +1029,12 @@ async function addToCart() {
 			categoryId: model.value.id,
 		})
 
-		notify('success', t('message.productAddedCart'))
-		router.push(localePath('/shop/cart'))
-	} catch {
-		notify('error', 'Error')
+		// Як і у звичайного товару: слайдер-кошик замість тосту й переходу на сторінку кошика —
+		// щоб можна було домалювати ще один чохол, не втрачаючи макет
+		openCart()
+	} catch (e) {
+		console.error('[printcase] addToCart', e)
+		notify('error', t('message.printcaseFailed'))
 	}
 	generating.value = false
 }
@@ -1040,8 +1064,9 @@ async function addToExistingOrder() {
 		})
 
 		notify('success', `OK: + № ${orderId.value}`)
-	} catch {
-		notify('error', 'Error')
+	} catch (e) {
+		console.error('[printcase] addToExistingOrder', e)
+		notify('error', t('message.printcaseFailed'))
 	}
 	generating.value = false
 }
