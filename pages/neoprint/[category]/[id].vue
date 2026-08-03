@@ -144,6 +144,7 @@
 // товару: заголовок, ціна, опис, кошик і URL ідуть за показаним дизайном.
 
 import type { IFilterNode } from '~/composables/useFilters'
+import type { IThemeDesign, IThemeNode } from '~/composables/useThemeDesigns'
 
 const route = useRoute()
 const { t, locale } = useI18n()
@@ -199,18 +200,8 @@ const { data } = await useAsyncData(
 			...others,
 		].slice(0, 30)
 
-		// Дерево тем для меню-перемикача: верхній рівень — усі теми (окрім службових фільтр-типів
-		// Категорія/Форм-фактор/Матеріал), у кожної — її підтеми з id. id потрібні, щоб на кліку
-		// вантажити дизайни теми прямо тут, без переходу на фільтр-сторінку.
-		const FILTER_TYPES = ['cat', 'form_factor', 'material']
-		const themeTree = ((filters as IFilterNode[]) || [])
-			.filter((f) => !FILTER_TYPES.includes(f.type || ''))
-			.map((f) => ({
-				alias: f.alias,
-				title: f.title,
-				id: f.id ?? 0,
-				children: (f.items || []).map((i) => ({ alias: i.alias, title: i.title, id: i.id ?? 0 })),
-			}))
+		// Дерево тем для меню-перемикача (спільне з конструктором — useThemeDesigns)
+		const themeTree = buildThemeTree(filters as IFilterNode[])
 
 		return {
 			landingId: neoprint.id,
@@ -240,14 +231,17 @@ if (!data.value) {
 }
 
 // Дизайн у «плівці» галереї/рейлу (getNeoPrint віддає any, тож типізуємо явно)
-type NpDesign = { id: number; alias: string; title: string; filter_id: number }
-type ThemeNode = { alias: string; title: string; id: number; children: { alias: string; title: string; id: number }[] }
+type NpDesign = IThemeDesign
+type ThemeNode = IThemeNode
 
 const category = computed(() => data.value!.category)
 const themeTree = data.value!.themeTree as ThemeNode[]
 
 // Показані зараз дизайни (галерея + рейл). Реф, бо меню тем перемикає набір без навігації.
 const designs = ref<NpDesign[]>([...data.value!.designs])
+
+// Перемикач тем без навігації (спільний із конструктором)
+const { switching, applyTheme, isModifiedClick } = useThemeDesigns(designs)
 
 // Форми назви моделі: повна — у назві товару, крихтах і meta; коротка — у перелінковці
 // («Усі чохли для Galaxy S25 Ultra»), щоб повна не повторювалась поспіль у сусідніх рядках
@@ -256,9 +250,6 @@ const modelName = computed(() => names.value.full)
 
 // ---------- Активний дизайн (перемикання без навігації, як вибір принта на сторінці товару) ----------
 const activeId = ref<number>(data.value!.landingId)
-
-// Мережева пауза при перемиканні теми — приглушуємо сітку, щоб клік мав миттєвий відгук
-const switching = ref(false)
 
 // ---------- Обрана тема/підтема в меню (керує набором дизайнів і підсвіткою) ----------
 const selectedParentAlias = ref<string | null>(data.value!.initialParentAlias)
@@ -317,50 +308,19 @@ function selectDesign(index: number) {
 // Клік по мініатюрі: звичайний лівий — перемикаємо дизайн на місці; з модифікатором або
 // середньою кнопкою — не заважаємо браузеру відкрити сторінку дизайну (нова вкладка/вікно).
 function onThumbClick(e: MouseEvent, index: number) {
-	if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return
+	if (isModifiedClick(e)) return
 	e.preventDefault()
 	selectDesign(index)
 }
 
 // ---------- Перемикання теми в меню (без навігації): вантажимо дизайни теми прямо тут ----------
-// Дизайни теми = її власний filter_id + усі підтеми: дизайни бувають прив'язані і напряму до теми
-// (напр. «Футболисты»), і до підтем. Тому беремо обидва рівні, інакше тема «не відкривається».
-// id > 0 — захист від службових/порожніх вузлів (getNeoPrints(0) віддав би сміття → 404).
-async function loadThemeDesigns(node: { id: number; children?: { id: number }[] }): Promise<NpDesign[]> {
-	const toDesigns = (arr: any[]): NpDesign[] =>
-		(Array.isArray(arr) ? arr : []).map((n) => ({ id: n.id, alias: n.alias, title: n.title, filter_id: n.filter_id }))
-	const ids = [...new Set([node.id, ...(node.children || []).map((c) => c.id)].filter((cid) => cid > 0))]
-	if (!ids.length) return []
-	const batches = await Promise.all(ids.map((cid) => shopApi.getNeoPrints(cid)))
-	return interleave(batches.map(toDesigns)).slice(0, 30)
-}
-
-// Тільки останній клік застосовується — захист від гонки при швидкому перемиканні тем
-let switchToken = 0
-
-// true — застосовано (або запит застарів); false — у теми немає жодного дизайну.
-async function applyTheme(node: { id: number; children?: { id: number }[] }, commitSelection: () => void): Promise<boolean> {
-	const token = ++switchToken
-	switching.value = true
-	try {
-		const list = await loadThemeDesigns(node)
-		if (token !== switchToken) return true // прийшов новіший клік — цей застарів
-		if (!list.length) return false
-		designs.value = list
-		commitSelection()
-		activeId.value = list[0].id
-		return true
-	} finally {
-		if (token === switchToken) switching.value = false
-	}
-}
-
 // Клік по темі верхнього рівня → показати всі її дизайни (перемежовані підтеми)
 function selectTopTheme(node: ThemeNode) {
 	if (node.alias === selectedParentAlias.value && !selectedChildAlias.value) return
 	applyTheme(node, () => {
 		selectedParentAlias.value = node.alias
 		selectedChildAlias.value = null
+		activeId.value = designs.value[0].id
 	})
 }
 
@@ -370,23 +330,27 @@ async function selectSubtheme(node: { alias: string; id: number }) {
 	if (node.alias === selectedChildAlias.value) return
 	const applied = await applyTheme(node, () => {
 		selectedChildAlias.value = node.alias
+		activeId.value = designs.value[0].id
 	})
 	if (!applied) {
 		const parent = selectedParent.value
-		if (parent) applyTheme(parent, () => { selectedChildAlias.value = null })
+		if (parent) applyTheme(parent, () => {
+			selectedChildAlias.value = null
+			activeId.value = designs.value[0].id
+		})
 	}
 }
 
 // Меню — справжні посилання на фільтр-сторінки (SEO/нова вкладка), а звичайний клік
 // перемикає набір дизайнів тут, без переходу.
 function onThemeClick(e: MouseEvent, node: ThemeNode) {
-	if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return
+	if (isModifiedClick(e)) return
 	e.preventDefault()
 	selectTopTheme(node)
 }
 
 function onSubthemeClick(e: MouseEvent, node: { alias: string; id: number }) {
-	if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return
+	if (isModifiedClick(e)) return
 	e.preventDefault()
 	selectSubtheme(node)
 }
@@ -480,54 +444,7 @@ onMounted(() => shopApi.addVisit(category.value.id, 0, activeId.value, activeDes
 </script>
 
 <style scoped>
-/* ---------- Меню тем (над блоком принтів у рейлі) — перевикористовує .chip з main.css ---------- */
-.theme-nav {
-	margin-bottom: 18px;
-}
-
-/* Ряд тем переноситься, щоб усі теми було видно повністю (без обрізання/скролу).
-   flex:0 0 auto + nowrap — чип тримає власну ширину й не ламає назву. */
-.theme-nav__row {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px;
-}
-
-.theme-nav__chip {
-	flex: 0 0 auto;
-	white-space: nowrap;
-	font-weight: 500;
-}
-
-/* Підтеми активної теми — одна загальна обводка навколо всього блоку, а пункти всередині
-   без власних чипів: звичайні текстові посилання. Мінімалістично й компактно; рівень
-   «тема → підтеми» показує сам контур, без ваги окремих плашок. */
-.theme-nav__sub {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 7px 16px;
-	margin-top: 10px;
-	padding: 9px 14px;
-	border: 1px solid var(--border);
-	border-radius: var(--radius);
-}
-
-.theme-nav__sublink {
-	font-size: 13px;
-	color: var(--text-soft);
-	white-space: nowrap;
-	transition: color 0.15s;
-}
-
-.theme-nav__sublink:hover {
-	color: var(--accent);
-}
-
-.theme-nav__sublink.is-active {
-	color: var(--accent);
-	font-weight: 700;
-}
+/* Меню тем (.theme-nav) — база в main.css: його ділять сторінка дизайну і конструктор */
 
 .np-layout {
 	display: grid;

@@ -694,6 +694,57 @@ img.np-img {
 	color: inherit;
 }
 
+/* ---------- Меню тем принтів (сторінка дизайну + конструктор чохлів) ----------
+   Чипи перемикають показані дизайни без переходу на іншу сторінку, тож блок
+   потрібен обом компонентам — база живе тут, а не в scoped. */
+.theme-nav {
+	margin-bottom: 18px;
+}
+
+/* Ряд тем переноситься, щоб усі теми було видно повністю (без обрізання/скролу).
+   flex:0 0 auto + nowrap — чип тримає власну ширину й не ламає назву. */
+.theme-nav__row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.theme-nav__chip {
+	flex: 0 0 auto;
+	white-space: nowrap;
+	font-weight: 500;
+}
+
+/* Підтеми активної теми — одна загальна обводка навколо всього блоку, а пункти всередині
+   без власних чипів: звичайні текстові посилання. Мінімалістично й компактно; рівень
+   «тема → підтеми» показує сам контур, без ваги окремих плашок. */
+.theme-nav__sub {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 7px 16px;
+	margin-top: 10px;
+	padding: 9px 14px;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+}
+
+.theme-nav__sublink {
+	font-size: 13px;
+	color: var(--text-soft);
+	white-space: nowrap;
+	transition: color 0.15s;
+}
+
+.theme-nav__sublink:hover {
+	color: var(--accent);
+}
+
+.theme-nav__sublink.is-active {
+	color: var(--accent);
+	font-weight: 700;
+}
+
 /* ---------- Typography content (articles, descriptions) ---------- */
 .typography {
 	color: var(--text-soft);

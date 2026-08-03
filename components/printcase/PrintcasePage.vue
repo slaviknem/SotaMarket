@@ -175,28 +175,75 @@
 			</nav>
 		</section>
 
-		<!-- SEO-стаття: своя стаття моделі → шаблон із підставленою моделлю → (нічого) -->
-		<article v-if="articleHtml" class="pc-block typography" v-html="contentHtml(articleHtml)" />
-
 		<!-- Готові дизайни: той самий друк, але без малювання. Унікальний контент і
-		     перелінковка на /neoprint/{модель}/{дизайн}. -->
+		     перелінковка на /neoprint/{модель}/{дизайн}.
+		     Стоять вище статті: після конструктора користувачу потрібен наступний крок
+		     (обрати готовий принт), а не текст. -->
 		<section v-if="designs.length && category" class="pc-block">
 			<div class="section-title">
-				<h2>{{ t('printcase.seo.designs', { model: names.short_ }) }}</h2>
+				<h2>{{ designsTitle }}</h2>
 			</div>
 			<p class="pc-block__note text-muted">{{ t('printcase.seo.designsNote', { model: names.short_ }) }}</p>
 
-			<div class="products-grid products-grid--left">
+			<!-- Меню тем: клік перемикає показані дизайни ТУТ, без переходу — інакше зник би
+			     намальований макет. Чипи лишаються справжніми посиланнями на фільтр-сторінки
+			     моделі (краулери, нова вкладка), звичайний клік перехоплюємо. -->
+			<nav v-if="themeTree.length" class="theme-nav" :aria-label="t('filters.type.theme')">
+				<div class="theme-nav__row">
+					<button
+						class="chip theme-nav__chip"
+						:class="{ 'is-active': !selectedParentAlias }"
+						@click="resetTheme"
+					>
+						{{ t('printcase.seo.allThemes') }}
+					</button>
+					<a
+						v-for="tp in themeTree"
+						:key="tp.alias"
+						:href="url.category(category.alias, tp.alias)"
+						class="chip theme-nav__chip"
+						:class="{ 'is-active': tp.alias === selectedParentAlias }"
+						@click="onThemeClick($event, tp)"
+					>
+						{{ tp.title }}
+					</a>
+				</div>
+
+				<!-- Підтеми лише активної теми: інакше на сторінці було б під сотню анкорів -->
+				<div v-if="subthemes.length" class="theme-nav__sub">
+					<a
+						v-for="st in subthemes"
+						:key="st.alias"
+						:href="url.category(category.alias, st.alias)"
+						class="theme-nav__sublink"
+						:class="{ 'is-active': st.alias === selectedChildAlias }"
+						@click="onSubthemeClick($event, st)"
+					>
+						{{ st.title }}
+					</a>
+				</div>
+			</nav>
+
+			<div class="products-grid products-grid--left" :class="{ 'is-switching': switching }">
 				<NeoPrintCard v-for="np in designs" :key="np.id" :neoprint="np" :category="category" />
 			</div>
 		</section>
 
+		<!-- SEO-стаття: своя стаття моделі → шаблон із підставленою моделлю → (нічого) -->
+		<article v-if="articleHtml" class="pc-block typography" v-html="contentHtml(articleHtml)" />
+
 		<!-- FAQ під модель: питання будуються з даних сторінки, JSON-LD — усередині ShopFaqList -->
 		<ShopFaqList v-if="faqItems.length" :title="t('printcase.seo.faq.title', { model: names.full })" :items="faqItems" />
 
-		<!-- Перелінковка: конструктор → каталог моделі та бренду -->
+		<!-- Перелінковка: конструктор моделі → хаб конструктора, каталог моделі та бренду.
+		     Посилання на хаб важливе: раніше всі моделі жили на ?model= з canonical на /printcase
+		     і вся вага йшла туди. Тепер у кожної моделі своя адреса, тож хаб має отримувати
+		     зворотні посилання з них — інакше лишається лише з хедера/футера. -->
 		<nav v-if="category" class="pc-links" :aria-label="t('neoprint.seeAlso')">
 			<span class="pc-links__label">{{ t('neoprint.seeAlso') }}:</span>
+			<NuxtLink :to="url.printcase()" class="chip">
+				{{ t('printcase.seo.hubLink') }}
+			</NuxtLink>
 			<NuxtLink :to="url.category(category.alias)" class="chip">
 				{{ t('neoprint.allModel', { model: names.short_ }) }}
 			</NuxtLink>
@@ -242,6 +289,7 @@
 // history.replaceState і підвантажує контент нової моделі — як перемикання дизайну на
 // сторінці /neoprint.
 
+import type { IThemeDesign, IThemeNode } from '~/composables/useThemeDesigns'
 import type { StageEl } from '~/components/printcase/StageElement.vue'
 import type { TextForm } from '~/components/printcase/TextModal.vue'
 import { STAGE_W, STAGE_H } from '~/components/printcase/PrintcaseStage.vue'
@@ -283,11 +331,14 @@ function printAvailable(cat: any): boolean {
 // Стаття своя (printcase-{модель}) має пріоритет над шаблоном (printcase-template),
 // у якому підставляються плейсхолдери моделі — та сама механіка, що на сторінках фільтрів.
 async function fetchModelBundle(alias: string) {
-	const [category, own, tpl, designs] = await Promise.all([
+	const [category, own, tpl, designs, filters] = await Promise.all([
 		shopApi.getCategoryByAlias(alias),
 		shopApi.getArticleByAlias(`printcase-${alias}`),
 		shopApi.getArticleByAlias('printcase-template'),
 		$fetch<any[]>('/api/printcase/designs', { params: { lang: locale.value } }).catch(() => []),
+		// Дерево тем для меню над дизайнами. У ту саму хвилю — latency не росте, а payload
+		// тримаємо коротким: лише alias/title/id тем і підтем (лічильники тут не потрібні).
+		shopApi.getFilters(alias).catch(() => []),
 	])
 
 	if (!category?.id || category.type !== 'model') return null
@@ -320,9 +371,13 @@ async function fetchModelBundle(alias: string) {
 			brend: category.brend ? { alias: category.brend.alias, title: category.brend.title } : null,
 		},
 		articleHtml: ownText || tplText,
+		// H1 з адмінки — лише у власної статті моделі: у шаблона в title лежить службова
+		// назва («Шаблон статті…»), її на сторінку виводити не можна
+		articleTitle: ownArticle?.title || '',
 		metaTitle: ownArticle?.meta_title || fromTpl('meta_title'),
 		metaDescription: ownArticle?.meta_description || fromTpl('meta_description'),
 		designs: category.printcase ? designs : [],
+		themeTree: category.printcase ? buildThemeTree(filters) : [],
 		articleId: 0,
 		hubReviews: [] as any[],
 		popularModels: [] as { alias: string; title: string }[],
@@ -342,9 +397,12 @@ async function fetchHubBundle() {
 		model: null,
 		category: null,
 		articleHtml: article?.text || '',
+		// H1 хаба керується з адмінки (як на старому сайті) — i18n лишається фолбеком
+		articleTitle: article?.title || '',
 		metaTitle: article?.meta_title || '',
 		metaDescription: article?.meta_description || '',
 		designs: [] as any[],
+		themeTree: [] as IThemeNode[],
 		articleId: article?.id || 0,
 		hubReviews: (article?.reviews || []) as any[],
 		popularModels: (popular || []).map((m: any) => ({ alias: m.alias, title: m.title_full || m.title })),
@@ -361,13 +419,87 @@ if (props.modelAlias && !data.value) {
 }
 
 const category = computed(() => data.value?.category || null)
-const designs = computed(() => data.value?.designs || [])
 const articleHtml = computed(() => data.value?.articleHtml || '')
 const articleId = computed(() => data.value?.articleId || 0)
 const hubReviews = computed(() => data.value?.hubReviews || [])
 const popularModels = computed(() => data.value?.popularModels || [])
 
 const names = computed(() => catNames(category.value))
+
+// ---------- Готові дизайни та меню тем ----------
+// Стартовий набір — мікс різних тем із кешованої ручки (однаковий для всіх моделей).
+// Клік по темі підмінює його дизайнами теми ПРЯМО ТУТ: навігація знищила б намальоване,
+// рівно з тієї ж причини, що й вибір моделі. URL сторінки при цьому не змінюється —
+// /printcase/{модель} має лишатись однією адресою у видачі.
+const mixedDesigns = computed<IThemeDesign[]>(() => data.value?.designs || [])
+const designs = ref<IThemeDesign[]>([...mixedDesigns.value])
+const themeTree = computed<IThemeNode[]>(() => (data.value?.themeTree || []) as IThemeNode[])
+
+const { switching, applyTheme, isModifiedClick } = useThemeDesigns(designs)
+
+const selectedParentAlias = ref<string | null>(null)
+const selectedChildAlias = ref<string | null>(null)
+
+const selectedParent = computed(() => themeTree.value.find((tn) => tn.alias === selectedParentAlias.value) || null)
+const subthemes = computed(() => selectedParent.value?.children || [])
+
+// Назва активної теми для заголовка секції («Готові дизайни: Квіти для Galaxy S25»)
+const activeThemeTitle = computed(() => {
+	if (selectedChildAlias.value) {
+		const c = subthemes.value.find((s) => s.alias === selectedChildAlias.value)
+		if (c) return c.title
+	}
+	return selectedParent.value?.title || ''
+})
+
+const designsTitle = computed(() =>
+	activeThemeTitle.value
+		? t('printcase.seo.designsTheme', { theme: activeThemeTitle.value, model: names.value.short_ })
+		: t('printcase.seo.designs', { model: names.value.short_ })
+)
+
+// Повернення до стартового міксу тем
+function resetTheme() {
+	selectedParentAlias.value = null
+	selectedChildAlias.value = null
+	designs.value = [...mixedDesigns.value]
+}
+
+function selectTopTheme(node: IThemeNode) {
+	if (node.alias === selectedParentAlias.value && !selectedChildAlias.value) return
+	applyTheme(node, () => {
+		selectedParentAlias.value = node.alias
+		selectedChildAlias.value = null
+	})
+}
+
+// Клік по підтемі → її дизайни; якщо власних немає (прив'язані до теми-батька) — показуємо
+// всю батьківську тему, щоб клік не був «мертвим»
+async function selectSubtheme(node: { alias: string; id: number }) {
+	if (node.alias === selectedChildAlias.value) return
+	const applied = await applyTheme(node, () => {
+		selectedChildAlias.value = node.alias
+	})
+	if (!applied && selectedParent.value) {
+		applyTheme(selectedParent.value, () => {
+			selectedChildAlias.value = null
+		})
+	}
+}
+
+// Чипи лишаються справжніми посиланнями на фільтр-сторінки моделі (краулери, нова вкладка),
+// а звичайний клік перемикає набір дизайнів тут
+function onThemeClick(e: MouseEvent, node: IThemeNode) {
+	if (isModifiedClick(e)) return
+	e.preventDefault()
+	selectTopTheme(node)
+}
+
+function onSubthemeClick(e: MouseEvent, node: { alias: string; id: number }) {
+	if (isModifiedClick(e)) return
+	e.preventDefault()
+	selectSubtheme(node)
+}
 
 // ---------- Модель та маска ----------
 const DEFAULT_MASK = '/images/printcase/default_mask.png'
@@ -422,6 +554,8 @@ async function selectModel(m: any) {
 	if (!bundle) return
 	data.value = bundle
 	model.value = bundle.model
+	// Теми в іншої моделі свої — вибір скидаємо на стартовий мікс нового бандла
+	resetTheme()
 }
 
 onMounted(() => {
@@ -839,9 +973,14 @@ async function addToExistingOrder() {
 // ---------- Тексти сторінки ----------
 const isModelPage = computed(() => !!category.value)
 
-const h1 = computed(() =>
-	isModelPage.value ? t('printcase.seo.h1', { model: names.value.full }) : t('printcase.constructor')
-)
+// H1: назва статті з адмінки має пріоритет (нею керували H1 на старому сайті), далі — i18n.
+// Для хаба це не «Конструктор чохлів» (назва інструмента), а сама послуга: хаб тепер цілиться
+// в загальні запити, бо модельні забрали свої сторінки. printcase.constructor лишається
+// коротким лейблом для меню, крихт і кнопок.
+const h1 = computed(() => {
+	if (data.value?.articleTitle) return data.value.articleTitle
+	return isModelPage.value ? t('printcase.seo.h1', { model: names.value.full }) : t('printcase.seo.hubH1')
+})
 
 // Лід над конструктором: коротко про послугу. На сторінці моделі — з її назвою,
 // тож навіть без статті сторінка має власний осмислений текст.
@@ -888,7 +1027,7 @@ const shareImage = computed(() => url.absolute('/images/printcase/printcase_prod
 usePageSeo({
 	title: () =>
 		data.value?.metaTitle ||
-		(isModelPage.value ? t('printcase.seo.metaTitle', { model: names.value.full }) : t('printcase.constructor')),
+		(isModelPage.value ? t('printcase.seo.metaTitle', { model: names.value.full }) : t('printcase.seo.hubH1')),
 	description: () =>
 		data.value?.metaDescription ||
 		(isModelPage.value
@@ -1328,6 +1467,16 @@ if (!isModelPage.value) {
 	margin: -6px 0 16px;
 	font-size: 14px;
 	line-height: 1.5;
+}
+
+/* Поки вантажаться дизайни іншої теми — приглушуємо сітку (миттєвий відгук на клік) */
+.products-grid {
+	transition: opacity 0.15s;
+}
+
+.products-grid.is-switching {
+	opacity: 0.45;
+	pointer-events: none;
 }
 
 .pc-models {
