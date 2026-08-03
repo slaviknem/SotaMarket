@@ -1,7 +1,7 @@
 <template>
 	<div
 		class="stage-el"
-		:class="{ 'is-active': element.activated }"
+		:class="{ 'is-active': element.activated, 'is-hidden': element.hidden }"
 		:style="boxStyle"
 		@pointerdown.stop="startDrag"
 		@dblclick.stop="element.type === 'text' && $emit('editText')"
@@ -59,6 +59,7 @@ export interface StageEl {
 	height: number
 	rotation: number
 	activated: boolean
+	hidden?: boolean // шар вимкнено «оком» у списку шарів: не видно на макеті й не йде у друк
 	color?: string
 	font?: string
 	bold?: boolean
@@ -218,6 +219,11 @@ onUnmounted(() => window.removeEventListener('pointermove', onMove))
 	outline: 1.5px dashed var(--accent);
 	outline-offset: 0;
 	z-index: 3;
+}
+
+/* Схований шар: індекси в масиві мають лишитись, тож ховаємо, а не викидаємо з DOM */
+.stage-el.is-hidden {
+	display: none;
 }
 
 .stage-el__img {

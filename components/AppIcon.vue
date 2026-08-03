@@ -67,6 +67,22 @@ const ICONS: Record<string, IconDef> = {
 	edit: {
 		path: '<path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>',
 	},
+	lock: {
+		path: '<rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+		round: true,
+	},
+	plus: {
+		path: '<path d="M12 5v14M5 12h14"/>',
+		round: true,
+	},
+	eye: {
+		path: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>',
+		round: true,
+	},
+	'eye-off': {
+		path: '<path d="M10.7 6.2A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17.4 17.4 0 0 1-3.4 4.2M6.5 7.6A17.3 17.3 0 0 0 2 12s3.6 7 10 7a9.9 9.9 0 0 0 4.6-1.1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="M3 3l18 18"/>',
+		round: true,
+	},
 	home: {
 		path: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.8V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.8"/><path d="M9.5 21v-6h5v6"/>',
 		round: true,

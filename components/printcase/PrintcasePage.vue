@@ -23,6 +23,8 @@
 						@deselect="setActive(null)"
 						@wheel-zoom="(dir) => (dir > 0 ? zoomIn() : zoomOut())"
 						@request-model="modelModalOpen = true"
+						@add-image="fileInput?.click()"
+						@open-library="libraryOpen = true"
 					/>
 				</div>
 
@@ -52,14 +54,22 @@
 						</button>
 					</div>
 
-					<label class="ctrl-bg" :title="t('printcase.control.colorBG')">
+					<!-- Колір фону: спектральний обідець + підпис, інакше читається як «ще одна кнопка».
+					     Обертання вмикаємо лише на старті (модель є, макет порожній) — разом з «+» на
+					     сцені це показує обидва перші кроки; щойно з'явився перший шар, панель затихає. -->
+					<label class="ctrl-bg" :class="{ 'is-hint': model && !elements.length }" :title="t('printcase.control.colorBG')">
 						<input v-model="backgroundColor" type="color" />
-						<span class="ctrl-bg__swatch" :style="{ background: backgroundColor }" />
+						<span class="ctrl-bg__ring">
+							<span class="ctrl-bg__swatch" :style="{ background: backgroundColor }" />
+						</span>
+						<span class="ctrl-bg__label">{{ t('printcase.control.bgShort') }}</span>
 					</label>
 				</div>
 			</div>
 
-			<!-- Панель дій -->
+			<!-- Панель дій. Без вибраної моделі інструменти не зникають, а стоять неактивними:
+			     колонка не порожніє поряд з високим макетом, і одразу видно, що вміє конструктор.
+			     Клік по будь-якому з них веде до вибору моделі — «мертвих» кнопок немає. -->
 			<div class="pc-actions-col">
 				<!-- Вибрана модель -->
 				<button class="pc-model-btn" @click="modelModalOpen = true">
@@ -67,95 +77,133 @@
 					<AppIcon name="edit" :size="15" />
 				</button>
 
-				<template v-if="model">
-					<!-- Дії -->
-					<input ref="fileInput" type="file" accept="image/*" multiple style="display: none" @change="addImagesFromDisk" />
+				<p v-if="!model" class="pc-locked-note">
+					<AppIcon name="lock" :size="14" />
+					{{ t('printcase.lockedHint') }}
+				</p>
 
-					<button class="pc-action" @click="fileInput?.click()">
-						<span class="pc-action__icon">
-							<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-						</span>
-						{{ t('printcase.addImage') }}
-					</button>
+				<!-- Дії -->
+				<input ref="fileInput" type="file" accept="image/*" multiple style="display: none" @change="addImagesFromDisk" />
 
-					<!-- Текст: коли виділено текст — зліва «+» додавання, праворуч редагування з прев'ю тексту -->
-					<div v-if="isActiveText" class="pc-action pc-action--split" @pointerdown.stop>
-						<button class="pc-action__add" :title="t('printcase.addText')" @click="openTextAdd">
-							<span class="pc-action__icon">
-								<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7V5h16v2M12 5v14M9 19h6"/></svg>
-								<span class="pc-action__plus">+</span>
-							</span>
-						</button>
-						<button class="pc-action__edit" :title="t('printcase.editText')" @click="openTextEdit(activeIndex)">
-							<AppIcon name="edit" :size="16" />
-							<span class="pc-action__edit-txt" :style="{ fontFamily: `'${activeEl?.font}', sans-serif` }">{{ activeEl?.text || t('printcase.editText') }}</span>
-						</button>
-					</div>
+				<button class="pc-action" :class="{ 'is-locked': !model }" :aria-disabled="!model" @click="withModel(() => fileInput?.click())">
+					<span class="pc-action__icon">
+						<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+					</span>
+					{{ t('printcase.addImage') }}
+				</button>
 
-					<button v-else class="pc-action" @click="openTextAdd">
+				<!-- Текст: коли виділено текст — зліва «+» додавання, праворуч редагування з прев'ю тексту -->
+				<div v-if="isActiveText" class="pc-action pc-action--split" @pointerdown.stop>
+					<button class="pc-action__add" :title="t('printcase.addText')" @click="openTextAdd">
 						<span class="pc-action__icon">
 							<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7V5h16v2M12 5v14M9 19h6"/></svg>
+							<span class="pc-action__plus">+</span>
 						</span>
-						{{ t('printcase.addText') }}
 					</button>
+					<button class="pc-action__edit" :title="t('printcase.editText')" @click="openTextEdit(activeIndex)">
+						<AppIcon name="edit" :size="16" />
+						<span class="pc-action__edit-txt" :style="{ fontFamily: `'${activeEl?.font}', sans-serif` }">{{ activeEl?.text || t('printcase.editText') }}</span>
+					</button>
+				</div>
 
-					<button class="pc-action" @click="libraryOpen = true">
-						<span class="pc-action__icon">
-							<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+				<button v-else class="pc-action" :class="{ 'is-locked': !model }" :aria-disabled="!model" @click="withModel(openTextAdd)">
+					<span class="pc-action__icon">
+						<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7V5h16v2M12 5v14M9 19h6"/></svg>
+					</span>
+					{{ t('printcase.addText') }}
+				</button>
+
+				<button class="pc-action" :class="{ 'is-locked': !model }" :aria-disabled="!model" @click="withModel(() => (libraryOpen = true))">
+					<span class="pc-action__icon">
+						<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+					</span>
+					{{ t('printcase.fromLibraryImage') }}
+				</button>
+
+				<!-- Шари -->
+				<div v-if="elements.length" class="pc-layers card" @pointerdown.stop>
+					<div class="pc-panel-title">
+						<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+						{{ t('printcase.layers') }}
+					</div>
+					<div
+						v-for="(el, revIdx) in reversedElements"
+						:key="elements.length - 1 - revIdx"
+						class="pc-layer"
+						:class="{
+							'is-active': activeIndex === elements.length - 1 - revIdx,
+							'is-hidden': el.hidden,
+						}"
+						@click="onLayerClick(elements.length - 1 - revIdx)"
+					>
+						<img v-if="el.type === 'image'" :src="el.url" class="pc-layer__thumb" alt="" />
+						<span v-else class="pc-layer__thumb pc-layer__thumb--text">T</span>
+						<span class="pc-layer__name">
+							{{ el.type === 'text' ? el.text : `${t('printcase.layerImage')} ${elements.length - revIdx}` }}
 						</span>
-						{{ t('printcase.fromLibraryImage') }}
-					</button>
-
-					<!-- Шари -->
-					<div v-if="elements.length" class="pc-layers" @pointerdown.stop>
-						<div class="pc-layers__title">
-							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-							{{ t('printcase.layers') }}
+						<div class="pc-layer__actions">
+							<button
+								class="pc-layer__btn"
+								:class="{ 'is-off': el.hidden }"
+								:title="el.hidden ? t('printcase.layerShow') : t('printcase.layerHide')"
+								:aria-pressed="!el.hidden"
+								@click.stop="toggleHidden(elements.length - 1 - revIdx)"
+							>
+								<AppIcon :name="el.hidden ? 'eye-off' : 'eye'" :size="14" />
+							</button>
+							<button class="pc-layer__btn" :disabled="revIdx === 0" :title="t('printcase.control.layerUp')" @click.stop="moveLayerUp(elements.length - 1 - revIdx)">
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+							</button>
+							<button class="pc-layer__btn" :disabled="revIdx === elements.length - 1" :title="t('printcase.control.layerDown')" @click.stop="moveLayerDown(elements.length - 1 - revIdx)">
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+							</button>
+							<button class="pc-layer__btn pc-layer__btn--del" :title="t('printcase.control.delete')" @click.stop="removeElement(elements.length - 1 - revIdx)">
+								<AppIcon name="close" :size="13" :stroke-width="2.4" />
+							</button>
 						</div>
-						<div
-							v-for="(el, revIdx) in reversedElements"
-							:key="elements.length - 1 - revIdx"
-							class="pc-layer"
-							:class="{ 'is-active': activeIndex === elements.length - 1 - revIdx }"
-							@click="setActive(elements.length - 1 - revIdx)"
-						>
-							<img v-if="el.type === 'image'" :src="el.url" class="pc-layer__thumb" alt="" />
-							<span v-else class="pc-layer__thumb pc-layer__thumb--text">T</span>
-							<span class="pc-layer__name">
-								{{ el.type === 'text' ? el.text : `${t('printcase.layerImage')} ${elements.length - revIdx}` }}
+					</div>
+				</div>
+
+				<!-- Поки модель не вибрана — на місці шарів стоїть інструкція: колонка
+				     заповнена, а кроки HowTo-розмітки хаба отримують видимий текст -->
+				<div v-if="!model" class="pc-steps card">
+					<h2 class="pc-panel-title">
+						<AppIcon name="bolt" :size="15" />
+						{{ t('printcase.howItWorks') }}
+					</h2>
+					<ol class="pc-steps__list">
+						<li v-for="i in 4" :key="i" class="pc-step">
+							<span class="pc-step__num">{{ i }}</span>
+							<span class="pc-step__body">
+								<b>{{ t(`printcase.seo.howTo.step${i}.name`) }}</b>
+								{{ t(`printcase.seo.howTo.step${i}.text`) }}
 							</span>
-							<div class="pc-layer__actions">
-								<button class="pc-layer__btn" :disabled="revIdx === 0" :title="t('printcase.control.layerUp')" @click.stop="moveLayerUp(elements.length - 1 - revIdx)">
-									<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-								</button>
-								<button class="pc-layer__btn" :disabled="revIdx === elements.length - 1" :title="t('printcase.control.layerDown')" @click.stop="moveLayerDown(elements.length - 1 - revIdx)">
-									<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
-								</button>
-								<button class="pc-layer__btn pc-layer__btn--del" :title="t('printcase.control.delete')" @click.stop="removeElement(elements.length - 1 - revIdx)">
-									<AppIcon name="close" :size="13" :stroke-width="2.4" />
-								</button>
-							</div>
-						</div>
+						</li>
+					</ol>
+				</div>
+
+				<!-- Ціна та купівля -->
+				<div class="pc-buy card">
+					<div class="pc-buy__prices">
+						<span class="pc-buy__price">{{ formatPrice(price) }}</span>
+						<span class="pc-buy__price-old">{{ formatPrice(priceOld) }}</span>
 					</div>
 
-					<!-- Ціна та купівля -->
-					<div class="pc-buy">
-						<div class="pc-buy__prices">
-							<span class="pc-buy__price">{{ formatPrice(price) }}</span>
-							<span class="pc-buy__price-old">{{ formatPrice(priceOld) }}</span>
-						</div>
+					<button
+						v-if="model"
+						class="btn btn-lg btn-block"
+						:class="model.available ? 'btn-primary' : 'btn-outline'"
+						:disabled="generating || !visibleElements.length"
+						@click="orderId ? addToExistingOrder() : addToCart()"
+					>
+						<AppIcon v-if="!generating" name="cart" :size="18" />
+						{{ buyLabel }}
+					</button>
 
-						<button
-							class="btn btn-lg btn-block"
-							:class="model.available ? 'btn-primary' : 'btn-outline'"
-							:disabled="generating || !elements.length"
-							@click="orderId ? addToExistingOrder() : addToCart()"
-						>
-							<AppIcon v-if="!generating" name="cart" :size="18" />
-							{{ buyLabel }}
-						</button>
-					</div>
-				</template>
+					<button v-else class="btn btn-lg btn-block btn-outline" @click="modelModalOpen = true">
+						{{ t('printcase.seo.pickModel') }}
+					</button>
+				</div>
 			</div>
 		</div>
 
@@ -562,12 +610,25 @@ onMounted(() => {
 	if (model.value) loadMask(model.value.alias)
 })
 
+// Інструменти без моделі стоять неактивними (клас is-locked), але клік по них не «мертвий» —
+// відкриває вибір моделі: це рівно той крок, якого бракує
+function withModel(fn: () => void) {
+	if (!model.value) {
+		modelModalOpen.value = true
+		return
+	}
+	fn()
+}
+
 // ---------- Елементи ----------
 const elements = ref<StageEl[]>([])
 const activeIndex = ref<number | null>(null)
 const libraryOpen = ref(false)
 
 const reversedElements = computed(() => [...elements.value].reverse())
+
+// Що реально буде надруковано: сховані «оком» шари лишаються в списку, але не йдуть у макет
+const visibleElements = computed(() => elements.value.filter((el: StageEl) => !el.hidden))
 
 // Активний елемент і чи це текст (для кнопки редагування тексту)
 const activeEl = computed(() => (activeIndex.value !== null ? elements.value[activeIndex.value] : null))
@@ -590,6 +651,21 @@ function removeElement(i: number | null) {
 	if (i === null || i < 0) return
 	elements.value.splice(i, 1)
 	setActive(null)
+}
+
+// «Око» в списку шарів: тимчасово прибрати шар з макета, не видаляючи його
+function toggleHidden(i: number) {
+	const el = elements.value[i]
+	if (!el) return
+	el.hidden = !el.hidden
+	// Виділення на невидимому елементі лишало б активними інструменти, які ні на що не діють
+	if (el.hidden && activeIndex.value === i) setActive(null)
+}
+
+// Клік по рядку схованого шару повертає його на макет — інакше рядок був би «мертвим»
+function onLayerClick(i: number) {
+	if (elements.value[i]?.hidden) return toggleHidden(i)
+	setActive(i)
 }
 
 // Додаємо зображення (вписане в сцену, по центру)
@@ -843,8 +919,8 @@ async function renderCanvas(width: number, withMask: boolean): Promise<string> {
 	ctx.fillStyle = backgroundColor.value
 	ctx.fillRect(0, 0, width, height)
 
-	// Елементи в порядку шарів
-	for (const el of elements.value) {
+	// Елементи в порядку шарів (сховані «оком» — повз)
+	for (const el of visibleElements.value) {
 		ctx.save()
 		ctx.translate((el.x + el.width / 2) * k, (el.y + el.height / 2) * k)
 		ctx.rotate((el.rotation * Math.PI) / 180)
@@ -909,7 +985,7 @@ async function generateAndUpload(): Promise<{ id: number; preview: string; sourc
 
 // Додати в кошик
 async function addToCart() {
-	if (!model.value || !elements.value.length) return
+	if (!model.value || !visibleElements.value.length) return
 
 	generating.value = true
 	try {
@@ -941,7 +1017,7 @@ async function addToCart() {
 
 // Додати до існуючого замовлення (?order_id=)
 async function addToExistingOrder() {
-	if (!model.value || !elements.value.length || !orderId.value) return
+	if (!model.value || !visibleElements.value.length || !orderId.value) return
 
 	generating.value = true
 	try {
@@ -1183,15 +1259,21 @@ if (!isModelPage.value) {
 .ctrl-bg {
 	position: relative;
 	display: flex;
+	flex-direction: column;
 	align-items: center;
-	justify-content: center;
+	gap: 3px;
 	width: 42px;
-	height: 42px;
+	padding: 6px 0 4px;
 	margin-top: auto;
 	border-radius: var(--radius-sm);
 	background: var(--bg-elevated);
 	border: 1px solid var(--border-light);
 	cursor: pointer;
+	transition: border-color 0.15s;
+}
+
+.ctrl-bg:hover {
+	border-color: var(--accent);
 }
 
 .ctrl-bg input {
@@ -1201,12 +1283,50 @@ if (!isModelPage.value) {
 	cursor: pointer;
 }
 
+/* Спектральний обідець навколо поточного кольору — однозначний сигнал «тут вибирають колір» */
+.ctrl-bg__ring {
+	display: flex;
+	padding: 3px;
+	border-radius: 50%;
+	background: var(--color-wheel);
+	transition: transform 0.3s;
+}
+
+.ctrl-bg:hover .ctrl-bg__ring {
+	transform: rotate(120deg) scale(1.08);
+}
+
+/* Поки на макеті нічого немає — обідець сам себе показує обертанням */
+.ctrl-bg.is-hint .ctrl-bg__ring {
+	animation: bg-ring-spin 9s linear infinite;
+}
+
+@keyframes bg-ring-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
 .ctrl-bg__swatch {
-	width: 24px;
-	height: 24px;
-	border-radius: var(--radius-sm);
-	border: 2px solid var(--border-light);
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	border: 2px solid var(--bg-elevated);
 	pointer-events: none;
+}
+
+.ctrl-bg__label {
+	font-size: 9.5px;
+	font-weight: 700;
+	line-height: 1;
+	color: var(--text-muted);
+	pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ctrl-bg.is-hint .ctrl-bg__ring {
+		animation: none;
+	}
 }
 
 /* Панель дій */
@@ -1253,6 +1373,45 @@ if (!isModelPage.value) {
 
 .pc-action:hover {
 	border-color: var(--accent);
+	color: var(--accent);
+}
+
+/* Неактивний інструмент (модель не вибрана): пунктирна «заготовка» замість живої кнопки */
+.pc-action.is-locked {
+	background: transparent;
+	border-style: dashed;
+	color: var(--text-muted);
+}
+
+.pc-action.is-locked .pc-action__icon {
+	background: var(--bg-elevated);
+	color: var(--text-muted);
+}
+
+.pc-action.is-locked:hover {
+	border-color: var(--accent);
+	color: var(--text-soft);
+}
+
+.pc-action.is-locked:hover .pc-action__icon {
+	background: var(--accent-soft);
+	color: var(--accent);
+}
+
+/* Підказка під кнопкою моделі — пояснює приглушені інструменти */
+.pc-locked-note {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	margin: -2px 0 0;
+	padding: 0 2px;
+	font-size: 12.5px;
+	line-height: 1.4;
+	color: var(--text-muted);
+}
+
+.pc-locked-note svg {
+	flex-shrink: 0;
 	color: var(--accent);
 }
 
@@ -1333,26 +1492,25 @@ if (!isModelPage.value) {
 	white-space: nowrap;
 }
 
-/* Шари */
-.pc-layers {
-	background: var(--bg-card);
-	border: 1px solid var(--border);
-	border-radius: var(--radius);
-	padding: 10px;
-}
-
-.pc-layers__title {
+/* Заголовок картки панелі (шари, інструкція) */
+.pc-panel-title {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+	margin: 0;
 	padding: 4px 6px 10px;
 	font-size: 13px;
 	font-weight: 700;
 	color: var(--text-soft);
 }
 
-.pc-layers__title svg {
+.pc-panel-title svg {
 	color: var(--accent);
+}
+
+/* Шари */
+.pc-layers {
+	padding: 10px;
 }
 
 .pc-layer {
@@ -1371,6 +1529,16 @@ if (!isModelPage.value) {
 
 .pc-layer.is-active {
 	background: var(--accent-soft);
+}
+
+/* Схований шар лишається в списку, але видно, що на макет він не йде */
+.pc-layer.is-hidden .pc-layer__thumb,
+.pc-layer.is-hidden .pc-layer__name {
+	opacity: 0.4;
+}
+
+.pc-layer.is-hidden .pc-layer__name {
+	text-decoration: line-through;
 }
 
 .pc-layer__thumb {
@@ -1431,12 +1599,59 @@ if (!isModelPage.value) {
 	color: var(--danger);
 }
 
+/* Вимкнене «око» світиться акцентом: одразу видно, який шар не потрапить у друк */
+.pc-layer__btn.is-off {
+	color: var(--accent);
+}
+
+/* Інструкція «як це працює» — тільки поки конструктор заблоковано */
+.pc-steps {
+	padding: 10px;
+}
+
+.pc-steps__list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	margin: 0;
+	padding: 0 6px 4px;
+	list-style: none;
+}
+
+.pc-step {
+	display: flex;
+	gap: 11px;
+}
+
+.pc-step__num {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 23px;
+	height: 23px;
+	border-radius: 50%;
+	background: var(--accent-soft);
+	color: var(--accent);
+	font-size: 12px;
+	font-weight: 800;
+}
+
+.pc-step__body {
+	font-size: 12.5px;
+	line-height: 1.45;
+	color: var(--text-muted);
+}
+
+.pc-step__body b {
+	display: block;
+	font-size: 13.5px;
+	color: var(--text-soft);
+}
+
 /* Купівля */
 .pc-buy {
 	padding: 16px;
-	background: var(--bg-card);
-	border: 1px solid var(--border);
-	border-radius: var(--radius);
 }
 
 .pc-buy__prices {
@@ -1537,7 +1752,6 @@ if (!isModelPage.value) {
 
 	.ctrl-bg {
 		width: 38px;
-		height: 38px;
 	}
 }
 </style>

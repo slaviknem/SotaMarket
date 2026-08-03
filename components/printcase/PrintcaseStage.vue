@@ -35,12 +35,28 @@
 					class="stage__mask"
 					:style="{ backgroundImage: `url(${maskUrl})` }"
 				/>
+			</div>
 
-				<!-- Підказка коли модель не вибрана -->
-				<div v-if="!hasModel" class="stage__placeholder" @pointerdown.stop="$emit('requestModel')">
-					<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4"/></svg>
-					<span>{{ t('printcase.msgSelectModel') }}</span>
-				</div>
+			<!-- Підказки лежать поза .stage__inner: той масштабується під ширину колонки,
+			     і всередині нього текст на телефоні став би вдвічі дрібнішим -->
+
+			<!-- Модель не вибрана -->
+			<div v-if="!hasModel" class="stage__placeholder" @pointerdown.stop="$emit('requestModel')">
+				<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4"/></svg>
+				<span>{{ t('printcase.msgSelectModel') }}</span>
+			</div>
+
+			<!-- Модель є, але чохол порожній: великий «+» просто на макеті — найкоротший шлях
+			     до першого фото. На телефоні панель дій узагалі нижче за екраном, тож без цієї
+			     кнопки перший крок неочевидний. -->
+			<div v-else-if="!elements.length" class="stage__empty">
+				<button class="stage__add" :title="t('printcase.addImage')" @pointerdown.stop @click="$emit('addImage')">
+					<AppIcon name="plus" :size="34" :stroke-width="2.2" />
+				</button>
+				<span class="stage__add-title">{{ t('printcase.stageAdd') }}</span>
+				<button class="stage__add-hint" @pointerdown.stop @click="$emit('openLibrary')">
+					{{ t('printcase.stageAddHint') }}
+				</button>
 			</div>
 		</div>
 	</div>
@@ -70,6 +86,8 @@ const emit = defineEmits<{
 	deselect: []
 	wheelZoom: [dir: 1 | -1]
 	requestModel: []
+	addImage: []
+	openLibrary: []
 }>()
 
 const { t } = useI18n()
@@ -155,12 +173,104 @@ defineExpose({ displayScale })
 	align-items: center;
 	justify-content: center;
 	gap: 16px;
-	padding: 0 44px;
+	padding: 0 26px;
 	text-align: center;
-	font-size: 19px;
+	font-size: 17px;
 	font-weight: 600;
 	color: var(--text-muted);
 	cursor: pointer;
 	background: rgba(255, 255, 255, 0.55);
+}
+
+/* Порожній чохол: заклик додати перше фото просто на макеті */
+.stage__empty {
+	position: absolute;
+	inset: 0;
+	z-index: 6;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	padding: 0 20px;
+	text-align: center;
+	/* Кнопки клікабельні, решта площі лишається сценою (клік = зняти виділення) */
+	pointer-events: none;
+}
+
+.stage__add {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 78px;
+	height: 78px;
+	border-radius: 50%;
+	color: var(--accent);
+	background: var(--img-bg);
+	border: 2px dashed var(--accent);
+	pointer-events: auto;
+	animation: stage-add-pulse 2.6s ease-out infinite;
+	transition: transform 0.15s, background 0.15s, color 0.15s;
+}
+
+.stage__add:hover {
+	background: var(--accent);
+	color: var(--on-accent);
+	border-style: solid;
+	transform: scale(1.06);
+	animation: none;
+}
+
+/* Хвиля від кнопки — щоб «+» помітили без пояснень */
+@keyframes stage-add-pulse {
+	0% {
+		box-shadow: 0 0 0 0 var(--accent-glow);
+	}
+	70%,
+	100% {
+		box-shadow: 0 0 0 18px transparent;
+	}
+}
+
+.stage__add-title {
+	font-size: 15px;
+	font-weight: 700;
+	color: var(--on-accent);
+}
+
+.stage__add-hint {
+	margin-top: -6px;
+	font-size: 12.5px;
+	font-weight: 600;
+	color: var(--text-muted);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	pointer-events: auto;
+	transition: color 0.15s;
+}
+
+.stage__add-hint:hover {
+	color: var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.stage__add {
+		animation: none;
+	}
+}
+
+@media (max-width: 640px) {
+	.stage__placeholder {
+		font-size: 15px;
+	}
+
+	.stage__add {
+		width: 66px;
+		height: 66px;
+	}
+
+	.stage__add-title {
+		font-size: 14px;
+	}
 }
 </style>
