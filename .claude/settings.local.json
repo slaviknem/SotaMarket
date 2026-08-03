@@ -123,7 +123,8 @@
       "Bash(php -l app/Http/Controllers/ApiSite/ArticleController.php)",
       "Bash(npm run *)",
       "Bash(node \"C:/Users/slavi/AppData/Local/Temp/claude/d--Web-SERVER-domains-FLOY-NEW/3e969171-213f-47d1-8c53-7fb2e4fd5af7/scratchpad/checkbundle.js\" \"d:/Web-SERVER/domains/FLOY-ADMIN\")",
-      "Bash(node \"C:/Users/slavi/AppData/Local/Temp/claude/d--Web-SERVER-domains-FLOY-NEW/3e969171-213f-47d1-8c53-7fb2e4fd5af7/scratchpad/aliascheck.js\")"
+      "Bash(node \"C:/Users/slavi/AppData/Local/Temp/claude/d--Web-SERVER-domains-FLOY-NEW/3e969171-213f-47d1-8c53-7fb2e4fd5af7/scratchpad/aliascheck.js\")",
+      "Bash(node \"C:/Users/slavi/AppData/Local/Temp/claude/d--Web-SERVER-domains-FLOY-NEW/9b64bf69-fb0a-4cac-9afd-c5bade8931ea/scratchpad/gen.js\")"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [
