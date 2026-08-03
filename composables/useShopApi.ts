@@ -43,6 +43,21 @@ export interface ISearchSuggest {
 	total: number | null
 }
 
+// Відповідь пошуку по моделях (вибір моделі в конструкторі чохлів):
+// той самий рушій, що й у випадайці, але у видачі лише моделі
+export interface ISearchModels {
+	query: string
+	normalized: string // як бекенд зрозумів запит: «самсунг а54» → «samsung a54»
+	models: {
+		id: number
+		alias: string
+		title: string // повна назва: «Samsung Galaxy A54»
+		type: string
+		image?: string | null
+		products_count: number
+	}[]
+}
+
 // Відстеження замовлення: одне поле — номер замовлення / телефон / ТТН
 export interface ITrackOrder {
 	found: boolean
@@ -151,6 +166,14 @@ export function useShopApi() {
 		// signal — щоб скасувати запит, коли користувач набрав далі
 		searchSuggest: (query: string, limit = 8, signal?: AbortSignal) =>
 			$fetch<ISearchSuggest>(config.public.urlApi + 'search/suggest', {
+				params: { ...baseParams(), q: query, limit },
+				signal,
+			}),
+
+		// Пошук лише по моделях (конструктор чохлів): та сама логіка розпізнавання,
+		// що й у випадайці — кирилиця, транслітерація, друкарські помилки, розкладка
+		searchModels: (query: string, limit = 20, signal?: AbortSignal) =>
+			$fetch<ISearchModels>(config.public.urlApi + 'search/models', {
 				params: { ...baseParams(), q: query, limit },
 				signal,
 			}),
