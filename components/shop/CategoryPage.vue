@@ -1,5 +1,9 @@
 <template>
-	<div class="container">
+	<!-- v-if на корені (як у ShopProductPage): коли категорії немає, setup кидає
+	     createError({ fatal: true }) і сторінку замінює error.vue — але без цієї умови
+	     Vue встигав почати рендер із неініціалізованими computed'ами setup'у й сипав
+	     Vue-warn про undefined-пропси (breadcrumbs, groups, selected) на кожен 404. -->
+	<div v-if="category" class="container">
 		<Breadcrumbs :items="breadcrumbs" />
 
 		<div class="cat-layout" :class="{ 'cat-layout--full': brandsLanding }">

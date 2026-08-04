@@ -31,7 +31,14 @@ export interface Crumb {
 	url?: string
 }
 
-const props = defineProps<{ items: Crumb[] }>()
+// items необов'язковий: коли setup сторінки обривається на createError({ fatal: true })
+// (немає категорії/моделі → 404), її `breadcrumbs` лишається неініціалізованим, хоча
+// render-функція на нього вже посилається. Сторінку однаково замінює error.vue, тож
+// єдиним наслідком був Vue-warn у логах на кожен 404. Порожній список тут — валідний
+// стан: крихту з назвою магазину компонент додає сам.
+const props = withDefaults(defineProps<{ items?: Crumb[] }>(), {
+	items: () => [],
+})
 
 const { t } = useI18n()
 const localePath = useLocalePath()

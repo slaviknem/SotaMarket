@@ -1,5 +1,8 @@
 <template>
-	<div class="container pc-container">
+	<!-- Умова — дзеркало createError нижче: модельна сторінка без даних іде в 404, а хаб
+	     рендериться завжди. Без неї Vue починав рендер обірваного setup'у й сипав
+	     Vue-warn про undefined-пропси (breadcrumbs, elements) на кожну невідому модель. -->
+	<div v-if="!modelAlias || data" class="container pc-container">
 		<Breadcrumbs :items="breadcrumbs" />
 
 		<h1 class="pc-title">{{ h1 }}</h1>
