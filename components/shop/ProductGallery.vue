@@ -325,7 +325,7 @@ onBeforeUnmount(() => {
 	z-index: 2;
 	display: flex;
 	padding: 8px;
-	color: #fff;
+	color: var(--on-overlay);
 	background: rgba(255, 255, 255, 0.12);
 	border-radius: var(--radius-pill);
 }
@@ -340,7 +340,7 @@ onBeforeUnmount(() => {
 	left: 50%;
 	transform: translateX(-50%);
 	z-index: 2;
-	color: #fff;
+	color: var(--on-overlay);
 	font-size: 14px;
 	opacity: 0.8;
 }
@@ -356,7 +356,7 @@ onBeforeUnmount(() => {
 	padding: 7px 16px;
 	border-radius: var(--radius-pill);
 	background: rgba(0, 0, 0, 0.55);
-	color: #fff;
+	color: var(--on-overlay);
 	font-size: 14px;
 	font-weight: 600;
 	text-align: center;
@@ -364,11 +364,11 @@ onBeforeUnmount(() => {
 
 .lb :deep(.swiper-button-next),
 .lb :deep(.swiper-button-prev) {
-	color: #fff;
+	color: var(--on-overlay);
 }
 
 .lb :deep(.swiper-pagination-bullet) {
-	background: #fff;
+	background: var(--on-overlay);
 	opacity: 0.5;
 }
 

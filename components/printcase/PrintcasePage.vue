@@ -1171,6 +1171,9 @@ useJsonLd(() => ({
 	},
 }))
 
+// Шлях Бренд → Модель → Конструктор: те саме, що у видимих крихтах над заголовком
+useBreadcrumbsJsonLd(breadcrumbs)
+
 // Хаб — ще й інструкція: AI-системам це найзрозуміліший опис самої послуги.
 // Реєструємо лише на хабі (режим сторінки відомий на момент SSR і далі не змінюється).
 if (!isModelPage.value) {
@@ -1284,7 +1287,7 @@ if (!isModelPage.value) {
 .ctrl-btn--danger:hover {
 	background: var(--danger);
 	border-color: var(--danger);
-	color: #fff;
+	color: var(--on-overlay);
 	box-shadow: none;
 }
 

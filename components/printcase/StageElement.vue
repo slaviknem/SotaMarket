@@ -249,7 +249,7 @@ onUnmounted(() => window.removeEventListener('pointermove', onMove))
 	position: absolute;
 	width: 14px;
 	height: 14px;
-	background: #fff;
+	background: var(--on-overlay);
 	border: 2px solid var(--accent);
 	border-radius: 50%;
 	z-index: 4;
@@ -263,7 +263,7 @@ onUnmounted(() => window.removeEventListener('pointermove', onMove))
 /* Бокові ручки — розтягування зі спотворенням */
 .stage-el__edge {
 	position: absolute;
-	background: #fff;
+	background: var(--on-overlay);
 	border: 2px solid var(--accent);
 	border-radius: 4px;
 	z-index: 4;
@@ -307,7 +307,7 @@ onUnmounted(() => window.removeEventListener('pointermove', onMove))
 	height: 34px;
 	border-radius: 50%;
 	background: rgba(20, 20, 26, 0.8);
-	color: #fff;
+	color: var(--on-overlay);
 	cursor: ew-resize;
 	z-index: 4;
 }
@@ -323,7 +323,7 @@ onUnmounted(() => window.removeEventListener('pointermove', onMove))
 	height: 26px;
 	border-radius: 50%;
 	background: var(--danger);
-	color: #fff;
+	color: var(--on-overlay);
 	z-index: 5;
 }
 </style>

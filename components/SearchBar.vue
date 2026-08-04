@@ -2,6 +2,9 @@
 	<div ref="rootRef" class="search" :class="{ 'is-open': open }">
 		<!-- Десктопний інпут -->
 		<form class="search__form" role="search" @submit.prevent="submit">
+			<!-- combobox без aria-controls неповний: скрінрідер оголошує «список», але не
+			     знаходить, який саме. aria-label — бо видимої мітки в поля немає (тільки placeholder,
+			     а його частина ассистивних технологій за ім'я поля не бере). -->
 			<input
 				ref="inputRef"
 				v-model="query"
@@ -9,7 +12,9 @@
 				type="search"
 				role="combobox"
 				aria-autocomplete="list"
+				aria-controls="search-results"
 				:aria-expanded="open"
+				:aria-label="t('header.topbar.search')"
 				:placeholder="t('header.topbar.searchPlaceholder')"
 				autocomplete="off"
 				@input="onInput"
@@ -48,12 +53,19 @@
 				<div v-if="open && isMobile" class="search-full">
 					<div class="search-full__bar">
 						<form class="search__form" role="search" @submit.prevent="submit">
+							<!-- Той самий набір ролей, що й у десктопного поля: пошук один і той самий,
+							     тож і для скрінрідера він мусить поводитись однаково -->
 							<input
 								ref="mobileInputRef"
 								v-model="query"
 								class="search__input"
 								type="search"
 								inputmode="search"
+								role="combobox"
+								aria-autocomplete="list"
+								aria-controls="search-results"
+								:aria-expanded="open"
+								:aria-label="t('header.topbar.search')"
 								:placeholder="t('header.topbar.searchPlaceholder')"
 								autocomplete="off"
 								@input="onInput"

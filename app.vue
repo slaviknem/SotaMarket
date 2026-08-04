@@ -28,7 +28,15 @@
 
 <script setup lang="ts">
 const { t, locale } = useI18n()
-const head = useLocaleHead({ identifierAttribute: 'id', seo: true, lang: true, dir: true })
+// canonicalQueries — білий список query, які лишаються в hreflang/og:url. Тримаємо його
+// однаковим із canonical у usePageSeo: сторінки пагінації самопосилальні (?page збережено),
+// а комбінації фільтрів (?filter_*, ?sort) канонізуються на базову адресу.
+const head = useLocaleHead({
+	identifierAttribute: 'id',
+	seo: { canonicalQueries: ['page'] },
+	lang: true,
+	dir: true,
+})
 
 useHead(() => ({
 	htmlAttrs: { lang: head.value.htmlAttrs?.lang || locale.value },

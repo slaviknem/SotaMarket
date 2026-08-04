@@ -1,5 +1,7 @@
 <template>
-	<div class="sr">
+	<!-- id — ціль aria-controls поля пошуку (SearchBar). Обидва інпути (десктоп і мобільний
+	     оверлей) показують цю випадайку, але завжди по одному за раз, тож id лишається унікальним. -->
+	<div id="search-results" class="sr">
 		<!-- Завантаження -->
 		<div v-if="loading && !hasResults" class="sr__load">
 			<span class="skeleton" style="height: 64px" />

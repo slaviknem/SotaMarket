@@ -43,7 +43,7 @@ const handleError = () => clearError({ redirect: '/' })
 	font-size: 120px;
 	font-weight: 800;
 	line-height: 1;
-	background: linear-gradient(135deg, var(--accent), #ffb066);
+	background: linear-gradient(135deg, var(--accent), var(--accent-hover));
 	-webkit-background-clip: text;
 	background-clip: text;
 	color: transparent;

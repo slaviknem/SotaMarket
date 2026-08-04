@@ -14,6 +14,7 @@ export function usePageSeo(opts: {
 }) {
 	const route = useRoute()
 	const config = useRuntimeConfig()
+	const { t } = useI18n()
 
 	// Само-посилальний canonical. Для сторінок пагінації зберігаємо ?page=N —
 	// інакше сторінки 2+ виглядали б дублями 1-ї і товари з них випадали б з індексу.
@@ -24,10 +25,22 @@ export function usePageSeo(opts: {
 	})
 
 	useHead(() => {
-		const title = toValue(opts.title)
-		const description = toValue(opts.description) || ''
-		const image = toValue(opts.image)
+		const page = Number(route.query.page) || 1
+		const baseTitle = toValue(opts.title)
+		const baseDescription = toValue(opts.description) || ''
 		const noindex = toValue(opts.noindex)
+
+		// Сторінки 2+ канонічні самі на себе, тож їхні сніпети конкурують із 1-ю за той самий
+		// запит — а title/description у них були байт-в-байт однакові. Номер сторінки в обох
+		// полях знімає дубль і одразу показує в видачі, що це продовження списку.
+		const pageSuffix = page > 1 ? t('other.pageN', { page }) : ''
+		const title = pageSuffix ? `${baseTitle} — ${pageSuffix}` : baseTitle
+		const description =
+			pageSuffix && baseDescription ? `${pageSuffix}. ${baseDescription}` : baseDescription
+
+		// Прев'ю для соцмереж і месенджерів. Без фолбеку посилання на головну, категорію
+		// чи фільтр летіли в Viber/Telegram/Facebook голим текстом без картинки.
+		const image = toValue(opts.image) || `${config.public.siteUrl}/images/og-default.jpg`
 
 		return {
 			title,
@@ -40,11 +53,41 @@ export function usePageSeo(opts: {
 				{ property: 'og:title', content: title },
 				{ property: 'og:description', content: description },
 				{ property: 'og:url', content: canonical.value },
-				...(image ? [{ property: 'og:image', content: image }] : []),
+				{ property: 'og:image', content: image },
 				// Twitter
-				{ name: 'twitter:card', content: image ? 'summary_large_image' : 'summary' },
+				{ name: 'twitter:card', content: 'summary_large_image' },
 			],
 			link: [{ rel: 'canonical', href: canonical.value }],
+		}
+	})
+}
+
+// BreadcrumbList — структура каталогу для пошуковиків і AI. Магазин завжди перша крихта,
+// далі — те, що сторінка показує візуально (Breadcrumbs), тож розмітка й видимий шлях
+// ніколи не розходяться. Останню крихту лишаємо без `item`: це поточна сторінка.
+export function useBreadcrumbsJsonLd(
+	crumbs: MaybeRefOrGetter<{ title: string; url?: string }[]>
+) {
+	const config = useRuntimeConfig()
+	const localePath = useLocalePath()
+
+	useJsonLd(() => {
+		const list = [
+			{ title: config.public.siteName as string, url: localePath('/') },
+			...toValue(crumbs),
+		]
+
+		return {
+			'@context': 'https://schema.org',
+			'@type': 'BreadcrumbList',
+			itemListElement: list.map((crumb, i) => ({
+				'@type': 'ListItem',
+				position: i + 1,
+				name: crumb.title,
+				...(crumb.url
+					? { item: crumb.url.startsWith('http') ? crumb.url : config.public.siteUrl + crumb.url }
+					: {}),
+			})),
 		}
 	})
 }

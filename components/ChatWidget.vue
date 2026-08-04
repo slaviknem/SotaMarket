@@ -505,7 +505,7 @@ onUnmounted(() => {
 	justify-content: center;
 	border-radius: var(--radius-pill);
 	background: var(--danger);
-	color: #fff;
+	color: var(--on-overlay);
 	font-size: 11px;
 	font-weight: 700;
 	border: 2px solid var(--bg);
@@ -1029,7 +1029,7 @@ onUnmounted(() => {
 	right: 18px;
 	display: flex;
 	padding: 8px;
-	color: #fff;
+	color: var(--on-overlay);
 	border-radius: var(--radius-sm);
 	background: rgba(255, 255, 255, 0.12);
 }

@@ -19,7 +19,6 @@ export function useProductJsonLd(opts: {
 	breadcrumbs: ComputedRef<{ title: string; url?: string }[]>
 }) {
 	const config = useRuntimeConfig()
-	const localePath = useLocalePath()
 	const url = useUrl()
 	const { variantTitle, variantLead } = useProductNaming(opts.product)
 
@@ -127,18 +126,5 @@ export function useProductJsonLd(opts: {
 	})
 
 	// Хлібні крихти (Бренд → Модель → Товар) — структура каталогу для пошуковиків і AI
-	useJsonLd(() => {
-		const crumbs = [{ title: config.public.siteName, url: localePath('/') }, ...opts.breadcrumbs.value]
-
-		return {
-			'@context': 'https://schema.org',
-			'@type': 'BreadcrumbList',
-			itemListElement: crumbs.map((crumb, i) => ({
-				'@type': 'ListItem',
-				position: i + 1,
-				name: crumb.title,
-				...(crumb.url ? { item: url.absolute(crumb.url) } : {}),
-			})),
-		}
-	})
+	useBreadcrumbsJsonLd(opts.breadcrumbs)
 }

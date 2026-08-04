@@ -63,7 +63,7 @@ import { Autoplay, Pagination } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/pagination'
 
-defineProps<{ banners: any[] | null }>()
+const props = defineProps<{ banners: any[] | null }>()
 
 // Промо-плитки доставки: відрізняються лише знаком перевізника та ключами перекладу
 const CARRIERS = [
@@ -75,6 +75,25 @@ const url = useUrl()
 const { t } = useI18n()
 const localePath = useLocalePath()
 const modules = [Autoplay, Pagination]
+
+// Перший банер — LCP головної. `eager` + `fetchpriority=high` на теґу вже є, але браузер
+// побачить їх лише дійшовши до розбору цього місця розмітки; preload у <head> ставить
+// завантаження в чергу одразу, ще до парсингу тіла сторінки.
+useHead(() => {
+	const first = props.banners?.[0]
+	if (!first) return {}
+
+	return {
+		link: [
+			{
+				rel: 'preload',
+				as: 'image',
+				href: url.bannerImg(first.image_file),
+				fetchpriority: 'high',
+			},
+		],
+	}
+})
 </script>
 
 <style scoped>

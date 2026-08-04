@@ -199,7 +199,7 @@ const toggleCompare = () => compare.toggle(props.product)
 	width: 34px;
 	height: 34px;
 	background: rgba(20, 20, 26, 0.85);
-	color: #fff;
+	color: var(--on-overlay);
 	border-radius: 10px;
 	backdrop-filter: blur(4px);
 	transition: all 0.15s;

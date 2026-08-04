@@ -650,6 +650,20 @@ const breadcrumbs = computed(() => {
 	return crumbs
 })
 
+// Прев'ю для соцмереж: перша картка сітки — те саме, що людина бачить, відкривши сторінку.
+// Дизайн теми беремо, коли товарів немає (сторінка теми з одними готовими принтами).
+// Фолбек на брендований og-default робить usePageSeo.
+//
+// productBig віддає готову адресу у сховищі, а neoprintImage — шлях на нашому домені,
+// тож абсолютним його робимо лише в другому випадку (absImg нижче — та сама перевірка).
+const shareImage = computed(() => {
+	const first = products.value[0]
+	if (first) return url.productBig(getImageByAttribute(first, 0) ?? first.image_file)
+
+	const np = neoprints.value[0]
+	return np ? url.absolute(url.neoprintImage(props.categoryAlias, np.alias)) : undefined
+})
+
 usePageSeo({
 	title: () =>
 		filterPage.value
@@ -659,6 +673,7 @@ usePageSeo({
 		filterPage.value
 			? filterLeadText.value
 			: category.value?.meta_description || modelLeadText.value,
+	image: () => shareImage.value,
 	// Мультивибір-комбінації (?filter_*) не індексуємо окремо — canonical веде на базову
 	// категорію. Саме canonical, БЕЗ noindex: пара «noindex + canonical на іншу адресу»
 	// небезпечна — Google може перенести noindex на канонічну сторінку і викинути з
@@ -758,19 +773,7 @@ useJsonLd(() => ({
 }))
 
 // JSON-LD: хлібні крихти (Категорія → Фільтр) для розуміння структури пошуковиками/AI
-useJsonLd(() => {
-	const crumbs = [{ title: config.public.siteName as string, url: localePath('/') }, ...breadcrumbs.value]
-	return {
-		'@context': 'https://schema.org',
-		'@type': 'BreadcrumbList',
-		itemListElement: crumbs.map((c, i) => ({
-			'@type': 'ListItem',
-			position: i + 1,
-			name: c.title,
-			...(c.url ? { item: config.public.siteUrl + c.url } : {}),
-		})),
-	}
-})
+useBreadcrumbsJsonLd(breadcrumbs)
 
 // Облік візитів
 onMounted(() => {

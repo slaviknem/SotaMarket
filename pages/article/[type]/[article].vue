@@ -114,6 +114,18 @@ useJsonLd(() => {
 		publisher,
 	}
 })
+
+// Шлях Блог → Категорія → Стаття: те саме, що у видимих крихтах вище
+useBreadcrumbsJsonLd(() => {
+	const a = article.value
+	if (!a) return []
+
+	return [
+		{ title: t('header.topbar.blog'), url: localePath('/article') },
+		{ title: t('blogCategory.' + a.type), url: localePath(`/article/${a.type}`) },
+		{ title: a.title },
+	]
+})
 </script>
 
 <style scoped>

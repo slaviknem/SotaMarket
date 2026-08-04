@@ -97,6 +97,14 @@ export default defineNuxtConfig({
 		bundle: {
 			optimizeTranslationDirective: false,
 		},
+		// hreflang мусить вести на канонічну адресу, інакше Google його просто ігнорує.
+		// Без цієї опції alternate тягнув за собою ВЕСЬ query: на /iphone-17?filter_cases=…
+		// canonical показував на базову категорію, а hreflang — на комбінацію з фільтром.
+		// Тепер у alternate лишається тільки ?page — рівно те, що зберігає й наш canonical
+		// (usePageSeo), тож обидва сигнали завжди збігаються.
+		experimental: {
+			alternateLinkCanonicalQueries: true,
+		},
 	},
 
 	// Стилі вже інлайняться в SSR-HTML (features.inlineStyles), але Nuxt додатково лишає

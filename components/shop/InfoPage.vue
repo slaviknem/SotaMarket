@@ -40,6 +40,8 @@ usePageSeo({
 	title: () => article.value?.meta_title || article.value?.title || '',
 	description: () => article.value?.meta_description || '',
 })
+
+useBreadcrumbsJsonLd(() => (article.value ? [{ title: article.value.title }] : []))
 </script>
 
 <style scoped>

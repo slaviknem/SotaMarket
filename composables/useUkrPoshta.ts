@@ -1,10 +1,11 @@
 // Довідник відділень Укрпошти за поштовим індексом.
-// Публічний ендпоінт класифікатора адрес — без токена й з відкритим CORS
-// (новий /address-classifier-ws/ натомість вимагає Bearer із договору).
+// Ходимо через власний проксі (server/api/ukrposhta.get.ts), а не напряму: класифікатор
+// віддає 403 на будь-який запит із заголовком Origin, тож із браузера він недосяжний.
+// Токена не потребує (новий /address-classifier-ws/ натомість вимагає Bearer із договору).
 // Відповідь — XML із фіксованою схемою, тож розбираємо регуляркою: працює і на сервері,
 // і в браузері, без DOMParser і без залежності на XML-парсер.
 
-const UP_API = 'https://www.ukrposhta.ua/address-classifier/get_postoffices_by_postindex'
+const UP_API = '/api/ukrposhta'
 
 export interface UPOffice {
 	postcode: string

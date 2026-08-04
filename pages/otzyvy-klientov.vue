@@ -52,10 +52,21 @@ if (!article.value) {
 	throw createError({ statusCode: 404, fatal: true })
 }
 
+// Те саме джерело, що й у видимому блоці відгуків, тож число в сніпеті завжди правдиве
+const stats = computed(() => reviewsStats(latestReviews.value))
+
 usePageSeo({
 	title: () => article.value?.meta_title || article.value?.title || '',
-	description: () => article.value?.meta_description || '',
+	// У статті в адмінці meta_description не заповнений, а сторінка індексована — без фолбеку
+	// сніпет складав Google сам. Рахуємо з живих даних: кількість відгуків і середня оцінка.
+	description: () =>
+		article.value?.meta_description ||
+		(stats.value.ratedCount
+			? t('reviews.metaDescription', { count: stats.value.ratedCount, avg: stats.value.avg })
+			: ''),
 })
+
+useBreadcrumbsJsonLd(() => (article.value ? [{ title: article.value.title }] : []))
 
 // Скрипт віджета Elfsight
 useHead({
