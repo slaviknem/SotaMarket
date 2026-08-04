@@ -155,7 +155,12 @@
       "Bash(curl -s -o /dev/null -D - -X OPTIONS \"https://admin.floy.com.ua/apisite/chats/start\" -H \"Origin: https://floy.com.ua\" -H \"Access-Control-Request-Method: POST\" -H \"Access-Control-Request-Headers: content-type\")",
       "Bash(curl -s -o /dev/null -w \"www.floy.com.ua -> %{http_code} %{redirect_url}\\\\n\" \"https://www.floy.com.ua/\")",
       "Bash(curl -s -o /dev/null -D - \"https://admin.floy.com.ua/apisite/chats/nonexistent-session-000/messages?site=floy\" -H \"Origin: https://example.com\")",
-      "Bash(curl -s \"https://admin.floy.com.ua/apisite/printcase/get_image_b64/xiaomi-redmi-note-8-pro.png/masks\" -o mask.json)"
+      "Bash(curl -s \"https://admin.floy.com.ua/apisite/printcase/get_image_b64/xiaomi-redmi-note-8-pro.png/masks\" -o mask.json)",
+      "PowerShell(Add-Type -AssemblyName System.Drawing; $i=[System.Drawing.Image]::FromFile\\(\"d:\\\\Web-SERVER\\\\domains\\\\FLOY-NEW\\\\public\\\\favicon.png\"\\); \"$\\($i.Width\\)x$\\($i.Height\\) $\\($i.PixelFormat\\)\"; $b=New-Object System.Drawing.Bitmap 256,256; $g=[System.Drawing.Graphics]::FromImage\\($b\\); $g.InterpolationMode='NearestNeighbor'; $g.DrawImage\\($i,0,0,256,256\\); $b.Save\\(\"C:\\\\Users\\\\slavi\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--Web-SERVER-domains-FLOY-NEW\\\\19faaee5-b0a3-4dd8-96d8-7da0ead36cad\\\\scratchpad\\\\fav-big.png\"\\); $i.Dispose\\(\\))",
+      "Bash(node -e \"console.log\\(1\\)\")",
+      "Bash(mkdir -p \"C:/Users/slavi/AppData/Local/Temp/claude/d--Web-SERVER-domains-FLOY-NEW/19faaee5-b0a3-4dd8-96d8-7da0ead36cad/scratchpad/fav\")",
+      "PowerShell(Remove-Item \"d:\\\\Web-SERVER\\\\domains\\\\FLOY-NEW\\\\public\\\\favicon.png\" -Confirm:$false)",
+      "PowerShell(\"removed\")"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [

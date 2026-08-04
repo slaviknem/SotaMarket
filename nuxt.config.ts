@@ -45,7 +45,13 @@ export default defineNuxtConfig({
 				{ name: 'theme-color', content: '#0d0d10' },
 			],
 			link: [
-				{ rel: 'icon', type: 'image/png', href: '/favicon.png' },
+				// SVG — основний (усі сучасні браузери), .ico — фолбек для старих і для
+				// закладок Windows, apple-touch — іконка «на екран “Додому”» в iOS.
+				{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+				{ rel: 'icon', type: 'image/png', sizes: '96x96', href: '/favicon-96.png' },
+				{ rel: 'icon', href: '/favicon.ico', sizes: '48x48' },
+				{ rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+				{ rel: 'manifest', href: '/site.webmanifest' },
 				{ rel: 'preconnect', href: 'https://admin.floy.com.ua' },
 				{ rel: 'dns-prefetch', href: 'https://admin.floy.com.ua' },
 				// Шрифт самохоститься (@font-face — у main.css). Два набори, потрібні на кожній
@@ -102,7 +108,13 @@ export default defineNuxtConfig({
 	routeRules: {
 		'/fonts/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
 		'/images/**': { headers: { 'cache-control': 'public, max-age=2592000' } },
-		'/favicon.png': { headers: { 'cache-control': 'public, max-age=2592000' } },
+		'/favicon.svg': { headers: { 'cache-control': 'public, max-age=2592000' } },
+		'/favicon.ico': { headers: { 'cache-control': 'public, max-age=2592000' } },
+		'/favicon-96.png': { headers: { 'cache-control': 'public, max-age=2592000' } },
+		'/apple-touch-icon.png': { headers: { 'cache-control': 'public, max-age=2592000' } },
+		'/icon-192.png': { headers: { 'cache-control': 'public, max-age=2592000' } },
+		'/icon-512.png': { headers: { 'cache-control': 'public, max-age=2592000' } },
+		'/icon-maskable-512.png': { headers: { 'cache-control': 'public, max-age=2592000' } },
 	},
 
 	nitro: {
