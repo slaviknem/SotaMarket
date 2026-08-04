@@ -33,6 +33,8 @@
 const { t, locale } = useI18n()
 const shopApi = useShopApi()
 const config = useRuntimeConfig()
+const localePath = useLocalePath()
+const url = useUrl()
 
 const productTabs = computed(() => [
 	{ name: t('product.type.all'), categoryAlias: 'all' },
@@ -59,34 +61,30 @@ usePageSeo({
 	description: () => t('metaDescription.index'),
 })
 
-useJsonLd(() => [
-	{
-		'@context': 'https://schema.org',
-		'@type': 'WebSite',
-		url: config.public.siteUrl,
-		name: 'FLOY — Чохли та захисне скло для телефону',
-		potentialAction: {
-			'@type': 'SearchAction',
-			target: `${config.public.siteUrl}/search?q={search_term_string}`,
-			'query-input': 'required name=search_term_string',
-		},
+// WebSite + OnlineStore (магазин як сутність) реєструються глобально в app.vue —
+// вони потрібні на кожній сторінці, а не лише тут. Головній лишається CollectionPage:
+// це вхідна точка каталогу, звідси пошуковики й AI бачать його розділи.
+useJsonLd(() => ({
+	'@context': 'https://schema.org',
+	'@type': 'CollectionPage',
+	name: t('metaTitle.index'),
+	description: t('metaDescription.index'),
+	url: config.public.siteUrl + localePath('/'),
+	isPartOf: { '@id': config.public.siteUrl + '/#website' },
+	about: orgId(config.public.siteUrl as string),
+	// Розділи каталогу — короткий, стабільний зріз (популярні моделі + категорії)
+	mainEntity: {
+		'@type': 'ItemList',
+		itemListElement: [...(popularModels.value || []), ...(popularCategories.value || [])]
+			.slice(0, 14)
+			.map((c: any, i: number) => ({
+				'@type': 'ListItem',
+				position: i + 1,
+				name: c.title_full || c.title,
+				url: config.public.siteUrl + url.category(c.alias),
+			})),
 	},
-	{
-		'@context': 'https://schema.org',
-		'@type': 'Organization',
-		url: config.public.siteUrl,
-		name: 'FLOY',
-		address: config.public.address,
-		contactPoint: {
-			'@type': 'ContactPoint',
-			telephone: config.public.phone,
-			contactType: 'customer service',
-			areaServed: 'UA',
-			availableLanguage: 'Ukrainian',
-		},
-		logo: config.public.siteUrl + '/images/logo.svg',
-	},
-])
+}))
 </script>
 
 <style scoped>

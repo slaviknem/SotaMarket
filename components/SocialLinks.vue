@@ -17,16 +17,17 @@
 
 <script setup lang="ts">
 // Іконки соцмереж з посиланнями (перевикористовується у футері / контактах).
-// Гліфи — у реєстрі AppIcon, посилання — як на старому floy.com.ua.
+// Гліфи — у реєстрі AppIcon, адреси — з runtimeConfig (спільні з sameAs у schema.org).
 const { t } = useI18n()
+const config = useRuntimeConfig()
 
 withDefaults(defineProps<{ size?: number }>(), { size: 18 })
 
 const socials = [
-	{ name: 'Instagram', icon: 'instagram', url: 'https://www.instagram.com/floy.com.ua/' },
-	{ name: 'Facebook', icon: 'facebook', url: 'https://www.facebook.com/floy.com.ua' },
-	{ name: 'Telegram', icon: 'telegram', url: 'https://t.me/floyshop' },
-	{ name: 'YouTube', icon: 'youtube', url: 'https://www.youtube.com/channel/UCmxlccT0fGh6hF79LSKYIPQ' },
+	{ name: 'Instagram', icon: 'instagram', url: config.public.instagram },
+	{ name: 'Facebook', icon: 'facebook', url: config.public.facebook },
+	{ name: 'Telegram', icon: 'telegram', url: config.public.telegram },
+	{ name: 'YouTube', icon: 'youtube', url: config.public.youtube },
 ]
 </script>
 

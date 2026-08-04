@@ -214,7 +214,7 @@ const localePath = useLocalePath()
 const shopApi = useShopApi()
 const config = useRuntimeConfig()
 const { buildFilterTree, findGroupAlias, isParentTheme, expandAliasForApi, filterChildIds } = useFilters()
-const { title: neoPrintTitle } = useNeoPrint()
+const { title: neoPrintTitle, price: neoPrintPrice } = useNeoPrint()
 
 const mobileFiltersOpen = ref(false)
 
@@ -659,19 +659,11 @@ usePageSeo({
 		filterPage.value
 			? filterLeadText.value
 			: category.value?.meta_description || modelLeadText.value,
-	// Мультивибір-комбінації (?filter_*) не індексуємо — canonical веде на базову категорію
-	noindex: () => hasFilterQuery.value,
+	// Мультивибір-комбінації (?filter_*) не індексуємо окремо — canonical веде на базову
+	// категорію. Саме canonical, БЕЗ noindex: пара «noindex + canonical на іншу адресу»
+	// небезпечна — Google може перенести noindex на канонічну сторінку і викинути з
+	// індексу саму категорію.
 })
-
-// Готові дизайни для ItemList — перші 48 (стабільно для SSR; далі — «показати ще» на клієнті)
-const neoPrintListItems = computed(() =>
-	showNeoPrints.value
-		? neoprints.value.slice(0, 48).map((np: INeoPrint) => ({
-				name: neoPrintTitle(np, category.value),
-				url: url.absolute(url.neoprint(props.categoryAlias, np.id)),
-			}))
-		: []
-)
 
 // Друга назва списку кирилицею («Чохли для Айфон 17») — підказка пошуковикам/AI, що
 // сторінка відповідає й на транслітерований запит. Лише там, де форми реально різні.
@@ -679,47 +671,91 @@ const listAltName = computed(() =>
 	catAlt.value && !props.filterAlias ? { alternateName: t('pageTitle.model', { title_full: catAlt.value }) } : {}
 )
 
-// JSON-LD: список товарів. На сторінці фільтра — картки-варіанти з URL /attr/
-// (дзеркалить видимий список); позиції — у межах поточної сторінки.
-useJsonLd(() => {
-	if (splitByAttributes.value) {
-		const items = expandProductsByAttributes(products.value)
-		const listed = [
-			...items.slice(0, 48).map(({ product: p, attribute: a }) => ({
-				name: a ? `${p.title} (${a.title})` : p.title,
-				url: config.public.siteUrl + `/${p.alias_cat}/${p.alias}` + (a ? `/attr/${a.alias}` : ''),
-			})),
-			...neoPrintListItems.value,
-		]
+// Позиції списку для JSON-LD — дзеркало видимої сітки: на сторінці фільтра це картки-варіанти
+// з URL /attr/, далі — готові дизайни. Стеля 24 = рівно одна сторінка видачі (раніше було до
+// 96 голих {name,url} — важче і без користі).
+//
+// URL будуємо через url.product/url.neoprint: вони проходять через localePath, тож на /uk
+// список веде на укр-версії. Ручна склейка siteUrl + '/alias_cat/alias' цього не вміла і
+// віддавала ru-адреси, суперечачи canonical і hreflang тієї ж сторінки.
+const LIST_MAX = 24
 
-		return {
-			'@context': 'https://schema.org',
-			'@type': 'ItemList',
-			name: pageTitle.value,
-			numberOfItems: listed.length,
-			itemListElement: listed.map((item, i: number) => ({
-				'@type': 'ListItem',
-				position: i + 1,
-				name: item.name,
-				url: item.url,
-			})),
-		}
-	}
+interface IListedItem {
+	name: string
+	link: string
+	image: string
+	price: number
+	inStock: boolean
+	rating: object
+}
 
-	return {
-		'@context': 'https://schema.org',
-		'@type': 'ItemList',
-		name: pageTitle.value,
-		...listAltName.value,
-		numberOfItems: total.value,
-		itemListElement: products.value.slice(0, 24).map((p: any, i: number) => ({
-			'@type': 'ListItem',
-			position: (currentPage.value - 1) * options.value.limit + i + 1,
-			name: p.title,
-			url: config.public.siteUrl + `/${p.alias_cat}/${p.alias}`,
-		})),
-	}
+// У schema.org зображення має бути абсолютним; плейсхолдер «немає фото» лежить у public/
+const absImg = (src: string) => (src.startsWith('http') ? src : url.absolute(src))
+
+const listedItems = computed<IListedItem[]>(() => {
+	const cards: { product: any; attribute: any | null }[] = splitByAttributes.value
+		? expandProductsByAttributes(products.value)
+		: products.value.map((p: any) => ({ product: p, attribute: null }))
+
+	const fromProducts = cards.slice(0, LIST_MAX).map(({ product: p, attribute: a }) => ({
+		name: a ? `${p.title} (${a.title})` : p.title,
+		link: url.absolute(url.product(p, a?.alias)),
+		image: absImg(url.productThumb(getImageByAttribute(p, a?.id) ?? p.image_file)),
+		price: p.price,
+		inStock: isProductInStock(p, a),
+		// Рейтинг рахує API підзапитом (rating + reviews_count у списку) — без нього
+		// зірочок у товарних сніпетах не буде; за відсутності даних поле просто зникає
+		rating: ratingJsonLd(p.rating, p.reviews_count),
+	}))
+
+	// Скільки дизайнів ще влізе у стелю списку — решту навіть не обходимо
+	const neoprintsRoom = Math.max(0, LIST_MAX - fromProducts.length)
+
+	const fromNeoprints = showNeoPrints.value
+		? neoprints.value.slice(0, neoprintsRoom).map((np: INeoPrint) => ({
+				name: neoPrintTitle(np, category.value),
+				link: url.absolute(url.neoprint(props.categoryAlias, np.id)),
+				image: url.absolute(url.neoprintImage(props.categoryAlias, np.alias)),
+				price: neoPrintPrice.value,
+				inStock: true,
+				rating: {},
+			}))
+		: []
+
+	return [...fromProducts, ...fromNeoprints].slice(0, LIST_MAX)
 })
+
+// JSON-LD: список товарів. Кожна позиція — повноцінний Product з ціною, наявністю і
+// рейтингом: саме це дає ціну й зірочки в товарних сніпетах, тоді як голий {name,url}
+// не дає нічого.
+useJsonLd(() => ({
+	'@context': 'https://schema.org',
+	'@type': 'ItemList',
+	name: pageTitle.value,
+	...listAltName.value,
+	numberOfItems: listedItems.value.length,
+	itemListElement: listedItems.value.map((it, i: number) => ({
+		'@type': 'ListItem',
+		position: (currentPage.value - 1) * options.value.limit + i + 1,
+		item: {
+			'@type': 'Product',
+			name: it.name,
+			url: it.link,
+			image: it.image,
+			...it.rating,
+			offers: {
+				'@type': 'Offer',
+				url: it.link,
+				priceCurrency: 'UAH',
+				price: it.price,
+				priceValidUntil: priceValidUntil(),
+				itemCondition: 'https://schema.org/NewCondition',
+				availability: it.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+				seller: orgId(config.public.siteUrl as string),
+			},
+		},
+	})),
+}))
 
 // JSON-LD: хлібні крихти (Категорія → Фільтр) для розуміння структури пошуковиками/AI
 useJsonLd(() => {

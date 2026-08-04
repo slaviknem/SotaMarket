@@ -17,25 +17,34 @@ export function reviewIsoDate(date?: string) {
 	return m ? `${m[3]}-${m[2]}-${m[1]}` : undefined
 }
 
-// Поля review + aggregateRating для JSON-LD (Product/Organization) — додаються лише коли є дані
+// aggregateRating з готових агрегатів (список товарів: API віддає rating + reviews_count
+// підзапитом, без завантаження самих відгуків) — для ItemList на категоріях і фільтрах
+export function ratingJsonLd(value?: number | null, count?: number | null) {
+	const avg = Number(value) || 0
+	const n = Number(count) || 0
+	if (!avg || !n) return {}
+
+	return { aggregateRating: { '@type': 'AggregateRating', ratingValue: avg, bestRating: 5, reviewCount: n } }
+}
+
+// Поля review + aggregateRating для JSON-LD (Product) — додаються лише коли є дані.
+// У `review` беремо ТІЛЬКИ оцінені відгуки: Google вимагає reviewRating у кожному
+// вкладеному Review, і відгук без оцінки завалює перевірку всього блоку.
 export function reviewsJsonLd(reviews: any[] | null | undefined, max = 5) {
 	const list = reviews || []
+	const rated = list.filter((r: any) => Number(r.rating) > 0)
 	const { ratedCount, avg } = reviewsStats(list)
 
 	return {
-		...(ratedCount
-			? { aggregateRating: { '@type': 'AggregateRating', ratingValue: avg, bestRating: 5, reviewCount: ratedCount } }
-			: {}),
-		...(list.length
+		...ratingJsonLd(avg, ratedCount),
+		...(rated.length
 			? {
-					review: list.slice(0, max).map((r: any) => ({
+					review: rated.slice(0, max).map((r: any) => ({
 						'@type': 'Review',
 						author: { '@type': 'Person', name: r.author },
 						reviewBody: r.text,
 						...(reviewIsoDate(r.date) ? { datePublished: reviewIsoDate(r.date) } : {}),
-						...(Number(r.rating) > 0
-							? { reviewRating: { '@type': 'Rating', ratingValue: Number(r.rating), bestRating: 5 } }
-							: {}),
+						reviewRating: { '@type': 'Rating', ratingValue: Number(r.rating), bestRating: 5 },
 					})),
 			  }
 			: {}),

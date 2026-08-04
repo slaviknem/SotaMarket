@@ -25,11 +25,20 @@ export default defineNuxtConfig({
 			phone: '099 072 14 12',
 			phones: ['099 072 14 12', '098 072 14 12', '093 072 14 12'],
 			address: 'м. Полтава, проспект Віталія Грицаєнка, 15А',
+			// Та сама адреса по частинах — для PostalAddress у schema.org (app.vue),
+			// щоб не дублювати літерали в розмітці
+			addressCity: 'Полтава',
+			addressStreet: 'проспект Віталія Грицаєнка, 15А',
 			email: 'info@floy.com.ua',
 			// Месенджери (кнопки швидкого переходу в онлайн-чаті)
 			telegram: 'https://t.me/floyshop',
 			viber: 'viber://chat?number=%2B380990721412',
 			whatsapp: 'https://wa.me/380990721412',
+			// Соцпрофілі: одне джерело для іконок у футері (SocialLinks) і для sameAs
+			// у schema.org (app.vue) — інакше два списки роз'їхались би
+			instagram: 'https://www.instagram.com/floy.com.ua/',
+			facebook: 'https://www.facebook.com/floy.com.ua',
+			youtube: 'https://www.youtube.com/channel/UCmxlccT0fGh6hF79LSKYIPQ',
 			printcasePrice: 289,
 			printcasePriceOld: 299,
 			// Готовий дизайн (NeoPrint) — дешевший за індивідуальний друк у конструкторі
@@ -106,6 +115,10 @@ export default defineNuxtConfig({
 	// перезавантажував і шрифти, і картинки. Імена без хеша, тож immutable — лише
 	// шрифтам (файл фіксований), решті — місяць.
 	routeRules: {
+		// ⛔ ТЕСТОВИЙ РЕЖИМ: увесь сайт закритий від індексації.
+		// ПЕРЕД ЗАПУСКОМ — прибрати цей рядок і повернути прод-версію public/robots.txt.
+		'/**': { headers: { 'x-robots-tag': 'noindex, nofollow' } },
+
 		'/fonts/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
 		'/images/**': { headers: { 'cache-control': 'public, max-age=2592000' } },
 		'/favicon.svg': { headers: { 'cache-control': 'public, max-age=2592000' } },

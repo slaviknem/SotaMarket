@@ -1138,6 +1138,7 @@ usePageSeo({
 	noindex: () => (isModelPage.value ? !indexable.value : false) || !!orderId.value,
 	// URL змінюється без навігації роутера (вибір іншої моделі) — canonical тримаємо на ній
 	path: () => url.printcase(model.value?.alias),
+	ogType: 'product',
 })
 
 // Товар: для пошуковиків і AI це повноцінна позиція зі своєю ціною
@@ -1151,15 +1152,22 @@ useJsonLd(() => ({
 		? t('printcase.seo.metaDescription', { model: names.value.full, price })
 		: t('printcase.seo.hubMetaDescription', { price }),
 	image: [shareImage.value],
+	url: url.absolute(url.printcase(model.value?.alias)),
 	...(category.value ? { sku: `PC-${category.value.id}` } : {}),
 	brand: { '@type': 'Brand', name: config.public.siteName },
+	// Відгуки про конструктор + зведений рейтинг — лише на хабі: саме там вони зібрані
+	// й показані. Переносити їх на сторінки моделей не можна — оцінка має стосуватися
+	// того, що на сторінці, і той самий блок на тисячах URL Google рахує накруткою.
+	...(isModelPage.value ? {} : reviewsJsonLd(data.value?.hubReviews)),
 	offers: {
 		'@type': 'Offer',
 		url: url.absolute(url.printcase(model.value?.alias)),
 		priceCurrency: 'UAH',
 		price,
+		priceValidUntil: priceValidUntil(),
 		itemCondition: 'https://schema.org/NewCondition',
 		availability: 'https://schema.org/InStock',
+		seller: orgId(config.public.siteUrl as string),
 	},
 }))
 

@@ -160,7 +160,10 @@
       "Bash(node -e \"console.log\\(1\\)\")",
       "Bash(mkdir -p \"C:/Users/slavi/AppData/Local/Temp/claude/d--Web-SERVER-domains-FLOY-NEW/19faaee5-b0a3-4dd8-96d8-7da0ead36cad/scratchpad/fav\")",
       "PowerShell(Remove-Item \"d:\\\\Web-SERVER\\\\domains\\\\FLOY-NEW\\\\public\\\\favicon.png\" -Confirm:$false)",
-      "PowerShell(\"removed\")"
+      "PowerShell(\"removed\")",
+      "Bash(git --no-pager diff components/shop/ProductPage.vue components/ProductCard.vue composables/useSeo.ts composables/useReviews.ts)",
+      "Bash(git --no-pager diff \"pages/article/[type]/[article].vue\" \"pages/neoprint/[category]/[id].vue\" components/printcase/PrintcasePage.vue composables/useProductJsonLd.ts)",
+      "Bash(git --no-pager diff nuxt.config.ts app.vue)"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [

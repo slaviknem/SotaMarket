@@ -79,20 +79,41 @@ usePageSeo({
 	description: () => article.value?.meta_description || '',
 	image: () =>
 		article.value?.image_file ? url.articleImgSource(article.value.image_file) : undefined,
+	ogType: 'article',
 })
 
-useJsonLd(() => ({
-	'@context': 'https://schema.org',
-	'@type': 'Article',
-	headline: article.value?.title || '',
-	image: article.value?.image_file ? [url.articleImgSource(article.value.image_file)] : [],
-	datePublished: article.value?.date || '',
-	publisher: {
+useJsonLd(() => {
+	const a = article.value
+	if (!a) return {}
+
+	// API віддає дату як «11.07.2026» — для schema.org потрібен ISO, інакше Google
+	// відкидає поле і разом з ним усю розмітку статті. Це updated_at, тож він і в
+	// dateModified, і (за відсутністю кращого) в datePublished.
+	const iso = reviewIsoDate(a.date)
+	const pageUrl = config.public.siteUrl + url.blogPost({ type: a.type, alias: a.alias })
+	// Автор і видавець — сам магазин: посилаємось на його вузол (@id з app.vue), але
+	// name/logo дублюємо явно, бо Google вимагає їх безпосередньо в полі
+	const publisher = {
 		'@type': 'Organization',
-		name: 'FLOY',
+		...orgId(config.public.siteUrl as string),
+		name: config.public.siteName,
 		logo: { '@type': 'ImageObject', url: config.public.siteUrl + '/images/logo.svg' },
-	},
-}))
+	}
+
+	return {
+		'@context': 'https://schema.org',
+		'@type': 'BlogPosting',
+		headline: a.title || '',
+		description: a.meta_description || '',
+		image: a.image_file ? [url.articleImgSource(a.image_file)] : [],
+		...(iso ? { datePublished: iso, dateModified: iso } : {}),
+		inLanguage: locale.value,
+		mainEntityOfPage: { '@type': 'WebPage', '@id': pageUrl },
+		url: pageUrl,
+		author: publisher,
+		publisher,
+	}
+})
 </script>
 
 <style scoped>

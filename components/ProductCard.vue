@@ -47,6 +47,14 @@
 				{{ cardTitle }}
 			</NuxtLink>
 
+			<!-- Рейтинг: дублює aggregateRating позиції в ItemList сторінки — Google зараховує
+			     оцінку в розмітці лише тоді, коли вона видима. Малюємо лише тим товарам,
+			     у яких відгуки реально є, тож у сітці це майже не додає вузлів. -->
+			<div v-if="product.reviews_count" class="p-card__rating">
+				<RatingStars :value="product.rating" :size="13" />
+				<span class="text-muted">({{ product.reviews_count }})</span>
+			</div>
+
 			<!-- Кольори/атрибути (у режимі картки-варіанта не показуємо — колір уже в назві) -->
 			<div v-if="colorAttributes.length" class="p-card__attrs">
 				<NuxtLink
@@ -201,6 +209,14 @@ const toggleCompare = () => compare.toggle(props.product)
 .icon-btn.is-active {
 	background: var(--accent);
 	color: var(--on-accent);
+}
+
+.p-card__rating {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	margin-top: 6px;
+	font-size: 12px;
 }
 
 .p-card__attrs {

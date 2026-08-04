@@ -17,6 +17,14 @@
 				<h1 class="product__title">{{ pageTitle }}</h1>
 
 				<div class="product__meta">
+					<!-- Зведений рейтинг біля H1. Google показує зірочки лише тоді, коли оцінка
+					     з мікророзмітки видима на сторінці — таб «Відгуки» нижче для цього
+					     недостатньо очевидний. Клік веде саме туди. -->
+					<button v-if="stats.ratedCount" class="product__rating" @click="activeTab = 'reviews'">
+						<RatingStars :value="stats.avg" :size="15" />
+						<span class="product__rating-val">{{ stats.avg }}</span>
+						<span class="text-muted">({{ stats.ratedCount }})</span>
+					</button>
 					<span class="product__code">{{ t('product.codeProduct') }}: {{ product.id }}{{ selectedAttributeId ? '-' + selectedAttributeId : '' }}</span>
 					<span class="product__stock" :class="available ? 'is-in' : 'is-out'">
 						{{ available ? t('product.inStock') : t('product.notStock') }}
@@ -404,6 +412,11 @@ function addToCart() {
 	openCart()
 }
 
+// ---------- Відгуки ----------
+// Зведений рейтинг — те саме джерело, що й aggregateRating у schema.org (useProductJsonLd),
+// тож видиме число і число в розмітці ніколи не розходяться
+const stats = computed(() => reviewsStats(product.value?.reviews))
+
 // ---------- Таби ----------
 const tabs = computed(() => [
 	{ key: 'description', title: t('product.description') },
@@ -428,6 +441,7 @@ usePageSeo({
 		t('metaDescription.product', { title: seoTitle.value, price: formatPrice(product.value?.price) }),
 	image: () => (currentImageFile.value ? url.productBig(currentImageFile.value) : undefined),
 	path: () => canonicalPath.value,
+	ogType: 'product',
 })
 
 // Product / ProductGroup + hasVariant / Product варіанта + BreadcrumbList
@@ -499,6 +513,25 @@ onMounted(() => {
 	flex-wrap: wrap;
 	margin-bottom: 12px;
 	font-size: 13px;
+}
+
+/* Рейтинг у шапці товару — стоїть першим у .product__meta, тому власних відступів не має.
+   padding: 0 — глобальний reset кнопки його не чіпає, а типовий UA-відступ збив би
+   вирівнювання з рештою рядка (код товару, наявність). */
+.product__rating {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 0;
+	font-size: 13px;
+}
+
+.product__rating-val {
+	font-weight: 700;
+}
+
+.product__rating:hover {
+	text-decoration: underline;
 }
 
 .product__code {

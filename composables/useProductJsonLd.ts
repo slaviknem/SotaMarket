@@ -26,15 +26,20 @@ export function useProductJsonLd(opts: {
 	// Абсолютний URL товару (з мовним префіксом), опційно — конкретного варіанта
 	const linkTo = (attr?: any) => url.absolute(url.product(opts.product.value, attr?.alias))
 
+	// priceValidUntil і seller — вимоги товарних сніпетів: без дати Google вважає ціну
+	// протермінованою і ховає її, а seller через @id зшиває пропозицію з магазином
+	// (його контакти й політика повернення оголошені один раз у app.vue).
 	const offerFor = (attr: any | null, offerUrl: string) => ({
 		'@type': 'Offer',
 		url: offerUrl,
 		priceCurrency: 'UAH',
 		price: opts.product.value?.price,
+		priceValidUntil: priceValidUntil(),
 		itemCondition: 'https://schema.org/NewCondition',
 		availability: isProductInStock(opts.product.value, attr)
 			? 'https://schema.org/InStock'
 			: 'https://schema.org/OutOfStock',
+		seller: orgId(config.public.siteUrl as string),
 	})
 
 	// Ознака, якою відрізняються варіанти: принт (pattern) чи колір (color)
@@ -71,6 +76,7 @@ export function useProductJsonLd(opts: {
 				description: variantLead(attr),
 				'@type': 'Product',
 				name: opts.pageTitle.value,
+				url: linkTo(attr),
 				image: opts.variantImages.value,
 				sku: `${groupId}-${attr.id}`,
 				...(hasVariants ? { inProductGroupWithID: groupId } : {}),
@@ -112,6 +118,7 @@ export function useProductJsonLd(opts: {
 			...base,
 			'@type': 'Product',
 			name: product.title,
+			url: linkTo(),
 			image: opts.images.value,
 			sku: groupId,
 			...(attr ? variesByProp(attr) : {}),

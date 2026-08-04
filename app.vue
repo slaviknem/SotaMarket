@@ -40,6 +40,63 @@ useHead(() => ({
 	titleTemplate: (chunk?: string) => chunk || `FLOY — ${t('metaTitle.index')}`,
 }))
 
+// Магазин як сутність — на КОЖНІЙ сторінці (а не лише на головній): за @id на цей вузол
+// посилаються всі Offer (seller), тож пошуковики й AI зшивають товар з продавцем, його
+// контактами, соцпрофілями та політикою повернення. Вузол компактний і статичний.
+const config = useRuntimeConfig()
+const localePath = useLocalePath()
+
+useJsonLd(() => [
+	{
+		'@context': 'https://schema.org',
+		'@type': 'OnlineStore',
+		...orgId(config.public.siteUrl as string),
+		url: config.public.siteUrl + localePath('/'),
+		name: config.public.siteName,
+		description: t('metaDescription.index'),
+		logo: config.public.siteUrl + '/images/logo.svg',
+		image: config.public.siteUrl + '/images/logo.svg',
+		email: config.public.email,
+		telephone: config.public.phone,
+		address: {
+			'@type': 'PostalAddress',
+			streetAddress: config.public.addressStreet,
+			addressLocality: config.public.addressCity,
+			addressCountry: 'UA',
+		},
+		areaServed: 'UA',
+		currenciesAccepted: 'UAH',
+		// Соцпрофілі: зв'язують сайт із тими самими акаунтами в графі знань
+		// (той самий список, що й в іконках футера — SocialLinks)
+		sameAs: [
+			config.public.instagram,
+			config.public.facebook,
+			config.public.telegram,
+			config.public.youtube,
+		],
+		// TODO: hasMerchantReturnPolicy (термін повернення, хто платить за пересилку) —
+		// Google показує ці умови покупцям, тож вносити їх можна лише з підтверджених
+		// даних магазину, а не з тексту статті /povernennya «на око».
+	},
+	{
+		'@context': 'https://schema.org',
+		'@type': 'WebSite',
+		'@id': config.public.siteUrl + '/#website',
+		url: config.public.siteUrl + localePath('/'),
+		name: config.public.siteName,
+		inLanguage: locale.value,
+		publisher: orgId(config.public.siteUrl as string),
+		potentialAction: {
+			'@type': 'SearchAction',
+			target: {
+				'@type': 'EntryPoint',
+				urlTemplate: `${config.public.siteUrl}${localePath('/search')}?q={search_term_string}`,
+			},
+			'query-input': 'required name=search_term_string',
+		},
+	},
+])
+
 // Меню вантажиться один раз на SSR і шариться між сторінками
 const shopApi = useShopApi()
 const { data: menu } = await useAsyncData('menu-' + locale.value, () => shopApi.getMenu(10), {

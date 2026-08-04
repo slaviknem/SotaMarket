@@ -402,6 +402,7 @@ usePageSeo({
 	image: () => shareImage.value,
 	// URL змінюється без навігації роутера — canonical/og тримаємо на активному дизайні
 	path: () => url.neoprint(category.value.alias, activeId.value),
+	ogType: 'product',
 })
 
 // Product + Offer: для пошуковиків і AI це повноцінний товар зі своєю ціною та фото
@@ -413,15 +414,21 @@ useJsonLd(() => ({
 	image: [shareImage.value],
 	sku: `NP-${activeDesign.value.id}-${category.value.id}`,
 	brand: { '@type': 'Brand', name: config.public.siteName },
+	url: url.absolute(url.neoprint(category.value.alias, activeDesign.value.id)),
 	// Чим цей варіант відрізняється від інших дизайнів теми
 	pattern: activeDesign.value.title,
+	// Дизайн друкують на чохлі під конкретну модель — вказуємо це явно: так пошуковики й AI
+	// розуміють сумісність і відповідають на запит «чи є такий чохол на {модель}»
+	isAccessoryOrSparePartFor: { '@type': 'Product', name: modelName.value },
 	offers: {
 		'@type': 'Offer',
 		url: url.absolute(url.neoprint(category.value.alias, activeDesign.value.id)),
 		priceCurrency: 'UAH',
 		price: price.value,
+		priceValidUntil: priceValidUntil(),
 		itemCondition: 'https://schema.org/NewCondition',
 		availability: 'https://schema.org/InStock',
+		seller: orgId(config.public.siteUrl as string),
 	},
 }))
 
