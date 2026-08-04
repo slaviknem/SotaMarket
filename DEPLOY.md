@@ -3,8 +3,8 @@
 Nuxt 3 SSR — потрібен **запущений Node-процес**, не статика. nginx (HestiaCP) проксіює
 домен на локальний порт, де крутиться Node під керуванням pm2.
 
-Перевірено на тестовому стенді **test.floy.com.ua** (порт 3000). Прод — за тією ж схемою,
-лише інший домен/порт.
+Перевірено на тестовому стенді **test.floy.com.ua** (порт 3000). Прод іде тим самим шляхом:
+той самий порт і той самий шаблон nginx, лише інший домен, папка й `SITE_URL`.
 
 > Сервер: hostia.ua VPS, HestiaCP, користувач `wm`, IP `138.199.205.230`, **arm64**, Ubuntu 22.04.
 > Node на сервері через nvm: **default = v16.20.2 (НЕ чіпати — старі сайти й pm2-демон)**,
@@ -14,37 +14,65 @@ Nuxt 3 SSR — потрібен **запущений Node-процес**, не �
 
 ## 0. Параметри розгортання
 
-| | тест | прод (приклад) |
+| | тест | прод |
 |---|---|---|
 | домен | `test.floy.com.ua` | `floy.com.ua` |
-| порт Node | `3000` | напр. `3100` (вільний; старий сайт зараз на 3001) |
+| порт Node | `3000` | `3000` (той самий; тест зупиняємо) |
 | pm2-ім'я | `floy-test` | `floy-prod` |
 | папка | `/root/nodeapps/FLOY-NEW` | `/root/nodeapps/FLOY-PROD` |
 | `SITE_URL` | `https://test.floy.com.ua` | `https://floy.com.ua` |
 
 Зайняті порти pm2: 3001 Floy(старий), 3002 Smarket, 3003 SotaMarket, 4000/4001 Print-Case, 9999 PL-FILTER.
 
+**Чому прод теж на 3000, а не на окремому 3100:** порт зашитий у шаблон nginx
+(`proxy_pass http://127.0.0.1:3000;`), тож будь-який інший порт вимагає дублювати шаблон —
+ще одна неперевірена ланка в найризикованіший момент. Простіше зупинити тестовий стенд
+(`pm2 stop floy-test`, саме stop — процес лишається в списку) і зайняти вже перевірений шлях.
+
+**Порт старого сайту (3001) не займати.** Спокуса зрозуміла — nginx туди вже проксіює, шаблон
+чіпати не треба. Але щоб зайняти 3001, старий процес доведеться спершу зупинити, і домен
+почне віддавати нову версію в ту саму мить: перевірити наперед неможливо, а відкат замість
+«повернути шаблон» стає «зупинити новий, підняти старий» при вже лежачому сайті.
+Старий процес має дожити на 3001 недоторканим ще 2–3 дні як страхівка.
+
 ---
 
-## 1. Залити код і зібрати (під node 22)
+## 1. Зафіксувати поточний стан (щоб було куди відкатитись)
+
+Виконати **до** будь-яких змін і зберегти вивід — з нього беруться значення для відкату:
+
+```bash
+pm2 list                                                  # імена/id процесів, хто на якому порту
+pm2 describe <id-старого-floy> | grep -E 'script|exec cwd|interpreter'
+grep -rn 'proxy_pass' /home/wm/conf/web/floy.com.ua/nginx.ssl.conf   # на який порт іде домен зараз
+v-list-web-domain wm floy.com.ua | grep -Ei 'proxy|ssl|alias'        # шаблон, SSL, www-alias
+```
+
+Записати: **шаблон домену**, **порт у proxy_pass**, **як стартує старий процес**.
+
+## 2. Залити код і зібрати (під node 22)
 
 ```bash
 nvm use 22
 mkdir -p /root/nodeapps && cd /root/nodeapps
-git clone git@github.com:slaviknem/FLOY-NEW.git FLOY-PROD     # SSH-ключ; або https + PAT
+git clone https://github.com/slaviknem/FLOY-NEW.git FLOY-PROD   # або SSH-ключ
 cd FLOY-PROD
 npm install
-SITE_URL=https://floy.com.ua npx nuxi build                  # НЕ build.cmd (Windows-обгортка)
+SITE_URL=https://floy.com.ua npx nuxi build                     # НЕ build.cmd (Windows-обгортка)
 ```
 Перевірка збірки: має з'явитись `.output/server/index.mjs`, у кінці `Build complete!`.
+Якщо збірка впала — далі не йти, старий сайт при цьому не зачеплений.
 
-## 2. Запуск через наявний pm2 (демон node 16, додаток — node 22)
+## 3. Звільнити порт 3000 і запустити прод
+
+pm2-демон крутиться на node 16, сам додаток — на node 22 через `--interpreter`.
 
 ```bash
-nvm use 16     # щоб pm2-команди йшли через робочий демон
+nvm use 16                       # щоб pm2-команди йшли через робочий демон
+pm2 stop floy-test               # звільняємо 3000; саме stop, не delete
 cd /root/nodeapps/FLOY-PROD
 
-PORT=3100 \
+PORT=3000 \
 SITE_URL=https://floy.com.ua \
 URL_API=https://admin.floy.com.ua/apisite/ \
 URL_STORAGE=https://admin.floy.com.ua/storage/ \
@@ -53,41 +81,70 @@ pm2 start .output/server/index.mjs \
   --interpreter /root/.nvm/versions/node/v22.23.1/bin/node
 
 pm2 save
-curl -I http://127.0.0.1:3100        # очікуємо HTTP/1.1 200 OK + x-powered-by: Nuxt
 ```
 
-## 3. nginx-проксі через шаблон HestiaCP `node`
+## 4. Перевірити ДО перемикання домену
 
-Шаблон уже створено: `/usr/local/hestia/data/templates/web/nginx/node.tpl` + `node.stpl`
-(HTTP:80 → Apache `%ip%:8080` для LE/редіректу; HTTPS:443 → `127.0.0.1:<порт>`).
-
-**Важливо:** порт Node прописаний у шаблоні (`proxy_pass http://127.0.0.1:3000;`).
-Для іншого порту шаблон треба продублювати під цей порт (напр. `node3100.stpl`)
-або тимчасово правити — один шаблон = один порт. Порти слухача 80/443 хардкоджені
-(змінні `%web_port%`/`%web_ssl_port%` тут = 8080/8443 бекенду Apache, НЕ фронтові!).
+Домен усе ще на старому сайті — новий стукаємо напряму в порт:
 
 ```bash
-# домен має бути створений у HestiaCP, alias www прибрати (LE впаде на www без DNS)
-v-delete-web-domain-alias wm floy.com.ua www.floy.com.ua    # якщо alias не потрібен
+curl -I http://127.0.0.1:3000                             # 200 + x-powered-by: Nuxt
+
+# індексація відкрита: x-robots-tag НЕ мусить бути
+curl -sI http://127.0.0.1:3000/ | grep -i x-robots
+
+# службові — навпаки, мусить бути noindex
+curl -sI http://127.0.0.1:3000/shop/cart | grep -i x-robots
+
+# canonical з правильним доменом (не test!)
+curl -s http://127.0.0.1:3000/ | grep -o '<link rel="canonical"[^>]*>'
+
+# каталог і товар живі, дані з API приходять
+curl -s http://127.0.0.1:3000/iphone-17-pro-max | grep -c 'p-card'
+curl -s http://127.0.0.1:3000/robots.txt | head -3
+
+# новий проксі Укрпошти
+curl -s 'http://127.0.0.1:3000/api/ukrposhta?pi=36000' | head -c 120
+```
+
+Якщо `canonical` показує `test.floy.com.ua` — збірка пішла зі старим `SITE_URL`:
+перезібрати з правильним і `pm2 restart floy-prod`.
+
+## 5. Перемкнути домен
+
+SSL для `floy.com.ua` **уже випущений і працює** (старий сайт віддає https), тож
+Let's Encrypt **не торкаємось** — жодних `v-add-letsencrypt-domain`, інакше можна
+зламати робочий сертифікат. Шаблон `node` пропускає acme через Apache на :80,
+тож автопродовження далі працює само.
+
+```bash
 v-change-web-domain-proxy-tpl wm floy.com.ua node
-nginx -t
-```
-
-## 4. SSL (Let's Encrypt) — обхід, бо прямий LE на кастомному шаблоні дає 404 acme
-
-```bash
-v-change-web-domain-proxy-tpl wm floy.com.ua default     # тимчасово стандартний шаблон
-v-add-letsencrypt-domain wm floy.com.ua                  # випуск сертифіката (Apache віддає челендж)
-v-add-web-domain-ssl-force wm floy.com.ua                # примусовий HTTPS
-v-change-web-domain-proxy-tpl wm floy.com.ua node        # повернути node-шаблон
 nginx -t && systemctl reload nginx
-curl -I --http1.1 https://floy.com.ua                    # HTTP/1.1 200 OK + x-powered-by: Nuxt
+
+curl -I --http1.1 https://floy.com.ua                     # 200 + x-powered-by: Nuxt
+curl -sI https://floy.com.ua/ | grep -i x-robots          # порожньо = індексується
 ```
 
-## 5. Оновлення після пушу в GitHub
+Якщо в домену є **alias www** і він у DNS — перевірити і його: `curl -I https://www.floy.com.ua`.
+
+## 6. Відкат (якщо щось не так)
+
+Старий процес живий на 3001, тому відкат — це одна команда з поверненням шаблону,
+який записали в кроці 1:
 
 ```bash
-cd /root/nodeapps/FLOY-PROD && git pull && nvm use 22 && npm install && npx nuxi build && pm2 restart floy-prod
+v-change-web-domain-proxy-tpl wm floy.com.ua <шаблон-із-кроку-1>
+nginx -t && systemctl reload nginx
+curl -I https://floy.com.ua                               # знову старий сайт
+```
+
+Старий процес **не видаляти 2–3 дні** після запуску. Аж потім:
+`pm2 delete <старий-id> && pm2 save`.
+
+## 7. Оновлення після пушу в GitHub
+
+```bash
+cd /root/nodeapps/FLOY-PROD && git pull && nvm use 22 && npm install && npx nuxi build && nvm use 16 && pm2 restart floy-prod
 ```
 (`npm install` можна пропустити, якщо залежності не мінялись.)
 
@@ -126,13 +183,18 @@ php artisan images:webp-templates-thumb                  # images/templates/thum
 
 ---
 
-## Прод-перемикання зі старого сайту (cutover)
+## Що зробити після запуску (не в коді)
 
-Старий floy.com.ua зараз на порту 3001. Щоб перевести домен на нову версію:
-1. Підняти нову версію на окремому порту (3100) і перевірити локально (`curl 127.0.0.1:3100`).
-2. Перевести `floy.com.ua` на шаблон `node` з потрібним портом (кроки 3–4).
-3. Переконатись, що сайт працює, і лише потім зупиняти старий процес: `pm2 delete <старий-id>` + `pm2 save`.
-4. Тримати старий код/процес у запасі до підтвердження стабільності.
+- [ ] **Google Search Console**: додати ресурс `floy.com.ua`, підтвердити власність
+      (простіше DNS-записом, ніж meta-теґом), надіслати sitemap, коли він з'явиться.
+- [ ] **Аналітика**: на сайті немає ні GA4/GTM, ні Meta Pixel — без них не буде даних про
+      продажі й не з чим порівняти «до/після» переїзду. Ставити одразу, а не «потім».
+- [ ] **`APP_DEBUG=false`** в `.env` адмінки (`admin.floy.com.ua`): зараз будь-яка 500-ка
+      віддає повний стек Laravel зі шляхами `/home/wm/web/...`.
+- [ ] Тестовий стенд, коли знадобиться, підняти на іншому порту (не 3000) і закрити від
+      індексації — його `SITE_URL` мусить лишитись `https://test.floy.com.ua`.
+- [ ] Перші дні тримати око на `pm2 logs floy-prod --lines 100` і `pm2 describe floy-prod`
+      (перезапуски, пам'ять).
 
 ## Чекліст безпеки/гігієни
 
@@ -141,3 +203,4 @@ php artisan images:webp-templates-thumb                  # images/templates/thum
 - [ ] `SITE_URL` на кожному стенді свій (canonical/OG/sitemap).
 - [ ] `pm2 save` після кожної зміни складу процесів (інакше після ребуту не підніметься).
 - [ ] **Не** ставити другий pm2 і **не** міняти nvm default з v16.
+- [ ] Let's Encrypt для `floy.com.ua` **не перевипускати** — сертифікат уже робочий.
