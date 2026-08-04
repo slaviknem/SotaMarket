@@ -1,59 +1,51 @@
 # =====================================================================
-# ⛔ ТЕСТОВИЙ РЕЖИМ — САЙТ ЗАКРИТИЙ ВІД ІНДЕКСАЦІЇ
+# ПРОДАКШН — сайт відкритий для індексації.
 #
-# Сканування тут ДОЗВОЛЕНЕ навмисно. Реальний запобіжник — заголовок
-# `X-Robots-Tag: noindex, nofollow` на всіх маршрутах (nuxt.config.ts → routeRules '/**').
-# Якби тут стояв `Disallow: /`, бот не зайшов би на сторінку і не побачив noindex —
-# а вже проіндексовані адреси так і висіли б у видачі «без опису».
-#
-# ЩОБ ВІДКРИТИ САЙТ:
-#   1. прибрати правило '/**' з routeRules у nuxt.config.ts;
-#   2. замінити блок нижче на «ПРОДАКШН».
+# Закриті лише службові розділи: кошик, порівняння, обране, відстеження
+# замовлення й сторінка пошуку. Вони ж віддають X-Robots-Tag: noindex
+# (nuxt.config.ts → routeRules): Disallow забороняє обхід, а прибирає з
+# індексу саме noindex, тож потрібні обидва.
 # =====================================================================
 
+# --- ШІ-краулери: явно дозволені (навчання + пошук усередині асистентів) ---
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-User
+User-agent: Claude-SearchBot
+User-agent: anthropic-ai
+User-agent: PerplexityBot
+User-agent: Google-Extended
+Allow: /
+Disallow: /shop/cart
+Disallow: /shop/checkout
+Disallow: /shop/compare
+Disallow: /shop/wishlist
+Disallow: /shop/track-order
+Disallow: /search
+Disallow: /uk/shop/cart
+Disallow: /uk/shop/checkout
+Disallow: /uk/shop/compare
+Disallow: /uk/shop/wishlist
+Disallow: /uk/shop/track-order
+Disallow: /uk/search
+
+# --- Усі інші боти ---
 User-agent: *
 Allow: /
+Disallow: /shop/cart
+Disallow: /shop/checkout
+Disallow: /shop/compare
+Disallow: /shop/wishlist
+Disallow: /shop/track-order
+Disallow: /search
+Disallow: /uk/shop/cart
+Disallow: /uk/shop/checkout
+Disallow: /uk/shop/compare
+Disallow: /uk/shop/wishlist
+Disallow: /uk/shop/track-order
+Disallow: /uk/search
 
-
-# =====================================================================
-# ПРОДАКШН (розкоментувати замість блока вище)
-# =====================================================================
-#
-# # --- ШІ-краулери: явно дозволені (навчання + пошук усередині асистентів) ---
-# User-agent: GPTBot
-# User-agent: OAI-SearchBot
-# User-agent: ChatGPT-User
-# User-agent: ClaudeBot
-# User-agent: Claude-User
-# User-agent: Claude-SearchBot
-# User-agent: anthropic-ai
-# User-agent: PerplexityBot
-# User-agent: Google-Extended
-# Allow: /
-# Disallow: /shop/cart
-# Disallow: /shop/checkout
-# Disallow: /shop/compare
-# Disallow: /shop/wishlist
-# Disallow: /shop/track-order
-# Disallow: /uk/shop/cart
-# Disallow: /uk/shop/checkout
-# Disallow: /uk/shop/compare
-# Disallow: /uk/shop/wishlist
-# Disallow: /uk/shop/track-order
-#
-# # --- Усі інші боти ---
-# User-agent: *
-# Allow: /
-# Disallow: /shop/cart
-# Disallow: /shop/checkout
-# Disallow: /shop/compare
-# Disallow: /shop/wishlist
-# Disallow: /shop/track-order
-# Disallow: /uk/shop/cart
-# Disallow: /uk/shop/checkout
-# Disallow: /uk/shop/compare
-# Disallow: /uk/shop/wishlist
-# Disallow: /uk/shop/track-order
-#
-# Host: https://floy.com.ua
-# Sitemap: https://floy.com.ua/sitemap.xml
+Host: https://floy.com.ua
+Sitemap: https://floy.com.ua/sitemap.xml

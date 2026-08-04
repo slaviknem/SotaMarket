@@ -123,9 +123,15 @@ export default defineNuxtConfig({
 	// перезавантажував і шрифти, і картинки. Імена без хеша, тож immutable — лише
 	// шрифтам (файл фіксований), решті — місяць.
 	routeRules: {
-		// ⛔ ТЕСТОВИЙ РЕЖИМ: увесь сайт закритий від індексації.
-		// ПЕРЕД ЗАПУСКОМ — прибрати цей рядок і повернути прод-версію public/robots.txt.
-		'/**': { headers: { 'x-robots-tag': 'noindex, nofollow' } },
+		// Службові розділи (кошик, порівняння, обране, відстеження) — noindex на рівні
+		// заголовка, окремо від robots.txt: там вони теж закриті, але Disallow лише
+		// забороняє обхід, а вже проіндексовані адреси прибирає саме noindex.
+		// Сторінки і так ставлять цей meta через usePageSeo — заголовок дублює його для
+		// випадків, коли бот бачить лише HTTP-відповідь.
+		'/shop/**': { headers: { 'x-robots-tag': 'noindex, follow' } },
+		'/uk/shop/**': { headers: { 'x-robots-tag': 'noindex, follow' } },
+		'/search': { headers: { 'x-robots-tag': 'noindex, follow' } },
+		'/uk/search': { headers: { 'x-robots-tag': 'noindex, follow' } },
 
 		'/fonts/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
 		'/images/**': { headers: { 'cache-control': 'public, max-age=2592000' } },
