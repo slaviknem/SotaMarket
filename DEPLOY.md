@@ -106,15 +106,23 @@ find .cache/neoprint -type f -atime +60 -delete          # прибрати не
 rm -rf .cache/neoprint                                   # повний скид (перезбереться на льоту)
 ```
 
-Джерела в адмінці (FLOY-ADMIN) мають бути в розмірах, під які заточений роут:
+Джерела в адмінці (FLOY-ADMIN) мають бути в розмірах, під які заточений роут — 576×1100
+(кадри вище 504: og, card2x, hero2x) і 264×504 (card, hero). Нові шаблони отримують обидва
+webp одразу при завантаженні в адмінці (`ImageH::makeTemplateWebp`), тож команди нижче —
+це БЕКФІЛ старих і перегенерація після зміни розмірів кадрів:
 
 ```bash
-php artisan images:webp-templates --max=1100             # images/templates/*.webp -> 576x1100
-php artisan images:webp-templates-thumb --size=264x504   # images/templates/thumb/*.webp
+php artisan images:webp-templates --dry-run              # спершу подивитись
+php artisan images:webp-templates                        # images/templates/*.webp -> 576x1100
+php artisan images:webp-templates-thumb                  # images/templates/thumb/*.webp -> 264x504
 ```
 
-Прогнати після кожної партії нових шаблонів: без webp роут падає назад на оригінальний
-jpg (1,7 МБ на шаблон — генерація помітно повільніша).
+Потрібні розміри вже стоять дефолтами — прапорці не потрібні. Без webp роут падає назад на
+оригінальний jpg (1,7 МБ на шаблон — генерація помітно повільніша).
+
+Міняються `PRESETS` у роуті — перерахувати обидва розміри (найбільший кадр диктує висоту
+великої копії, `THUMB_MAX_HEIGHT` — висоту прев'ю) і поправити `ImageH::makeTemplateWebp`
+разом із дефолтами команд.
 
 ---
 

@@ -8,6 +8,7 @@
 		"build": "build.cmd",
 		"preview": "preview.cmd",
 		"start": "start.cmd",
+		"icons": "node scripts/gen-icons.mjs",
 		"postinstall": "nuxt prepare"
 	},
 	"dependencies": {

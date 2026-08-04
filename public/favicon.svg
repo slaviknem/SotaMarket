@@ -7,4 +7,4 @@
 		<stop offset="0" stop-color="#c95500" stop-opacity="0"/>
 		<stop offset="1" stop-color="#c95500" stop-opacity=".45"/>
 	</linearGradient>
-</defs><rect width="64" height="64" rx="15" fill="#ff7a00"/><rect width="64" height="64" rx="15" fill="url(#warm)"/><rect width="64" height="64" rx="15" fill="url(#deep)"/><path d="M20 8H55a1 1 0 0 1 1 1V19a1 1 0 0 1 -1 1H21a1 1 0 0 0 -1 1V23a1 1 0 0 0 1 1H55a1 1 0 0 1 1 1V35a1 1 0 0 1 -1 1H21a1 1 0 0 0 -1 1V51a1 1 0 0 1 -1 1H9a1 1 0 0 1 -1 -1V20a12 12 0 0 1 12 -12Z" fill="#14100b"/></svg>
+</defs><rect width="64" height="64" rx="15" fill="#ff7a00"/><rect width="64" height="64" rx="15" fill="url(#warm)"/><rect width="64" height="64" rx="15" fill="url(#deep)"/><path d="M20 11H55a1 1 0 0 1 1 1V22a1 1 0 0 1 -1 1H21a1 1 0 0 0 -1 1V26a1 1 0 0 0 1 1H55a1 1 0 0 1 1 1V38a1 1 0 0 1 -1 1H21a1 1 0 0 0 -1 1V54a1 1 0 0 1 -1 1H9a1 1 0 0 1 -1 -1V23a12 12 0 0 1 12 -12Z" fill="#14100b"/></svg>
