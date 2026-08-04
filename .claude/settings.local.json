@@ -163,7 +163,19 @@
       "PowerShell(\"removed\")",
       "Bash(git --no-pager diff components/shop/ProductPage.vue components/ProductCard.vue composables/useSeo.ts composables/useReviews.ts)",
       "Bash(git --no-pager diff \"pages/article/[type]/[article].vue\" \"pages/neoprint/[category]/[id].vue\" components/printcase/PrintcasePage.vue composables/useProductJsonLd.ts)",
-      "Bash(git --no-pager diff nuxt.config.ts app.vue)"
+      "Bash(git --no-pager diff nuxt.config.ts app.vue)",
+      "Bash(curl -s \"https://admin.floy.com.ua/apisite/filters/iphone-13?site=floy&lang=uk\")",
+      "Bash(which mysql *)",
+      "Read(//c/xampp/mysql/bin/**)",
+      "Bash(\"/d/Web-SERVER/modules/database/MySQL-8.0-Win10/bin/mysql.exe\" -h127.0.0.1 -uroot my_admin_floy -e \"SHOW COLUMNS FROM filters;\")",
+      "Bash(curl -s \"https://admin.floy.com.ua/apisite/filters/filter/iphone-13/brendy?site=floy&lang=uk\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\)['data']; print\\(repr\\(d.get\\('description'\\)\\), repr\\(d.get\\('theme'\\)\\), d.get\\('type'\\), d.get\\('id'\\)\\)\")",
+      "Bash(\"/d/Web-SERVER/modules/database/MySQL-8.0-Win10/bin/mysql.exe\" -h127.0.0.1 -uroot -t my_admin_floy -e \"SELECT alias, type, parent_id, site FROM filters WHERE type='theme' AND parent_id IS NULL LIMIT 5;\")",
+      "Bash(\"/d/Web-SERVER/modules/database/MySQL-8.0-Win10/bin/mysql.exe\" -h127.0.0.1 -uroot -t my_admin_floy -e \"SELECT COUNT\\(*\\) total FROM filters; SELECT site, type, COUNT\\(*\\) c FROM filters GROUP BY site, type LIMIT 20;\")",
+      "Bash(\"/d/Web-SERVER/modules/database/MySQL-8.0-Win10/bin/mysql.exe\" -h127.0.0.1 -uroot my_admin_floy -e \"UPDATE filters SET description_uk='it''s broken WHERE alias='x';\")",
+      "Bash(mkdir -p .claude/skills/filter-article/data)",
+      "Bash(mv data/articles-filters.sql .claude/skills/filter-article/data/articles-filters.sql)",
+      "Bash(rmdir data *)"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [
