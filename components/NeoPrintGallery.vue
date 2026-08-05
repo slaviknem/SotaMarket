@@ -35,7 +35,7 @@
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Navigation } from 'swiper/modules'
 import type { Swiper as SwiperClass } from 'swiper'
-import 'swiper/css'
+// Базовий swiper/css — глобальний (nuxt.config), див. коментар там
 import 'swiper/css/navigation'
 
 // Галерея дизайнів теми. Дзеркалить логіку ShopProductGallery, але малює композицію

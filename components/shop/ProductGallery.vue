@@ -109,7 +109,7 @@ import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Thumbs, Navigation, Pagination, Zoom } from 'swiper/modules'
 import type { Swiper as SwiperClass } from 'swiper'
 import type { IGallerySlide } from '~/composables/useProductGallery'
-import 'swiper/css'
+// Базовий swiper/css — глобальний (nuxt.config), див. коментар там
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import 'swiper/css/thumbs'

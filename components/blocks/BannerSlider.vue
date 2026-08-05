@@ -60,7 +60,8 @@
 <script setup lang="ts">
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Autoplay, Pagination } from 'swiper/modules'
-import 'swiper/css'
+// Базовий swiper/css — глобальний (nuxt.config): він тримає розкладку слайдів,
+// тож мусить бути в HTML ще до гідратації. Тут лишаються тільки модульні стилі.
 import 'swiper/css/pagination'
 
 const props = defineProps<{ banners: any[] | null }>()

@@ -83,7 +83,14 @@ export default defineNuxtConfig({
 		},
 	},
 
-	css: ['~/assets/css/main.css'],
+	// Базовий CSS Swiper — глобально, а не імпортом усередині компонента: інлайнер Nuxt
+	// (features.inlineStyles) кладе в SSR-HTML лише стилі самих .vue, а <link> на решту чанків
+	// прибирає хук build:manifest нижче. Через це геометрії слайдера (.swiper overflow,
+	// .swiper-wrapper flex, .swiper-slide width) у першому кадрі не було: слайди ставали
+	// стовпчиком і схлопувалися при ініціалізації, зсуваючи весь перший екран (CLS ~0.4).
+	// Модульні стилі (pagination/navigation/thumbs/zoom) лишаються в компонентах — вони
+	// позиціонують лише absolute-елементи й на розкладку не впливають.
+	css: ['swiper/css', '~/assets/css/main.css'],
 
 	i18n: {
 		baseUrl: process.env.SITE_URL || 'https://floy.com.ua',
