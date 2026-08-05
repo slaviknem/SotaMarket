@@ -344,8 +344,25 @@ const brandTree = computed(() => {
 	}]
 })
 
-// Дерево фільтрів для сайдбара (синтетичні групи Категорія/Форм-фактор/Матеріал + теми)
-const displayTree = computed(() => buildFilterTree(filtersTree.value || []))
+// Тематичні фільтри (Аніме, Авто, Брендові…) — це теми ПРИНТІВ на чохлах: доречні на
+// моделях/брендах/серіях. У розділах аксесуарів (type=category: павербанки, навушники…)
+// вони нелогічні — API віддає їх лише тому, що count включає готові дизайни.
+const hideThemes = computed(() => category.value?.type === 'category')
+
+// Дерево фільтрів для сайдбара (синтетичні групи Категорія/Форм-фактор/Матеріал + теми).
+// Тема поточної сторінки /filter/ лишається навіть у розділі — інакше на ній зникає і
+// підсвітка «ви тут», і навігація по її підтемах.
+const displayTree = computed(() => {
+	const tree = buildFilterTree(filtersTree.value || [])
+	if (!hideThemes.value) return tree
+
+	const active = props.filterAlias
+	return tree.filter(
+		(g) =>
+			g.type !== 'theme' ||
+			(!!active && (g.alias === active || !!g.items?.some((i) => i.alias === active)))
+	)
+})
 
 // Вибрані фільтри для сайдбара: query-вибір + активний фільтр сторінки (крім теми-батька,
 // у якої немає власного пункту — її підсвічуємо через activeAlias у заголовку).
