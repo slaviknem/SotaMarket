@@ -24,7 +24,6 @@
 		format="webp"
 		:loading="loading"
 		:fetchpriority="fetchpriority"
-		:preload="preloadOptions"
 		decoding="async"
 		@error="onError"
 	/>
@@ -71,27 +70,42 @@ function onError() {
 	if (/\.webp(\?|$)/i.test(props.src)) fallback.value = true
 }
 
+const $img = useImage()
+
 // Preload зображення БЕЗ fetchpriority браузер ставить у чергу з низьким пріоритетом —
 // і саме він виграє гонку, а `fetchpriority="high"` на самому <img> вже нічого не піднімає
 // (запит один і той самий). Тому preload завжди йде з високим пріоритетом.
-const preloadOptions = computed(() =>
-	props.preload ? { fetchPriority: props.fetchpriority || 'high' } : false
-)
+//
+// Лінк збираємо самі для ОБОХ гілок. Власний preload у NuxtImg не годиться: `imagesrcset`
+// він додає лише для density-варіантів (`… 1x, … 2x`), а з `sizes` дескриптори йдуть по
+// ширині (`… 650w, … 1300w`) — і в <link> лишається голий href найбільшого кандидата.
+// Браузер тоді тягне і його, і той варіант, що реально обрав за `sizes`, тобто LCP-картинку
+// двічі. З imagesrcset+imagesizes preload-сканер обирає рівно те саме, що й сам <img>.
+if (props.preload) {
+	useHead(() => {
+		// Модифікатори мусять збігатися з тими, що NuxtImg рахує для <img> (useImageProps
+		// у @nuxt/image), інакше URL у preload не збіжиться з обраним кандидатом.
+		// Джерело — props.src, а не finalSrc: клієнтський фолбек на .jpg стається вже
+		// після завантаження, і переписувати через нього preload немає сенсу.
+		const variant = isRaw.value
+			? { src: props.src, srcset: props.srcset, sizes: undefined }
+			: $img.getSizes(props.src, {
+				sizes: props.sizes,
+				modifiers: { width: props.width, height: props.height, format: 'webp', quality: $img.options.quality },
+			})
 
-// NuxtImg робить preload сам (preloadOptions вище); для raw-гілки додаємо його вручну.
-// imagesrcset обов'язковий за наявності srcset — інакше на retina браузер завантажить
-// і preload-кандидата 1x, і потрібний йому 2x
-if (props.preload && isRaw.value) {
-	useHead({
-		link: [
-			{
-				rel: 'preload',
-				as: 'image',
-				href: props.src,
-				fetchpriority: props.fetchpriority || 'high',
-				...(props.srcset ? { imagesrcset: props.srcset } : {}),
-			},
-		],
+		return {
+			link: [
+				{
+					rel: 'preload',
+					as: 'image',
+					href: variant.src,
+					fetchpriority: props.fetchpriority || 'high',
+					...(variant.srcset ? { imagesrcset: variant.srcset } : {}),
+					...(variant.sizes ? { imagesizes: variant.sizes } : {}),
+				},
+			],
+		}
 	})
 }
 </script>

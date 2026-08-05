@@ -18,14 +18,27 @@
 								:href="banner.url || undefined"
 								class="banner-slide"
 							>
-								<img
+								<!-- Перший банер — LCP головної: eager + preload з високим пріоритетом.
+								     `sizes` описує реальну ширину слайдера (уся ширина контейнера до 900px,
+								     далі — мінус колонка плиток), щоб телефон не тягнув десктопний кадр.
+								     `resize` — бо банер це ОРИГІНАЛ, завантажений менеджером в адмінці:
+								     на відміну від прев'ю товарів/категорій, готової стисненої копії тут
+								     немає, тож будь-яке джерело (хоч jpg на мегабайт) нормалізує IPX.
+								     Висоту НЕ передаємо навмисно: width+height склалися б у ipx-модифікатор
+								     `s_ШxВ`, тобто IPX обрізав би кадр під 1300/480 ще до браузера, і на
+								     мобільному (де пропорція інша) банер поїхав би. Так IPX лише масштабує
+								     по ширині, а кадрує, як і раніше, CSS (`object-fit: cover`);
+								     розміри блоку тримає .banner-slide__img, тож CLS не з'являється. -->
+								<AppImage
 									:src="url.bannerImg(banner.image_file)"
 									:alt="banner.title || 'FLOY'"
 									class="banner-slide__img"
-									width="1300"
-									height="480"
-									:fetchpriority="i === 0 ? 'high' : 'auto'"
+									:width="1300"
+									sizes="sm:100vw md:100vw lg:66vw 2xl:1116px"
+									resize
+									:fetchpriority="i === 0 ? 'high' : undefined"
 									:loading="i === 0 ? 'eager' : 'lazy'"
+									:preload="i === 0"
 								/>
 								<div v-if="banner.title || banner.description" class="banner-slide__content">
 									<h2 v-if="banner.title" class="banner-slide__title">{{ banner.title }}</h2>
@@ -64,7 +77,7 @@ import { Autoplay, Pagination } from 'swiper/modules'
 // тож мусить бути в HTML ще до гідратації. Тут лишаються тільки модульні стилі.
 import 'swiper/css/pagination'
 
-const props = defineProps<{ banners: any[] | null }>()
+defineProps<{ banners: any[] | null }>()
 
 // Промо-плитки доставки: відрізняються лише знаком перевізника та ключами перекладу
 const CARRIERS = [
@@ -76,25 +89,6 @@ const url = useUrl()
 const { t } = useI18n()
 const localePath = useLocalePath()
 const modules = [Autoplay, Pagination]
-
-// Перший банер — LCP головної. `eager` + `fetchpriority=high` на теґу вже є, але браузер
-// побачить їх лише дійшовши до розбору цього місця розмітки; preload у <head> ставить
-// завантаження в чергу одразу, ще до парсингу тіла сторінки.
-useHead(() => {
-	const first = props.banners?.[0]
-	if (!first) return {}
-
-	return {
-		link: [
-			{
-				rel: 'preload',
-				as: 'image',
-				href: url.bannerImg(first.image_file),
-				fetchpriority: 'high',
-			},
-		],
-	}
-})
 </script>
 
 <style scoped>
