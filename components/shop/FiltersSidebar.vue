@@ -120,8 +120,9 @@ const hasSelected = computed(() => Object.values(props.selected).some((v) => v.l
 .filters {
 	display: flex;
 	flex-direction: column;
-	/* top:5px у обгортці + 5px знизу = картка не впритул до країв вікна */
-	max-height: calc(100vh - 10px);
+	/* Доступна висота = вікно мінус прибита шапка мінус повітря згори (5px у sticky-обгортці)
+	   і знизу (5px). Інакше футер із «Скинути фільтри» виїжджає за нижній край екрана. */
+	max-height: calc(100vh - var(--header-stuck-h) - 10px);
 	background: var(--bg-card);
 	border: 1px solid var(--border);
 	border-radius: var(--radius);
