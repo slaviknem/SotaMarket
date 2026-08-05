@@ -414,12 +414,14 @@ const total = computed(() => productsData.value?.meta?.total || 0)
 const currentPage = computed(() => productsData.value?.meta?.current_page || 1)
 const lastPage = computed(() => productsData.value?.meta?.last_page || 1)
 
-// Картка конструктора: тільки для моделей з увімкненим printcase,
-// на першій сторінці і не на сторінці фільтра
+// Картка конструктора: тільки для моделей з увімкненим printcase, на першій сторінці
+// і не на сторінці фільтра. Модель, зняту з друку (not_available), у конструктор не ведемо —
+// там нічого замовити (на pre_order лишаємо: чохол зроблять під передзамовлення).
 const showPrintcaseCard = computed(
 	() =>
 		category.value?.type === 'model' &&
 		!!category.value?.printcase &&
+		printStockState(category.value) !== 'out' &&
 		currentPage.value === 1 &&
 		!props.filterAlias
 )
@@ -721,7 +723,7 @@ interface IListedItem {
 	link: string
 	image: string
 	price: number
-	inStock: boolean
+	stock: StockState
 	rating: object
 }
 
@@ -738,7 +740,7 @@ const listedItems = computed<IListedItem[]>(() => {
 		link: url.absolute(url.product(p, a?.alias)),
 		image: absImg(url.productThumb(getImageByAttribute(p, a?.id) ?? p.image_file)),
 		price: p.price,
-		inStock: isProductInStock(p, a),
+		stock: productStockState(p, a),
 		// Рейтинг рахує API підзапитом (rating + reviews_count у списку) — без нього
 		// зірочок у товарних сніпетах не буде; за відсутності даних поле просто зникає
 		rating: ratingJsonLd(p.rating, p.reviews_count),
@@ -753,7 +755,8 @@ const listedItems = computed<IListedItem[]>(() => {
 				link: url.absolute(url.neoprint(props.categoryAlias, np.id)),
 				image: url.absolute(url.neoprintImage(props.categoryAlias, np.alias)),
 				price: neoPrintPrice.value,
-				inStock: true,
+				// Дизайн друкують під модель — його наявність і є статусом друку моделі
+				stock: printStockState(category.value),
 				rating: {},
 			}))
 		: []
@@ -786,7 +789,7 @@ useJsonLd(() => ({
 				price: it.price,
 				priceValidUntil: priceValidUntil(),
 				itemCondition: 'https://schema.org/NewCondition',
-				availability: it.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+				availability: stockAvailability(it.stock),
 				seller: orgId(config.public.siteUrl as string),
 			},
 		},

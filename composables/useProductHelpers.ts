@@ -62,19 +62,82 @@ export function expandProductsByAttributes(products: any[]): { product: any; att
 	return items
 }
 
-// ---------- Наявність: ЄДИНА логіка для картки і сторінки товару ----------
+// ---------- Наявність: ЄДИНА логіка для картки, товару, дизайнів і конструктора ----------
+//
+// Три стани замість «є/немає» (дзеркалять старий services/stock.ts: 1 / 0 / -1):
+//   in        — можна класти в кошик одразу;
+//   pre_order — товару зараз немає, але його зроблять: замість кошика — передзамовлення
+//               (модалка ShopPreOrder, замовлення type=pre_order);
+//   out       — немає й не буде: купівля недоступна.
+export type StockState = 'in' | 'pre_order' | 'out'
 
-// Чи в наявності конкретний атрибут:
-// товар «завжди в наявності» → так; інакше — за реальним залишком атрибута.
-export function isAttrInStock(product: any, attr: any): boolean {
-	return !!product?.always_available || !!attr?.available
+// Статус друку МОДЕЛІ з адмінки (enum categories.alphaprint_available):
+//   available / available_not — друкуємо одразу; pre_order — лише передзамовлення;
+//   not_available — модель знята. Невідомий/порожній статус → null (вирішує загальна логіка).
+export function modelPrintState(cat: any): StockState | null {
+	const status = String(cat?.alphaprint_available || cat?.brend?.alphaprint_available || '')
+		.trim()
+		.toLowerCase()
+		.replace(/[-\s]+/g, '_')
+
+	if (status === 'available' || status === 'available_not') return 'in'
+	if (status === 'pre_order') return 'pre_order'
+	if (status === 'not_available') return 'out'
+	return null
 }
 
-// Чи в наявності товар (опційно — з урахуванням обраного атрибута).
-export function isProductInStock(product: any, selectedAttr?: any | null): boolean {
-	if (product?.always_available) return true
-	if (selectedAttr) return !!selectedAttr.available
-	return !!product?.available
+// Усе, що ДРУКУЄТЬСЯ під модель (alphaprint-товари, готові дизайни NeoPrint, конструктор),
+// живе за статусом самої моделі, а не за складом: чохол виготовляють під замовлення.
+export function printStockState(cat: any): StockState {
+	return modelPrintState(cat) ?? 'in'
+}
+
+// Реальний залишок атрибута в таблиці стоків (AttributeResource.available)
+const hasStock = (attr: any) => !!attr?.available
+
+// Наявність конкретного атрибута (кольору/принта)
+export function attrStockState(product: any, attr: any): StockState {
+	// Живий залишок на складі — купуємо одразу, хай яким буде статус моделі
+	if (hasStock(attr)) return 'in'
+	if (isAlphaprint(product)) return printStockState(product?.categories?.[0])
+	return product?.always_available ? 'in' : 'pre_order'
+}
+
+// Наявність товару (опційно — з урахуванням обраного атрибута)
+export function productStockState(product: any, selectedAttr?: any | null): StockState {
+	if (selectedAttr) return attrStockState(product, selectedAttr)
+
+	if (isAlphaprint(product)) {
+		const state = printStockState(product?.categories?.[0])
+		// Хоч один принт лежить на складі — товар купують одразу (саме цим варіантом)
+		if (state !== 'in' && product?.attributes?.some(hasStock)) return 'in'
+		return state
+	}
+
+	if (product?.always_available) return 'in'
+	return product?.available ? 'in' : 'pre_order'
+}
+
+// Короткі перевірки для місць, де важливий лише факт «можна покласти в кошик»
+export const isAttrInStock = (product: any, attr: any) => attrStockState(product, attr) === 'in'
+
+export const isProductInStock = (product: any, selectedAttr?: any | null) =>
+	productStockState(product, selectedAttr) === 'in'
+
+// Модифікатор картки за станом наявності: приглушене превʼю (стилі — .p-card--* у main.css).
+// Спільний для картки товару і картки готового дизайну.
+export function stockCardClass(state: StockState): string {
+	if (state === 'pre_order') return 'p-card--pre-order'
+	if (state === 'out') return 'p-card--out'
+	return ''
+}
+
+// Наявність для schema.org: PreOrder — окремий стан, і пошуковики його розуміють,
+// тож видима кнопка «Передзамовлення» і розмітка ніколи не розходяться
+export function stockAvailability(state: StockState): string {
+	if (state === 'in') return 'https://schema.org/InStock'
+	if (state === 'pre_order') return 'https://schema.org/PreOrder'
+	return 'https://schema.org/OutOfStock'
 }
 
 // Знижка у відсотках

@@ -26,9 +26,7 @@
 						<span class="text-muted">({{ stats.ratedCount }})</span>
 					</button>
 					<span class="product__code">{{ t('product.codeProduct') }}: {{ product.id }}{{ selectedAttributeId ? '-' + selectedAttributeId : '' }}</span>
-					<span class="product__stock" :class="available ? 'is-in' : 'is-out'">
-						{{ available ? t('product.inStock') : t('product.notStock') }}
-					</span>
+					<span class="product__stock" :class="stockClass">{{ stockLabel }}</span>
 				</div>
 
 				<p v-if="product.description_short" class="product__short">{{ product.description_short }}</p>
@@ -83,8 +81,10 @@
 						</div>
 
 						<div class="product__actions">
+							<!-- Три стани: у кошик / передзамовлення (товар зроблять) /
+							     неактивна кнопка, коли товару немає й не буде -->
 							<button
-								v-if="available"
+								v-if="stock === 'in'"
 								class="btn btn-primary btn-lg product__cart-btn"
 								@click="addToCart"
 							>
@@ -92,11 +92,15 @@
 								{{ t('product.inCart') }}
 							</button>
 							<button
-								v-else
+								v-else-if="stock === 'pre_order'"
 								class="btn btn-primary btn-lg product__cart-btn"
-								@click="preOrderOpen = true"
+								@click="preOrder"
 							>
+								<AppIcon name="clock" :size="19" />
 								{{ t('quick.quickPreOrder') }}
+							</button>
+							<button v-else class="btn btn-primary btn-lg product__cart-btn" disabled>
+								{{ t('product.notStock') }}
 							</button>
 
 							<button
@@ -119,28 +123,21 @@
 						</div>
 
 						<ShopQuickOrder
-							v-if="available"
+							v-if="stock === 'in'"
 							:product="product"
 							:attribute-id="selectedAttributeId"
 							:image="currentImageFile"
 							:attrib-title="selectedAttribute?.title || ''"
 							class="product__quick"
 						/>
-
-						<ShopPreOrder
-							v-model="preOrderOpen"
-							:product="product"
-							:attribute-id="selectedAttributeId"
-							:image="currentImageFile"
-							:attrib-title="selectedAttribute?.title || ''"
-						/>
 					</div>
 				</div>
 
 				<!-- Конструктор чохлів для моделі (на всю ширину колонки).
-					 Тільки на чохлах: на склі/плівках та іншій техніці для цієї ж моделі пропозиція недоречна -->
+					 Тільки на чохлах: на склі/плівках та іншій техніці для цієї ж моделі пропозиція недоречна.
+					 Модель, яку зняли з друку (not_available), у конструктор не веде — там нічого замовити -->
 				<NuxtLink
-					v-if="product.type === 'chekhly' && (modelCategory?.alphaprint_available === 'available' || modelCategory?.printcase)"
+					v-if="product.type === 'chekhly' && printState !== 'out' && (modelCategory?.alphaprint_available === 'available' || modelCategory?.printcase)"
 					:to="url.printcase(modelCategory.alias)"
 					class="product__printcase"
 				>
@@ -149,7 +146,7 @@
 
 				<!-- Спеціальна пропозиція (дешевше разом) — у правій колонці, після гідрації -->
 				<LazyShopPromotionalItems
-					v-if="available"
+					v-if="stock === 'in'"
 					:product="product"
 					:attribute-id="selectedAttributeId"
 					:image="currentImageFile"
@@ -228,6 +225,7 @@ const url = useUrl()
 const shopApi = useShopApi()
 const cart = useCart()
 const { openCart } = useCartDrawer()
+const { openPreOrder } = usePreOrder()
 const wishlist = useWishlist()
 const compare = useCompare()
 const { notify } = useNotify()
@@ -327,15 +325,30 @@ function onGallerySelect(slide: IGallerySlide) {
 const currentImageFile = computed(() => getImageByAttribute(product.value, selectedAttributeId.value))
 
 // ---------- Наявність ----------
-const available = computed(() => isProductInStock(product.value, selectedAttribute.value))
+// Стан обраного варіанта: в наявності / передзамовлення / немає й не буде.
+// В альфапринтів його визначає статус друку моделі, тож на моделі pre_order кнопка
+// «Купити» поступається місцем «Передзамовленню» — крім принтів із живим залишком.
+const stock = computed(() => productStockState(product.value, selectedAttribute.value))
 
-// Модалка передзамовлення (коли обраний атрибут не в наявності)
-const preOrderOpen = ref(false)
+const stockLabel = computed(() =>
+	stock.value === 'in'
+		? t('product.inStock')
+		: stock.value === 'pre_order'
+			? t('product.preOrder')
+			: t('product.notStock')
+)
+
+const stockClass = computed(() =>
+	stock.value === 'in' ? 'is-in' : stock.value === 'pre_order' ? 'is-pre-order' : 'is-out'
+)
 
 const discount = computed(() => discountPercent(product.value?.price, product.value?.price_old))
 
 // ---------- Категорія (для breadcrumbs та printcase) ----------
 const modelCategory = computed(() => product.value?.categories?.[0])
+
+// Статус друку моделі — ним живе пропозиція конструктора під товаром
+const printState = computed(() => printStockState(modelCategory.value))
 
 const breadcrumbs = computed(() => {
 	const crumbs: { title: string; url?: string }[] = []
@@ -410,6 +423,23 @@ function addToCart() {
 
 	// Замість тосту — відкриваємо слайдер-кошик зі складом замовлення
 	openCart()
+}
+
+// Товару зараз немає: замість кошика — модалка передзамовлення (замовлення type=pre_order)
+function preOrder() {
+	openPreOrder({
+		price: product.value.price,
+		buildItem: () => ({
+			product_id: product.value.id,
+			title: pageTitle.value,
+			attribute_id: selectedAttributeId.value,
+			count: 1,
+			price: product.value.price,
+			discount: 0,
+			image_file: currentImageFile.value,
+			category_id: modelCategory.value?.id,
+		}),
+	})
 }
 
 // ---------- Відгуки ----------
@@ -544,6 +574,10 @@ onMounted(() => {
 
 .product__stock.is-in {
 	color: var(--success);
+}
+
+.product__stock.is-pre-order {
+	color: var(--warning);
 }
 
 .product__stock.is-out {

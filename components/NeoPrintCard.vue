@@ -1,5 +1,5 @@
 <template>
-	<article class="p-card np-card">
+	<article class="p-card np-card" :class="stockCardClass(stock)">
 		<div class="p-card__media">
 			<NuxtLink :to="link" class="p-card__img-link">
 				<NeoPrintImage :alias="neoprint.alias" :category-alias="category.alias" :alt="cardTitle" />
@@ -10,6 +10,9 @@
 				<span class="np-card__badge" :title="t('neoprint.badge')" :aria-label="t('neoprint.badge')">
 					<AppIcon name="printer" :size="15" />
 				</span>
+				<!-- Друк на цю модель зараз недоступний: стан видно одразу в сітці -->
+				<span v-if="stock === 'pre_order'" class="badge badge-pre-order">{{ t('product.preOrder') }}</span>
+				<span v-else-if="stock === 'out'" class="badge badge-out">{{ t('product.notStock') }}</span>
 			</div>
 		</div>
 
@@ -24,8 +27,14 @@
 					<span class="p-card__price">{{ formatPrice(price) }}</span>
 				</div>
 
-				<button class="p-card__cart-btn" :title="t('product.inCart')" @click.prevent="addToCart(neoprint, category)">
-					<AppIcon name="cart" :size="18" />
+				<button
+					class="p-card__cart-btn"
+					:class="{ 'is-pre-order': stock === 'pre_order' }"
+					:disabled="stock === 'out'"
+					:title="buyTitle"
+					@click.prevent="buy(neoprint, category)"
+				>
+					<AppIcon :name="stock === 'pre_order' ? 'clock' : 'cart'" :size="18" />
 				</button>
 			</div>
 		</div>
@@ -39,11 +48,22 @@ const props = defineProps<{ neoprint: INeoPrint; category: any }>()
 
 const { t } = useI18n()
 const url = useUrl()
-const { price, priceOld, title, addToCart } = useNeoPrint()
+const { price, priceOld, title, stock: npStock, buy } = useNeoPrint()
 
 const cardTitle = computed(() => title(props.neoprint, props.category))
 const link = computed(() => url.neoprint(props.category.alias, props.neoprint.id))
 const discount = computed(() => discountPercent(price.value, priceOld.value))
+
+// Наявність дизайну = статус друку на цю модель
+const stock = computed(() => npStock(props.category))
+
+const buyTitle = computed(() =>
+	stock.value === 'in'
+		? t('product.inCart')
+		: stock.value === 'pre_order'
+			? t('quick.quickPreOrder')
+			: t('product.notStock')
+)
 </script>
 
 <style scoped>
@@ -67,21 +87,4 @@ const discount = computed(() => discountPercent(price.value, priceOld.value))
 	color: var(--on-accent);
 }
 
-.p-card__cart-btn {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 40px;
-	height: 40px;
-	border-radius: 12px;
-	background: var(--accent-soft);
-	color: var(--accent);
-	transition: all 0.15s;
-	flex-shrink: 0;
-}
-
-.p-card__cart-btn:hover {
-	background: var(--accent);
-	color: var(--on-accent);
-}
 </style>

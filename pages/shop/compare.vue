@@ -38,8 +38,8 @@
 						<tr>
 							<th>{{ t('product.stock') }}</th>
 							<td v-for="p in compare.items.value" :key="p.id">
-								<span :class="p.available ? 'text-accent' : 'text-muted'">
-									{{ p.available ? t('product.inStock') : t('product.notStock') }}
+								<span :class="productStockState(p) === 'in' ? 'text-accent' : 'text-muted'">
+									{{ stockLabel(p) }}
 								</span>
 							</td>
 						</tr>
@@ -65,6 +65,13 @@ const { t } = useI18n()
 const localePath = useLocalePath()
 const url = useUrl()
 const compare = useCompare()
+
+// Наявність — та сама логіка, що в картці й на сторінці товару (передзамовлення окремим станом)
+const stockLabel = (p: any) => {
+	const state = productStockState(p)
+	if (state === 'in') return t('product.inStock')
+	return t(state === 'pre_order' ? 'product.preOrder' : 'product.notStock')
+}
 
 usePageSeo({ title: () => t('other.comparison'), noindex: true })
 </script>

@@ -85,6 +85,8 @@
 	   (#ff4757 з білим дає лише 3.3:1, цей — 4.8:1) */
 	--danger-strong: #d92b45;
 	--warning: #ffc048;
+	/* Підкладка під жовтим (кнопки й плашки передзамовлення) — як --accent-soft у акценту */
+	--warning-soft: rgba(255, 192, 72, 0.14);
 
 	/* Layout */
 	--container: 1550px;
@@ -556,6 +558,19 @@ textarea.form-control {
 	transform: scale(1.04);
 }
 
+/* Наявність видно ще в сітці, до кліку — приглушеним превʼю (як на старому сайті).
+   Передзамовлення злегка тьмяне (товар буде), «немає й не буде» — сильніше й у сірому.
+   Гасимо саме зображення, а не картку: назва, ціна та бейдж мають лишатись читабельними. */
+.p-card--pre-order .p-card__img-link img {
+	opacity: 0.62;
+	filter: saturate(0.72);
+}
+
+.p-card--out .p-card__img-link img {
+	opacity: 0.42;
+	filter: grayscale(0.9);
+}
+
 .p-card__badges {
 	position: absolute;
 	top: 10px;
@@ -617,6 +632,42 @@ textarea.form-control {
 	color: var(--accent);
 }
 
+/* Кнопка купівлі в картці — спільна для ProductCard і NeoPrintCard.
+   Три стани дії: у кошик / передзамовлення (жовта) / недоступно (неактивна). */
+.p-card__cart-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border-radius: 12px;
+	background: var(--accent-soft);
+	color: var(--accent);
+	transition: all 0.15s;
+	flex-shrink: 0;
+}
+
+.p-card__cart-btn:hover:not(:disabled) {
+	background: var(--accent);
+	color: var(--on-accent);
+}
+
+.p-card__cart-btn.is-pre-order {
+	background: var(--warning-soft);
+	color: var(--warning);
+}
+
+.p-card__cart-btn.is-pre-order:hover {
+	background: var(--warning);
+	color: var(--on-accent);
+}
+
+.p-card__cart-btn:disabled {
+	background: var(--bg-elevated);
+	color: var(--text-muted);
+	cursor: not-allowed;
+}
+
 
 /* ---------- NeoPrint: готовий чохол «шаблон принта + маска моделі» ----------
    Композицію збирає Nitro-роут /img/neoprint (дзеркалить бекендовий
@@ -663,6 +714,18 @@ img.np-img {
 .badge-new {
 	background: var(--success);
 	color: #0b1410;
+}
+
+/* Наявність на картці: передзамовлення / знято з продажу */
+.badge-pre-order {
+	background: var(--warning);
+	color: var(--on-accent);
+}
+
+.badge-out {
+	background: var(--bg-elevated);
+	border: 1px solid var(--border-light);
+	color: var(--text-muted);
 }
 
 /* ---------- Chips (посилання-теги: фільтри категорії, перелінковка товару) ---------- */

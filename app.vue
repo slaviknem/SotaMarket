@@ -16,6 +16,7 @@
 		<!-- Оверлеї монтуємо лениво — лише коли їх уперше відкрили (не тягнемо в стартовий JS) -->
 		<LazyMobileMenu v-if="mobileMenuMounted" :menu="menu" />
 		<LazyCartDrawer v-if="cartMounted" />
+		<LazyShopPreOrder v-if="preOrderMounted" />
 
 		<!-- Онлайн-чат: відкладений клієнтський віджет.
 		     Lazy-чанк вантажиться ПІСЛЯ завантаження сайту (коли браузер простоює)
@@ -118,6 +119,12 @@ const { open: cartOpen } = useCartDrawer()
 const cartMounted = ref(false)
 watch(cartOpen, (v: boolean) => {
 	if (v) cartMounted.value = true
+})
+
+const { open: preOrderOpen } = usePreOrder()
+const preOrderMounted = ref(false)
+watch(preOrderOpen, (v: boolean) => {
+	if (v) preOrderMounted.value = true
 })
 
 const mobileMenuOpen = useState('mobileMenuOpen', () => false)

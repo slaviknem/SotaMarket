@@ -18,14 +18,16 @@
 								v-model="phone"
 								class="form-control"
 								type="tel"
+								inputmode="tel"
+								autocomplete="tel-national"
 								placeholder="099-999-99-99"
 								maxlength="13"
-								@input="maskPhone"
+								@input="onPhoneInput"
 							/>
 						</div>
 
 						<button class="btn btn-primary btn-block btn-lg" :disabled="sending" @click="send">
-							{{ t('cart.placeOrder') }}
+							{{ sending ? t('cart.sendingOrder') : t('cart.placeOrder') }}
 						</button>
 					</template>
 
@@ -37,26 +39,21 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
-	product: any
-	attributeId: number
-	image: string | null
-	attribTitle: string
-}>()
-
-// Видимість модалки керується ззовні (кнопка «Передзамовлення» в товарі)
-const open = defineModel<boolean>({ default: false })
-
+// Модалка передзамовлення — одна на застосунок; що саме замовляють, приносить заявка
+// з usePreOrder (ціна + функція збору позиції). Форма та сама, що у швидкого замовлення,
+// різниця лише в типі замовлення (pre_order) і текстах.
 const { t, locale } = useI18n()
 const shopApi = useShopApi()
+const { maskPhone, isValidPhone } = usePhone()
 const { notify } = useNotify()
+const { open, request, closePreOrder } = usePreOrder()
 
 const phone = ref('')
 const sending = ref(false)
 const isSent = ref(false)
 
 // При кожному відкритті — чистий стан
-watch(open, (v) => {
+watch(open, (v: boolean) => {
 	if (v) {
 		isSent.value = false
 		phone.value = ''
@@ -64,49 +61,39 @@ watch(open, (v) => {
 })
 
 function close() {
-	open.value = false
+	closePreOrder()
 }
 
-// Маска 0XX-XXX-XX-XX
-function maskPhone() {
-	const digits = phone.value.replace(/\D/g, '').slice(0, 10)
-	const parts = [digits.slice(0, 3), digits.slice(3, 6), digits.slice(6, 8), digits.slice(8, 10)]
-	phone.value = parts.filter(Boolean).join('-')
+function onPhoneInput() {
+	phone.value = maskPhone(phone.value)
 }
 
 async function send() {
-	if (phone.value.length < 13 || phone.value.startsWith('038')) {
+	if (!isValidPhone(phone.value)) {
 		notify('error', t('cart.phoneNoCorrect'))
 		return
 	}
 
+	const req = request.value
+	if (!req) return
+
 	sending.value = true
 	try {
-		const order = {
+		const item = await req.buildItem()
+
+		await shopApi.sendOrder({
 			phone: phone.value,
 			fio: '',
 			type: 'pre_order', // Тип замовлення — передзамовлення
 			lang: locale.value,
-			suma_order: props.product.price,
-			order_items: [
-				{
-					product_id: props.product.id,
-					title: props.product.title,
-					attribute_id: props.attributeId,
-					count: 1,
-					price: props.product.price,
-					discount: 0,
-					image_file: props.image,
-					category_id: props.product.categories?.[0]?.id,
-				},
-			],
-		}
+			suma_order: req.price,
+			order_items: [item],
+		})
 
-		await shopApi.sendOrder(order)
 		isSent.value = true
 		notify('success', t('quick.quickPreOrderSendMsg'))
 	} catch {
-		notify('error', 'Error')
+		notify('error', t('message.orderFailed'))
 	}
 	sending.value = false
 }

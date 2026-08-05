@@ -1,5 +1,5 @@
 <template>
-	<article class="p-card">
+	<article class="p-card" :class="stockCardClass(stock)">
 		<div class="p-card__media">
 			<NuxtLink
 				:to="cardLink"
@@ -18,8 +18,12 @@
 			</NuxtLink>
 
 			<div class="p-card__badges">
-				<span v-if="product.mark === 'hit'" class="badge badge-hit">HIT</span>
+				<span v-if="product.mark === 'hit' && stock === 'in'" class="badge badge-hit">HIT</span>
 				<span v-if="discount > 0" class="badge badge-sale">-{{ discount }}%</span>
+				<!-- Наявність прямо в сітці: разом із приглушеним фото видно, що товар
+				     не можна покласти в кошик, ще до переходу на його сторінку -->
+				<span v-if="stock === 'pre_order'" class="badge badge-pre-order">{{ t('product.preOrder') }}</span>
+				<span v-else-if="stock === 'out'" class="badge badge-out">{{ t('product.notStock') }}</span>
 			</div>
 
 			<div class="p-card__quick-actions">
@@ -77,8 +81,16 @@
 					<span class="p-card__price">{{ formatPrice(product.price) }}</span>
 				</div>
 
-				<button class="p-card__cart-btn" :title="t('product.inCart')" @click.prevent="addToCart">
-					<AppIcon name="cart" :size="18" />
+				<!-- Немає й не буде — кнопка неактивна; передзамовлення — та сама кнопка,
+				     але веде в модалку замовлення, а не в кошик -->
+				<button
+					class="p-card__cart-btn"
+					:class="{ 'is-pre-order': stock === 'pre_order' }"
+					:disabled="stock === 'out'"
+					:title="buyTitle"
+					@click.prevent="buy"
+				>
+					<AppIcon :name="stock === 'pre_order' ? 'clock' : 'cart'" :size="18" />
 				</button>
 			</div>
 		</div>
@@ -95,6 +107,7 @@ const { t } = useI18n()
 const url = useUrl()
 const cart = useCart()
 const { openCart } = useCartDrawer()
+const { openPreOrder } = usePreOrder()
 const wishlist = useWishlist()
 const compare = useCompare()
 
@@ -123,24 +136,61 @@ const colorAttributes = computed(() =>
 		: sortedAttributes(props.product.attributes).filter((a: any) => a.type === 'color' || a.type === 'print')
 )
 
+// Наявність картки: у режимі варіанта — за його атрибутом, інакше за товаром загалом
+// (альфапринт на моделі pre_order лишається купівельним, якщо хоч один принт є на складі)
+const stock = computed(() => productStockState(props.product, props.attribute || null))
+
+// Атрибут, який купують із картки: у режимі варіанта — його власний, інакше перший у наявності
+const buyAttribute = computed(() => {
+	const attrs = sortedAttributes(props.product.attributes)
+	return props.attribute || attrs.find((a: any) => isAttrInStock(props.product, a)) || attrs[0] || null
+})
+
+const buyTitle = computed(() =>
+	stock.value === 'in'
+		? t('product.inCart')
+		: stock.value === 'pre_order'
+			? t('quick.quickPreOrder')
+			: t('product.notStock')
+)
+
+function buy() {
+	if (stock.value === 'out') return
+	stock.value === 'in' ? addToCart() : preOrder()
+}
+
 function addToCart() {
 	const p = props.product
-	const attrs = sortedAttributes(p.attributes)
-
-	// Картка-варіант — додаємо саме її атрибут; інакше перший у наявності (єдина логіка наявності)
-	const attr = props.attribute || attrs.find((a: any) => isAttrInStock(p, a)) || attrs[0]
-	const attributeId = attr?.id || 0
+	const attributeId = buyAttribute.value?.id || 0
 
 	cart.add({
 		product: p,
 		attribute: attributeId,
 		image: getImageByAttribute(p, attributeId),
-		attribTitle: attr?.title || '',
+		attribTitle: buyAttribute.value?.title || '',
 		categoryId: p.categories?.[0]?.id,
 	})
 
 	// Замість тосту — відкриваємо слайдер-кошик зі складом замовлення
 	openCart()
+}
+
+// Товару зараз немає: замість кошика — модалка передзамовлення (замовлення type=pre_order)
+function preOrder() {
+	const p = props.product
+	openPreOrder({
+		price: p.price,
+		buildItem: () => ({
+			product_id: p.id,
+			title: cardTitle.value,
+			attribute_id: buyAttribute.value?.id || 0,
+			count: 1,
+			price: p.price,
+			discount: 0,
+			image_file: imageFile.value,
+			category_id: p.categories?.[0]?.id,
+		}),
+	})
 }
 
 const toggleWishlist = () => wishlist.toggle(props.product)
@@ -262,23 +312,5 @@ const toggleCompare = () => compare.toggle(props.product)
 .p-card__attr-more {
 	font-size: 11px;
 	color: var(--text-muted);
-}
-
-.p-card__cart-btn {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 40px;
-	height: 40px;
-	border-radius: 12px;
-	background: var(--accent-soft);
-	color: var(--accent);
-	transition: all 0.15s;
-	flex-shrink: 0;
-}
-
-.p-card__cart-btn:hover {
-	background: var(--accent);
-	color: var(--on-accent);
 }
 </style>

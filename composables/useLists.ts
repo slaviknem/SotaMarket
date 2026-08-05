@@ -49,6 +49,11 @@ function productCard(p: any) {
 		// потрібен картці: alphaprint-фото показуємо на всю площу кадру (див. isAlphaprint)
 		group: p.group,
 		available: p.available,
+		// Статус друку моделі — з ним картка в списку показує ту саму наявність, що й
+		// у каталозі (передзамовлення / немає), а не «є в наявності» за always_available
+		categories: p.categories?.[0]
+			? [{ id: p.categories[0].id, alphaprint_available: p.categories[0].alphaprint_available }]
+			: undefined,
 		description_short: p.description_short,
 	}
 }

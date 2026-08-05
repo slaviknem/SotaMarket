@@ -40,6 +40,7 @@ export function useNeoPrint() {
 	const cart = useCart()
 	const config = useRuntimeConfig()
 	const { openCart } = useCartDrawer()
+	const { openPreOrder } = usePreOrder()
 
 	const price = computed(() => config.public.neoprintPrice as number)
 	const priceOld = computed(() => config.public.neoprintPriceOld as number)
@@ -77,5 +78,36 @@ export function useNeoPrint() {
 		openCart()
 	}
 
-	return { price, priceOld, title, description, addToCart }
+	// Дизайн друкують під конкретну модель, тож наявність тут — статус самої моделі
+	// (categories.alphaprint_available), а не склад: власного залишку в дизайна немає
+	const stock = (category: any) => printStockState(category)
+
+	// Модель у передзамовленні: у кошик не кладемо, а оформлюємо замовлення type=pre_order
+	// з тим самим макетом, що пішов би у друк
+	function preOrder(np: { id: number; alias: string | number; title: string }, category: any) {
+		openPreOrder({
+			price: price.value,
+			buildItem: () => ({
+				product_id: 0,
+				title: title(np, category),
+				attribute_id: np.id,
+				count: 1,
+				price: price.value,
+				discount: 0,
+				image_file: url.absolute(url.neoprintImage(category.alias, np.alias)),
+				printcase: url.neoprintTemplateSource(np.alias),
+				category_id: category.id,
+			}),
+		})
+	}
+
+	// Одна дія для картки й сторінки дизайну: кошик або передзамовлення — за станом моделі
+	function buy(np: { id: number; alias: string | number; title: string }, category: any) {
+		const state = stock(category)
+		if (state === 'out') return // модель знято з друку — замовляти нічого
+		if (state === 'pre_order') preOrder(np, category)
+		else addToCart(np, category)
+	}
+
+	return { price, priceOld, title, description, stock, addToCart, preOrder, buy }
 }

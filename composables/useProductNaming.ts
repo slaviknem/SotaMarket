@@ -40,9 +40,14 @@ export function useProductNaming(product: Ref<any>) {
 				: t('product.naming.printPhrase', { title: p.title, attr: attr.title })
 			: t('product.naming.colorPhrase', { title: p.title, attr: attr.title })
 
+		// Наявність у ліді — той самий стан, що в кнопці та в schema.org
+		const state = productStockState(p, attr)
+		const stockKey =
+			state === 'in' ? 'inStock' : state === 'pre_order' ? 'notStock' : 'outStock'
+
 		return t(p.type === 'chekhly' ? 'product.lead.case' : 'product.lead.other', {
 			variant,
-			stock: t(isProductInStock(p, attr) ? 'product.lead.inStock' : 'product.lead.notStock'),
+			stock: t(`product.lead.${stockKey}`),
 			price: formatPrice(p.price),
 		})
 	}

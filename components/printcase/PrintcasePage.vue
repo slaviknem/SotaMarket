@@ -195,11 +195,11 @@
 					<button
 						v-if="model"
 						class="btn btn-lg btn-block"
-						:class="model.available ? 'btn-primary' : 'btn-outline'"
-						:disabled="generating || !visibleElements.length"
-						@click="orderId ? addToExistingOrder() : addToCart()"
+						:class="modelStock === 'in' ? 'btn-primary' : 'btn-outline'"
+						:disabled="generating || !visibleElements.length || modelStock === 'out'"
+						@click="order"
 					>
-						<AppIcon v-if="!generating" name="cart" :size="18" />
+						<AppIcon v-if="!generating" :name="modelStock === 'pre_order' ? 'clock' : 'cart'" :size="18" />
 						{{ buyLabel }}
 					</button>
 
@@ -353,6 +353,7 @@ const config = useRuntimeConfig()
 const shopApi = useShopApi()
 const cart = useCart()
 const { openCart } = useCartDrawer()
+const { openPreOrder } = usePreOrder()
 const { notify } = useNotify()
 const url = useUrl()
 
@@ -364,16 +365,8 @@ interface PcModel {
 	id: number
 	alias: string
 	name: string // повна назва: «Samsung Galaxy A07»
-	available: boolean // друк доступний одразу (інакше — передзамовлення)
-}
-
-// Статуси друку з адмінки, за яких чохол можна замовити одразу
-function printAvailable(cat: any): boolean {
-	const s = String(cat?.alphaprint_available || cat?.brend?.alphaprint_available || '')
-		.trim()
-		.toLowerCase()
-		.replace(/[-\s]+/g, '_')
-	return s === 'available' || s === 'available_not'
+	// Статус друку з адмінки: одразу в кошик / лише передзамовлення / знято з друку
+	stock: StockState
 }
 
 // ---------- Дані сторінки (SSR) ----------
@@ -407,7 +400,7 @@ async function fetchModelBundle(alias: string) {
 			id: category.id,
 			alias: category.alias,
 			name: category.title_full || category.title,
-			available: printAvailable(category),
+			stock: printStockState(category),
 		} as PcModel,
 		// Для карток дизайнів, крихт і перелінковки — без відгуків і описів категорії:
 		// вони на цій сторінці не малюються, а в payload важили б найбільше
@@ -418,6 +411,9 @@ async function fetchModelBundle(alias: string) {
 			title_full: category.title_full,
 			title_rus: category.title_rus,
 			printcase: category.printcase,
+			// Потрібен карткам готових дизайнів нижче: друк на цю модель може бути
+			// лише під передзамовлення (або взагалі знятий)
+			alphaprint_available: category.alphaprint_available,
 			brend: category.brend ? { alias: category.brend.alias, title: category.brend.title } : null,
 		},
 		articleHtml: ownText || tplText,
@@ -563,10 +559,14 @@ const orderId = computed(() => {
 	return (Array.isArray(v) ? v[0] : v) || null
 })
 
+// Стан друку обраної моделі веде і напис на кнопці, і саму дію
+const modelStock = computed<StockState>(() => model.value?.stock || 'in')
+
 const buyLabel = computed(() => {
 	if (generating.value) return t('category.loading')
 	if (orderId.value) return `+ № ${orderId.value}`
-	return model.value?.available ? t('product.inCart') : t('quick.quickPreOrder')
+	if (modelStock.value === 'out') return t('product.notStock')
+	return modelStock.value === 'in' ? t('product.inCart') : t('quick.quickPreOrder')
 })
 
 // Маска моделі з адмінки, fallback — стандартна. Тільки клієнт: це base64-картинка,
@@ -589,11 +589,13 @@ async function selectModel(m: any) {
 	const alias = String(m.url)
 	if (alias === model.value?.alias) return
 
+	// Статус приїде з бандлом моделі (нижче); до того вважаємо друк доступним —
+	// кнопка все одно мовчить, поки на макеті нічого не намальовано
 	model.value = {
 		id: m.id,
 		alias,
 		name: [m.brend, m.title].filter(Boolean).join(' '),
-		available: false,
+		stock: 'in',
 	}
 	loadMask(alias)
 
@@ -1008,6 +1010,14 @@ async function generateAndUpload(): Promise<{ id: number; preview: string; sourc
 	}
 }
 
+// Кнопка під ціною: домалювати до вже оформленого замовлення (?order_id=), покласти в кошик
+// або — коли друк на модель лише під передзамовлення — оформити його телефоном
+function order() {
+	if (orderId.value) return addToExistingOrder()
+	if (modelStock.value === 'pre_order') return preOrder()
+	return addToCart()
+}
+
 // Додати в кошик
 async function addToCart() {
 	if (!model.value || !visibleElements.value.length) return
@@ -1040,6 +1050,36 @@ async function addToCart() {
 		notify('error', t('message.printcaseFailed'))
 	}
 	generating.value = false
+}
+
+// Передзамовлення: у кошик макет не кладемо — беремо телефон і одразу оформлюємо замовлення.
+// Рендер і вивантаження макета робимо вже в модалці (buildItem), щоб не малювати марно,
+// якщо людина передумає вводити номер.
+function preOrder() {
+	if (!model.value || !visibleElements.value.length) return
+
+	openPreOrder({
+		price,
+		buildItem: async () => {
+			generating.value = true
+			try {
+				const { id, preview, source } = await generateAndUpload()
+				return {
+					product_id: id,
+					title: `ІНДИВІДУАЛЬНИЙ чохол для ${model.value!.name}`,
+					attribute_id: 0,
+					count: 1,
+					price,
+					discount: 0,
+					image_file: preview,
+					printcase: source,
+					category_id: model.value!.id,
+				}
+			} finally {
+				generating.value = false
+			}
+		},
+	})
 }
 
 // Додати до існуючого замовлення (?order_id=)

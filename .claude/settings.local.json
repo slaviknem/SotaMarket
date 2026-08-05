@@ -224,7 +224,19 @@
       "Bash(curl -s \"https://admin.floy.com.ua/apisite/articles/article/about?site=floy&lang=ru\" -o about-ru.json)",
       "Bash(node -e \"const d=require\\('./about-uk.json'\\).data; require\\('fs'\\).writeFileSync\\('about-uk.html', d.text\\); console.log\\(d.text.length\\)\")",
       "Bash(node -e \"const d=require\\('./about-ru.json'\\).data; require\\('fs'\\).writeFileSync\\('about-ru.html', d.text\\); console.log\\(JSON.stringify\\({title:d.title, mt:d.meta_title, md:d.meta_description},null,1\\)\\)\")",
-      "Bash(node -e \"console.log\\('sharp', require\\('./node_modules/sharp/package.json'\\).version\\)\")"
+      "Bash(node -e \"console.log\\('sharp', require\\('./node_modules/sharp/package.json'\\).version\\)\")",
+      "Bash(curl -s \"https://admin.floy.com.ua/apisite/categories/category/chekhly-samsung-galaxy-a54?lang=ru&site=floy\")",
+      "Bash(curl -s \"https://admin.floy.com.ua/apisite/categories/popular/model/5?lang=ru&site=floy\")",
+      "Bash(curl -s \"https://admin.floy.com.ua/apisite/categories/category/iphone-13?lang=ru&site=floy\" -o /tmp/cat.json)",
+      "Bash(where python *)",
+      "Bash(where python3 *)",
+      "Bash(where node *)",
+      "Read(//d/Web-SERVER/domains/FLOY-NEW/**)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" -m 5 http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" -m 5 http://localhost:3001/)",
+      "Bash(git -C /c/Web-SERVER/domains/FLOY-NEW diff --stat)",
+      "Bash(git -C /c/Web-SERVER/domains/FLOY-NEW diff components/printcase/PrintcasePage.vue)",
+      "Bash(git -C /c/Web-SERVER/domains/FLOY-NEW diff components/shop/ProductPage.vue components/shop/PreOrder.vue composables/useNeoPrint.ts)"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [

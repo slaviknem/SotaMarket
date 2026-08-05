@@ -24,12 +24,20 @@
 					<span class="np-prices__now">{{ formatPrice(price) }}</span>
 					<span v-if="discount > 0" class="np-prices__old">{{ formatPrice(priceOld) }}</span>
 					<span v-if="discount > 0" class="badge badge-sale">-{{ discount }}%</span>
+					<span v-if="stock !== 'in'" class="np-stock" :class="`is-${stock === 'pre_order' ? 'pre-order' : 'out'}`">
+						{{ stock === 'pre_order' ? t('product.preOrder') : t('product.notStock') }}
+					</span>
 				</div>
 
 				<div class="np-actions">
-					<button class="btn btn-primary btn-lg" @click="addToCart(activeDesign, category)">
-						<AppIcon name="cart" :size="18" />
-						{{ t('product.inCart') }}
+					<!-- Друк під модель: у наявності — в кошик; модель у передзамовленні —
+					     оформлюємо замовлення телефоном; знята з друку — кнопка неактивна -->
+					<button v-if="stock !== 'out'" class="btn btn-primary btn-lg" @click="buy(activeDesign, category)">
+						<AppIcon :name="stock === 'pre_order' ? 'clock' : 'cart'" :size="18" />
+						{{ stock === 'in' ? t('product.inCart') : t('quick.quickPreOrder') }}
+					</button>
+					<button v-else class="btn btn-primary btn-lg" disabled>
+						{{ t('product.notStock') }}
 					</button>
 
 					<NuxtLink :to="url.printcase(category.alias, activeDesign.alias)" class="btn btn-outline btn-lg">
@@ -39,7 +47,7 @@
 				</div>
 
 				<ul class="np-features">
-					<li v-for="key in ['ready', 'print', 'model']" :key="key">
+					<li v-for="key in features" :key="key">
 						<AppIcon name="check" :size="15" />
 						{{ t(`neoprint.features.${key}`) }}
 					</li>
@@ -152,7 +160,7 @@ const config = useRuntimeConfig()
 const localePath = useLocalePath()
 const url = useUrl()
 const shopApi = useShopApi()
-const { price, priceOld, title, description: npDescription, addToCart } = useNeoPrint()
+const { price, priceOld, title, description: npDescription, stock: npStock, buy } = useNeoPrint()
 
 const categoryAlias = computed(() => String(route.params.category))
 const id = computed(() => String(route.params.id))
@@ -215,6 +223,8 @@ const { data } = await useAsyncData(
 				// Кирилична назва: потрібна для #model_ru# в описах, які підвантажуються
 				// при перемиканні дизайну вже на клієнті (SSR-опис її отримує з повної категорії)
 				title_rus: category.title_rus,
+				// Статус друку моделі: ним живе кнопка (кошик / передзамовлення / недоступно)
+				alphaprint_available: category.alphaprint_available,
 				brend: category.brend ? { alias: category.brend.alias, title: category.brend.title } : null,
 			},
 			themeTree,
@@ -286,6 +296,12 @@ const slides = computed(() =>
 const pageTitle = computed(() => title(activeDesign.value, category.value))
 const description = computed(() => descCache[activeId.value] || '')
 const discount = computed(() => discountPercent(price.value, priceOld.value))
+
+// Дизайн друкують під модель — наявність тут це статус друку самої моделі
+const stock = computed(() => npStock(category.value))
+
+// «Готовий дизайн — одразу в кошик» правдиве лише коли модель у наявності
+const features = computed(() => (stock.value === 'in' ? ['ready', 'print', 'model'] : ['print', 'model']))
 
 // Готова композиція одним файлом — для og:image та schema.org
 const shareImage = computed(() =>
@@ -427,7 +443,7 @@ useJsonLd(() => ({
 		price: price.value,
 		priceValidUntil: priceValidUntil(),
 		itemCondition: 'https://schema.org/NewCondition',
-		availability: 'https://schema.org/InStock',
+		availability: stockAvailability(stock.value),
 		seller: orgId(config.public.siteUrl as string),
 	},
 }))
@@ -499,6 +515,20 @@ onMounted(() => shopApi.addVisit(category.value.id, 0, activeId.value, activeDes
 	font-size: 16px;
 	color: var(--text-muted);
 	text-decoration: line-through;
+}
+
+/* Наявність друку на цю модель — поруч із ціною (як .product__stock на сторінці товару) */
+.np-stock {
+	font-size: 13px;
+	font-weight: 700;
+}
+
+.np-stock.is-pre-order {
+	color: var(--warning);
+}
+
+.np-stock.is-out {
+	color: var(--danger);
 }
 
 /* Кнопки — у стовпчик і однакової ширини (stretch); max-width тримає CTA компактним,

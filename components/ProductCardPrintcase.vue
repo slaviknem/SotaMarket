@@ -1,5 +1,5 @@
 <template>
-	<article class="p-card pc-card">
+	<article class="p-card pc-card" :class="stockCardClass(stock)">
 		<div class="p-card__media">
 			<NuxtLink :to="url.printcase(category.alias)" class="p-card__img-link">
 				<AppImage src="/images/printcase/printcase_product.webp" :alt="title" :title="title" :width="280"
@@ -9,6 +9,8 @@
 
 			<div class="p-card__badges">
 				<span class="badge pc-card__badge">{{ t('printcase.card.printcase') }}</span>
+				<!-- Друк на цю модель — лише під передзамовлення -->
+				<span v-if="stock === 'pre_order'" class="badge badge-pre-order">{{ t('product.preOrder') }}</span>
 			</div>
 		</div>
 
@@ -42,6 +44,9 @@ const config = useRuntimeConfig()
 const title = computed(() =>
 	t('printcase.card.titleProduct', { model: props.category.title_full || props.category.title })
 )
+
+// Індивідуальний чохол друкують під модель — наявність тут це статус друку моделі
+const stock = computed(() => printStockState(props.category))
 </script>
 
 <style scoped>

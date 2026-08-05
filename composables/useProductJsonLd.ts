@@ -35,9 +35,7 @@ export function useProductJsonLd(opts: {
 		price: opts.product.value?.price,
 		priceValidUntil: priceValidUntil(),
 		itemCondition: 'https://schema.org/NewCondition',
-		availability: isProductInStock(opts.product.value, attr)
-			? 'https://schema.org/InStock'
-			: 'https://schema.org/OutOfStock',
+		availability: stockAvailability(productStockState(opts.product.value, attr)),
 		seller: orgId(config.public.siteUrl as string),
 	})
 
