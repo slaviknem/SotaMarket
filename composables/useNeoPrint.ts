@@ -94,7 +94,7 @@ export function useNeoPrint() {
 				count: 1,
 				price: price.value,
 				discount: 0,
-				image_file: url.absolute(url.neoprintImage(category.alias, np.alias)),
+				image_file: url.orderImage(url.neoprintImage(category.alias, np.alias)),
 				printcase: url.neoprintTemplateSource(np.alias),
 				category_id: category.id,
 			}),

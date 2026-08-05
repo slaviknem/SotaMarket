@@ -49,6 +49,7 @@ const props = defineProps<{
 }>()
 
 const { t, locale } = useI18n()
+const url = useUrl()
 const shopApi = useShopApi()
 const { maskPhone, isValidPhone } = usePhone()
 const { notify } = useNotify()
@@ -85,7 +86,7 @@ async function send() {
 					count: 1,
 					price: props.product.price,
 					discount: 0,
-					image_file: props.image,
+					image_file: url.orderImage(props.image),
 					category_id: props.product.categories?.[0]?.id,
 				},
 			],

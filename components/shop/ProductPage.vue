@@ -436,7 +436,7 @@ function preOrder() {
 			count: 1,
 			price: product.value.price,
 			discount: 0,
-			image_file: currentImageFile.value,
+			image_file: url.orderImage(currentImageFile.value),
 			category_id: modelCategory.value?.id,
 		}),
 	})

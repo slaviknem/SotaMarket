@@ -685,7 +685,7 @@ async function sendOrder() {
 			price: item.product.price,
 			discount: item.discount,
 			printcase: item.printcase,
-			image_file: item.product.image,
+			image_file: url.orderImage(item.product.image),
 			category_id: item.category_id,
 		})),
 	}

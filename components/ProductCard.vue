@@ -187,7 +187,7 @@ function preOrder() {
 			count: 1,
 			price: p.price,
 			discount: 0,
-			image_file: imageFile.value,
+			image_file: url.orderImage(imageFile.value),
 			category_id: p.categories?.[0]?.id,
 		}),
 	})

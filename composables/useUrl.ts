@@ -45,6 +45,19 @@ export function useUrl() {
 					: config.public.urlStorage + 'images/products/thumb/' + toWebp(imageFile)
 				: '/images/no-photo.svg',
 
+		// Прев'ю позиції для ЗАМОВЛЕННЯ (адмінка підставляє його в <img src> як є).
+		// Тому тут завжди АБСОЛЮТНИЙ URL: голе ім'я файлу чи шлях від кореня на домені
+		// адмінки не відкриється. Так само робив старий сайт (URL_STORAGE + thumb/<файл>).
+		// webp навмисно не робимо: менеджер скачує прев'ю з адмінки, а там очікується jpg.
+		orderImage: (image?: string | null) =>
+			image
+				? /^https?:\/\//.test(image)
+					? image // уже абсолютний (макет конструктора, акційні аксесуари)
+					: image.startsWith('/')
+						? config.public.siteUrl + image // кадр чохла з нашого домену (/img/neoprint/…)
+						: config.public.urlStorage + 'images/products/thumb/' + image
+				: null,
+
 		// Велике фото — поки що тільки jpg (стиснених копій ще немає)
 		productBig: (imageFile?: string | null) =>
 			imageFile ? config.public.urlStorage + 'images/products/big/' + imageFile : '/images/no-photo.svg',
