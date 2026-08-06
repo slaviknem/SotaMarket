@@ -1280,6 +1280,9 @@ if (!isModelPage.value) {
 	background: var(--img-bg);
 	border-radius: var(--radius-lg) 0 0 var(--radius-lg);
 	box-shadow: var(--shadow-card);
+	/* Рамка виділення виходить за межі чохла — обрізаємо її по білому блоку,
+	   щоб не лізла на панель інструментів */
+	overflow: hidden;
 }
 
 /* Темна панель інструментів, вмонтована в білий блок на всю висоту */

@@ -8,7 +8,7 @@
 				height: STAGE_H * displayScale + 'px',
 			}"
 			@wheel.prevent="onWheel"
-			@pointerdown.self="$emit('deselect')"
+			@pointerdown="$emit('deselect')"
 		>
 			<div
 				class="stage__inner"
@@ -23,6 +23,7 @@
 					:key="i"
 					:element="el"
 					:display-scale="displayScale"
+					:frame-target="chromeRef"
 					@activate="$emit('activate', i)"
 					@remove="$emit('remove', i)"
 					@edit-text="$emit('editText', i)"
@@ -58,6 +59,17 @@
 					{{ t('printcase.stageAddHint') }}
 				</button>
 			</div>
+		</div>
+
+		<!-- Шар рамок виділення: лежить поза .stage, тож не обрізається його межами —
+		     рамку й ручки видно й тоді, коли об'єкт більший за чохол.
+		     Повторює масштаб сцени, щоб координати рамок збігалися з елементами. -->
+		<div class="stage__chrome">
+			<div
+				ref="chromeRef"
+				class="stage__chrome-inner"
+				:style="{ transform: `scale(${displayScale})` }"
+			/>
 		</div>
 	</div>
 </template>
@@ -95,6 +107,8 @@ const { t } = useI18n()
 // Масштаб відображення сцени під ширину колонки
 const wrapRef = ref<HTMLElement>()
 const stageRef = ref<HTMLElement>()
+// Контейнер, у який елементи телепортують свої рамки виділення
+const chromeRef = ref<HTMLElement>()
 const displayScale = ref(0.6)
 
 function updateScale() {
@@ -127,10 +141,29 @@ defineExpose({ displayScale })
 <style scoped>
 /* Центрування макета — телефон стоїть прямо на білому блоці сторінки, без власної рамки */
 .stage-wrap {
+	position: relative;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	max-width: 100%;
+}
+
+/* Шар рамок: рівно над макетом, але без overflow:hidden — рамка виходить за чохол.
+   Наскрізний для кліків, «auto» вмикають лише самі ручки */
+.stage__chrome {
+	position: absolute;
+	inset: 0;
+	z-index: 10;
+	pointer-events: none;
+}
+
+.stage__chrome-inner {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 400px;
+	height: 800px;
+	transform-origin: top left;
 }
 
 .stage {
@@ -194,6 +227,8 @@ defineExpose({ displayScale })
 	gap: 12px;
 	padding: 0 20px;
 	text-align: center;
+	/* Зсув нижче центру: вгорі макета — блок камер, кнопка наїжджала б на нього */
+	transform: translateY(12%);
 	/* Кнопки клікабельні, решта площі лишається сценою (клік = зняти виділення) */
 	pointer-events: none;
 }
@@ -262,6 +297,11 @@ defineExpose({ displayScale })
 @media (max-width: 640px) {
 	.stage__placeholder {
 		font-size: 15px;
+	}
+
+	/* На телефоні макет нижчий — камери «ближче», тож зсуваємо ще трохи */
+	.stage__empty {
+		transform: translateY(15%);
 	}
 
 	.stage__add {
