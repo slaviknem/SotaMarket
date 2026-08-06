@@ -236,7 +236,15 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" -m 5 http://localhost:3001/)",
       "Bash(git -C /c/Web-SERVER/domains/FLOY-NEW diff --stat)",
       "Bash(git -C /c/Web-SERVER/domains/FLOY-NEW diff components/printcase/PrintcasePage.vue)",
-      "Bash(git -C /c/Web-SERVER/domains/FLOY-NEW diff components/shop/ProductPage.vue components/shop/PreOrder.vue composables/useNeoPrint.ts)"
+      "Bash(git -C /c/Web-SERVER/domains/FLOY-NEW diff components/shop/ProductPage.vue components/shop/PreOrder.vue composables/useNeoPrint.ts)",
+      "Bash(curl -s \"https://admin.floy.com.ua/apisite/banners?lang=uk&site=floy\")",
+      "Bash(curl -s \"https://admin.floy.com.ua/apisite/banners?lang=ru&site=floy\")",
+      "Read(//c/Web-SERVER//**)",
+      "Read(//c/Web-SERVER/modules//**)",
+      "Read(//c/Web-SERVER/modules/database/**)",
+      "Bash(\"/c/Web-SERVER/modules/database/MySQL-8.0-Win10/bin/mysql.exe\" -h127.0.0.1 -uroot --default-character-set=utf8mb4 -e \"SELECT id, site, publish, title_uk, title_ru, description_uk, description_ru FROM banners\\\\G\" my_admin_floy)",
+      "Bash(curl -s \"https://admin.floy.com.ua/apisite/categories/popular/category/3?lang=uk&site=floy\")",
+      "Bash(curl -s \"https://admin.floy.com.ua/apisite/categories/popular/category/3?lang=ru&site=floy\")"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [

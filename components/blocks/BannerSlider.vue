@@ -28,7 +28,7 @@
 								     `s_ШxВ`, тобто IPX обрізав би кадр під 1300/480 ще до браузера, і на
 								     мобільному (де пропорція інша) банер поїхав би. Так IPX лише масштабує
 								     по ширині, а кадрує, як і раніше, CSS (`object-fit: cover`);
-								     розміри блоку тримає .banner-slide__img, тож CLS не з'являється. -->
+								     розміри блоку тримає .banner-hero__main, тож CLS не з'являється. -->
 								<AppImage
 									:src="url.bannerImg(banner.image_file)"
 									:alt="banner.title || 'FLOY'"
@@ -40,10 +40,16 @@
 									:loading="i === 0 ? 'eager' : 'lazy'"
 									:preload="i === 0"
 								/>
-								<div v-if="banner.title || banner.description" class="banner-slide__content">
-									<h2 v-if="banner.title" class="banner-slide__title">{{ banner.title }}</h2>
-									<p v-if="banner.description" class="banner-slide__desc">{{ banner.description }}</p>
-								</div>
+								<template v-if="banner.title || banner.description">
+									<!-- Підкладка під напис — окремим елементом на весь кадр, а не ::before
+									     у самого тексту: тягнеться на повну висоту слайда, тож країв підкладки
+									     не видно (див. --scrim-text). Слайдам без напису вона не потрібна. -->
+									<span class="banner-slide__scrim" />
+									<div class="banner-slide__content">
+										<h2 v-if="banner.title" class="banner-slide__title">{{ banner.title }}</h2>
+										<p v-if="banner.description" class="banner-slide__desc">{{ banner.description }}</p>
+									</div>
+								</template>
 							</component>
 						</SwiperSlide>
 					</Swiper>
@@ -99,7 +105,7 @@ const modules = [Autoplay, Pagination]
 /* Слайдер (зліва) + колонка плиток (справа) */
 .banner-hero__grid {
 	display: grid;
-	/* ширша колонка плиток → банер зліва відповідно вужчий і нижчий (висота від aspect-ratio) */
+	/* ширша колонка плиток → банер зліва відповідно вужчий і нижчий (висота від пропорції) */
 	grid-template-columns: minmax(0, 1fr) clamp(280px, 30%, 380px);
 	gap: 14px;
 	align-items: stretch;
@@ -107,30 +113,58 @@ const modules = [Autoplay, Pagination]
 
 /* Стабільна обгортка: min-width:0 не дає Swiper розпирати grid понад контейнер */
 .banner-hero__main {
+	position: relative;
 	min-width: 0;
 	border-radius: var(--radius-lg);
 	overflow: hidden;
 	border: 1px solid var(--border);
 }
 
+/* Розпірка: тримає мінімальну висоту у пропорції від ширини колонки (менш
+   панорамна за колишні 1300/400, щоб на широких екранах менше обрізало верх/низ),
+   тож висота відома ще до завантаження фото → без CLS. Саме розпіркою, а не
+   `aspect-ratio` на блоці: у grid-елемента зі stretch-висотою браузер порахував
+   би з пропорції ШИРИНУ (415px × 2.7 ≈ 1124px) і банер виліз би за свою колонку
+   поверх плиток — `justify-self: stretch` при заданій пропорції не діє. */
+.banner-hero__main::before {
+	content: '';
+	display: block;
+	padding-top: calc(480 / 1300 * 100%);
+}
+
+/* Слайдер поверх розпірки: заповнює фактичну висоту блоку — або пропорційну, або
+   (коли вікно вузьке і колонка плиток вища) розтягнуту grid-ом під сусідній
+   стовпчик. Раніше <img> тримав власну пропорцію й під слайдом лишалася порожня
+   смуга; тепер фото заповнює блок, ховаючи боки через cover.
+   .swiper-wrapper/.swiper-slide мають height:100% уже в базовому swiper/css. */
 .banner-swiper {
-	width: 100%;
+	position: absolute;
+	inset: 0;
 }
 
 .banner-slide {
 	position: relative;
 	display: block;
+	height: 100%;
 }
 
 .banner-slide__img {
 	width: 100%;
-	/* менш панорамна пропорція (було 1300/400) — щоб на широких екранах менше обрізало верх/низ фото */
-	aspect-ratio: 1300 / 480;
+	height: 100%;
 	object-fit: cover;
 }
 
-/* Жодного затемнення на все фото: усі слайди — і з написом, і без — показуються
-   у повній яскравості. Контраст тексту тримають тінь літер + локальний ореол нижче. */
+/* Розтяжка від лівого краю кадру (звідти починається напис) до прозорого приблизно
+   на середині: контраст під текстом є, а сам предмет на фото — праворуч — лишається
+   у повній яскравості. Ніяких видимих меж підкладки, бо краї збігаються з краями кадру. */
+.banner-slide__scrim {
+	position: absolute;
+	inset: 0;
+	background: var(--scrim-text);
+	pointer-events: none;
+}
+
+/* Напис — над розтяжкою (вона в потоці раніше) */
 .banner-slide__content {
 	position: absolute;
 	left: 6%;
@@ -138,22 +172,6 @@ const modules = [Autoplay, Pagination]
 	transform: translateY(-50%);
 	max-width: 46%;
 	text-shadow: var(--text-shadow-on-img);
-}
-
-/* Ореол під написом — помітно ширший за сам текст, з нульовими краями,
-   тож приглушує лише ту ділянку фото, що прямо під літерами. */
-.banner-slide__content::before {
-	content: '';
-	position: absolute;
-	inset: -34px -64px;
-	background: var(--scrim-text);
-	pointer-events: none;
-}
-
-/* Текст — над ореолом (::before малюється першим) */
-.banner-slide__title,
-.banner-slide__desc {
-	position: relative;
 }
 
 .banner-slide__title {
@@ -344,21 +362,26 @@ const modules = [Autoplay, Pagination]
 	/* Банер на всю ширину: висота плавно масштабується разом із шириною,
 	   зі стелею, щоб не «з'їдав» перший екран. Пропорція близька до самих
 	   зображень (~2.1:1) — телефони не обрізаються. */
-	.banner-slide__img {
-		aspect-ratio: auto;
+	.banner-hero__main {
 		height: clamp(170px, 45vw, 320px);
 	}
 
-	/* Текст ширше, бо на вузькому екрані 46% замало.
-	   Ореол тягнеться за текстом сам (він прив'язаний до цього блоку), тож окремого правила не треба. */
+	/* Висота задана напряму — розпірка з пропорцією тут лише заважала б */
+	.banner-hero__main::before {
+		display: none;
+	}
+
+	/* Текст ширше, бо на вузькому екрані 46% замало */
 	.banner-slide__content {
 		left: 5%;
 		max-width: 70%;
 	}
 
-	/* Банер нижчий — ореол відповідно компактніший */
-	.banner-slide__content::before {
-		inset: -22px -40px;
+	/* Напис займає 70% ширини — розтягуємо саму розтяжку (а не її кольори),
+	   щоб прозорою вона ставала вже за текстом, а не посеред нього */
+	.banner-slide__scrim {
+		background-size: 150% 100%;
+		background-repeat: no-repeat;
 	}
 }
 
