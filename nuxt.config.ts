@@ -39,6 +39,16 @@ export default defineNuxtConfig({
 			instagram: 'https://www.instagram.com/floy.com.ua/',
 			facebook: 'https://www.facebook.com/floy.com.ua',
 			youtube: 'https://www.youtube.com/channel/UCmxlccT0fGh6hF79LSKYIPQ',
+			// Лічильники аналітики. Порожній ID = провайдер вимкнений (жодного запиту й байта JS).
+			// Самі скрипти вантажаться відкладено — plugins/analytics.client.ts.
+			// Зазвичай потрібен ЛИШЕ один із двох Google-варіантів: або GTM (з GA4-тегом
+			// усередині), або GA4 напряму.
+			analytics: {
+				ga4: process.env.GA4_ID || '', // G-XXXXXXXXXX
+				gtm: process.env.GTM_ID || '', // GTM-XXXXXXX
+				metaPixel: process.env.META_PIXEL_ID || '', // 15-16 цифр
+				dev: process.env.ANALYTICS_DEV === '1', // рахувати й у dev (для перевірки)
+			},
 			printcasePrice: 289,
 			printcasePriceOld: 299,
 			// Готовий дизайн (NeoPrint) — дешевший за індивідуальний друк у конструкторі
