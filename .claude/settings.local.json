@@ -244,7 +244,8 @@
       "Read(//c/Web-SERVER/modules/database/**)",
       "Bash(\"/c/Web-SERVER/modules/database/MySQL-8.0-Win10/bin/mysql.exe\" -h127.0.0.1 -uroot --default-character-set=utf8mb4 -e \"SELECT id, site, publish, title_uk, title_ru, description_uk, description_ru FROM banners\\\\G\" my_admin_floy)",
       "Bash(curl -s \"https://admin.floy.com.ua/apisite/categories/popular/category/3?lang=uk&site=floy\")",
-      "Bash(curl -s \"https://admin.floy.com.ua/apisite/categories/popular/category/3?lang=ru&site=floy\")"
+      "Bash(curl -s \"https://admin.floy.com.ua/apisite/categories/popular/category/3?lang=ru&site=floy\")",
+      "PowerShell(foreach \\($f in @\\(\"i18n\\\\locales\\\\uk.json\",\"i18n\\\\locales\\\\ru.json\"\\)\\) { try { Get-Content $f -Raw -Encoding utf8 | ConvertFrom-Json | Out-Null; \"OK $f\" } catch { \"FAIL $f : $_\" } })"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [

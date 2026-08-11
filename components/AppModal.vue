@@ -1,7 +1,7 @@
 <template>
 	<Teleport to="body">
 		<Transition name="modal">
-			<div v-if="modelValue" class="app-modal" @click.self="close">
+			<div v-if="modelValue" class="app-modal" :class="{ 'is-hidden': hidden }" @click.self="close">
 				<div class="app-modal__panel" :class="`app-modal__panel--${size}`">
 					<div class="app-modal__head">
 						<h3 class="app-modal__title">{{ title }}</h3>
@@ -24,8 +24,11 @@ withDefaults(
 		modelValue: boolean
 		title?: string
 		size?: 'sm' | 'md' | 'lg' | 'xl'
+		// Прибрати модалку з очей, не закриваючи її: вміст і введене лишаються, але сторінка
+		// під нею видима й не затемнена (піпетка кольору бере колір саме зі сторінки)
+		hidden?: boolean
 	}>(),
-	{ title: '', size: 'md' }
+	{ title: '', size: 'md', hidden: false }
 )
 
 const emit = defineEmits<{ 'update:modelValue': [v: boolean] }>()
@@ -46,6 +49,13 @@ const close = () => emit('update:modelValue', false)
 	background: rgba(0, 0, 0, 0.65);
 	backdrop-filter: blur(3px);
 	padding: 16px;
+}
+
+/* visibility (а не display: none) — модалка лишається змонтованою разом з усім введеним,
+   а затемнення й блюр не малюються, тож колір під нею справжній */
+.app-modal.is-hidden {
+	opacity: 0;
+	visibility: hidden;
 }
 
 .app-modal__panel {

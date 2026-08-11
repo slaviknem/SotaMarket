@@ -3,6 +3,7 @@
 		:model-value="modelValue"
 		:title="isEdit ? t('printcase.editText') : t('printcase.addText')"
 		size="sm"
+		:hidden="picking"
 		@update:model-value="$emit('update:modelValue', $event)"
 	>
 		<div class="form-group">
@@ -13,7 +14,14 @@
 		<div class="text-row">
 			<div class="form-group">
 				<label>{{ t('printcase.controlText.color') }}</label>
-				<input v-model="form.color" type="color" class="color-input" />
+				<div class="color-row">
+					<input v-model="form.color" type="color" class="color-input" />
+					<!-- Піпетка окремою кнопкою: та, що всередині нативного вибору кольору,
+					     бере піксель разом із затемненням модалки — колір виходив темнішим -->
+					<button v-if="canPick" class="style-btn" :title="t('printcase.controlText.pickColor')" @click="pickColor">
+						<AppIcon name="pipette" :size="18" />
+					</button>
+				</div>
 			</div>
 
 			<div class="form-group text-styles">
@@ -60,12 +68,18 @@ export interface TextForm {
 	underline: boolean
 }
 
-const props = defineProps<{
-	modelValue: boolean
-	fonts: string[]
-	isEdit: boolean
-	initial: TextForm
-}>()
+const props = withDefaults(
+	defineProps<{
+		modelValue: boolean
+		fonts: string[]
+		isEdit: boolean
+		initial: TextForm
+		// Колір фону чохла: поле прев'ю малюємо на ньому, інакше темний напис на темному
+		// полі виглядає тьмяним, хоча на самому чохлі він контрастний
+		bg?: string
+	}>(),
+	{ bg: '#FFFFFF' }
+)
 
 const emit = defineEmits<{
 	'update:modelValue': [v: boolean]
@@ -84,8 +98,39 @@ watch(
 	}
 )
 
+// ---------- Піпетка ----------
+// EyeDropper — Chrome/Edge (не Firefox і не мобільні): кнопку показуємо тільки там, де вона працює
+interface EyeDropperCtor {
+	new (): { open: () => Promise<{ sRGBHex: string }> }
+}
+
+const canPick = ref(false)
+const picking = ref(false)
+
+onMounted(() => {
+	canPick.value = 'EyeDropper' in window
+})
+
+// На час вибору ховаємо модалку: вона перекриває макет, а її затемнення підмішувалось
+// у зчитаний піксель. Стан форми при цьому лишається — модалка не закривається.
+async function pickColor() {
+	picking.value = true
+	// Чекаємо саме перемальовування кадру, а не лише оновлення DOM: інакше піпетка могла б
+	// відкритися ще над затемненим кадром
+	await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())))
+	try {
+		const { sRGBHex } = await new (window as unknown as { EyeDropper: EyeDropperCtor }).EyeDropper().open()
+		if (sRGBHex) form.color = sRGBHex
+	} catch {
+		/* Esc — вибір скасовано */
+	}
+	picking.value = false
+}
+
+// Поле введення — маленьке прев'ю напису на чохлі: той самий фон, колір і накреслення
 const previewStyle = computed(() => ({
-	color: form.color === '#000000' ? undefined : form.color,
+	color: form.color,
+	background: props.bg,
 	fontFamily: `'${form.font}', sans-serif`,
 	fontWeight: form.bold ? 'bold' : 'normal',
 	fontStyle: form.italic ? 'italic' : 'normal',
@@ -104,6 +149,11 @@ function save() {
 	gap: 18px;
 }
 
+.color-row {
+	display: flex;
+	gap: 6px;
+}
+
 .color-input {
 	width: 56px;
 	height: 42px;
@@ -119,7 +169,11 @@ function save() {
 	gap: 6px;
 }
 
+/* Квадратна кнопка панелі тексту: B / I / U і піпетка */
 .style-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	width: 42px;
 	height: 42px;
 	border-radius: var(--radius-sm);
@@ -127,6 +181,11 @@ function save() {
 	font-size: 16px;
 	color: var(--text-soft);
 	transition: all 0.13s;
+}
+
+.style-btn:hover {
+	border-color: var(--accent);
+	color: var(--accent);
 }
 
 .style-btn.is-on {

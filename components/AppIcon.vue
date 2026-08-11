@@ -83,6 +83,10 @@ const ICONS: Record<string, IconDef> = {
 		path: '<path d="M10.7 6.2A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17.4 17.4 0 0 1-3.4 4.2M6.5 7.6A17.3 17.3 0 0 0 2 12s3.6 7 10 7a9.9 9.9 0 0 0 4.6-1.1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="M3 3l18 18"/>',
 		round: true,
 	},
+	pipette: {
+		path: '<path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4z"/>',
+		round: true,
+	},
 	home: {
 		path: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.8V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.8"/><path d="M9.5 21v-6h5v6"/>',
 		round: true,

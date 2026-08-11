@@ -8,7 +8,15 @@
 		<h1 class="pc-title">{{ h1 }}</h1>
 		<p v-if="lead" class="pc-lead">{{ lead }}</p>
 
-		<div class="pc-layout">
+		<!-- Перетягування файлів ловимо на всій робочій зоні (макет + панель дій): кинутий
+		     повз конструктор файл браузер просто відкрив би замість вкладки -->
+		<div
+			class="pc-layout"
+			@dragenter.prevent="onDragEnter"
+			@dragover.prevent="onDragOver"
+			@dragleave="onDragLeave"
+			@drop.prevent="onDrop"
+		>
 			<!-- Робоча зона: макет + інструменти на одному білому блоці -->
 			<div ref="editorRef" class="pc-editor">
 				<!-- Сцена -->
@@ -68,6 +76,12 @@
 						<span class="ctrl-bg__label">{{ t('printcase.control.bgShort') }}</span>
 					</label>
 				</div>
+
+				<!-- Ціль перетягування: підсвічуємо весь блок макета, поки файл над сторінкою -->
+				<div v-if="dragOver" class="pc-drop">
+					<AppIcon name="plus" :size="30" :stroke-width="2.2" />
+					{{ t('printcase.dropHint') }}
+				</div>
 			</div>
 
 			<!-- Панель дій. Без вибраної моделі інструменти не зникають, а стоять неактивними:
@@ -88,7 +102,15 @@
 				<!-- Дії -->
 				<input ref="fileInput" type="file" accept="image/*" multiple style="display: none" @change="addImagesFromDisk" />
 
-				<button class="pc-action" :class="{ 'is-locked': !model }" :aria-disabled="!model" @click="withModel(() => fileInput?.click())">
+				<!-- Ctrl+V і перетягування — у title: окремим рядком підказка з'їдала місце
+				     в колонці, а спосіб і так очевидний тим, хто ним користується -->
+				<button
+					class="pc-action"
+					:class="{ 'is-locked': !model }"
+					:aria-disabled="!model"
+					:title="t('printcase.addImageHint')"
+					@click="withModel(() => fileInput?.click())"
+				>
 					<span class="pc-action__icon">
 						<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
 					</span>
@@ -139,12 +161,23 @@
 						}"
 						@click="onLayerClick(elements.length - 1 - revIdx)"
 					>
-						<img v-if="el.type === 'image'" :src="el.url" class="pc-layer__thumb" alt="" />
+						<!-- draggable="false": інакше перетягнута мініатюра сама себе кидає на макет як текст -->
+						<img v-if="el.type === 'image'" :src="el.url" class="pc-layer__thumb" alt="" draggable="false" />
 						<span v-else class="pc-layer__thumb pc-layer__thumb--text">T</span>
 						<span class="pc-layer__name">
 							{{ el.type === 'text' ? el.text : `${t('printcase.layerImage')} ${elements.length - revIdx}` }}
 						</span>
 						<div class="pc-layer__actions">
+							<!-- Правка напису прямо зі списку: інакше треба спершу вибрати шар,
+							     а потім шукати кнопку редагування в панелі дій -->
+							<button
+								v-if="el.type === 'text'"
+								class="pc-layer__btn"
+								:title="t('printcase.editText')"
+								@click.stop="editLayerText(elements.length - 1 - revIdx)"
+							>
+								<AppIcon name="edit" :size="13" />
+							</button>
 							<button
 								class="pc-layer__btn"
 								:class="{ 'is-off': el.hidden }"
@@ -322,6 +355,7 @@
 			:fonts="fonts"
 			:is-edit="textEditMode"
 			:initial="textForm"
+			:bg="backgroundColor"
 			@save="saveText"
 		/>
 	</div>
@@ -672,6 +706,13 @@ function onLayerClick(i: number) {
 	setActive(i)
 }
 
+// Правка напису зі списку шарів. Схований шар спершу повертаємо на макет — інакше
+// результат правок нікуди не видно.
+function editLayerText(i: number) {
+	if (elements.value[i]?.hidden) toggleHidden(i)
+	openTextEdit(i)
+}
+
 // Додаємо зображення (вписане в сцену, по центру)
 function pushImage(src: string) {
 	const img = new Image()
@@ -695,14 +736,128 @@ function pushImage(src: string) {
 	img.src = src
 }
 
+// Файл (з диска чи з буфера) кладемо на макет як data:URL — тоді він не залежить від
+// CORS і йде в canvas-рендер напряму
+function pushImageFile(file: File) {
+	const reader = new FileReader()
+	reader.onload = () => pushImage(String(reader.result))
+	reader.readAsDataURL(file)
+}
+
 function addImagesFromDisk(e: Event) {
 	const input = e.target as HTMLInputElement
-	for (const file of Array.from(input.files || [])) {
-		const reader = new FileReader()
-		reader.onload = () => pushImage(String(reader.result))
-		reader.readAsDataURL(file)
-	}
+	for (const file of Array.from(input.files || [])) pushImageFile(file)
 	input.value = ''
+}
+
+// Картинки з DataTransfer — і буфер обміну, і перетягування дають той самий об'єкт.
+// items надійніші за files у paste-подіях, тож беремо їх першими.
+function imageFilesFrom(dt: DataTransfer | null | undefined): File[] {
+	if (!dt) return []
+	const fromItems = Array.from(dt.items || [])
+		.filter((it) => it.kind === 'file' && it.type.startsWith('image/'))
+		.map((it) => it.getAsFile())
+		.filter((f): f is File => !!f)
+	return fromItems.length ? fromItems : Array.from(dt.files || []).filter((f) => f.type.startsWith('image/'))
+}
+
+// Без моделі малювати нікуди — ведемо до її вибору, як заблоковані кнопки
+function addImageFiles(files: File[]) {
+	if (!model.value) {
+		modelModalOpen.value = true
+		return
+	}
+	files.forEach(pushImageFile)
+}
+
+// ---------- Буфер обміну ----------
+// Довший текст на чохлі перетворюється на нечитабельну смужку — краще чесно сказати,
+// ніж мовчки додати шар, який доведеться видаляти
+const PASTE_TEXT_MAX = 60
+
+// Вставка не має заважати звичайному введенню: полям, модалкам
+function pasteBlocked(target: EventTarget | null) {
+	if (textModalOpen.value || modelModalOpen.value || libraryOpen.value) return true
+	const tgt = target as HTMLElement | null
+	return !!tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.isContentEditable)
+}
+
+// Текст із буфера або з перетягування стає написом. Сцена малює один рядок, тож переноси
+// склеюємо. false — вставляти нема чого (порожньо або посилання), викликач вирішує сам.
+function addTextFrom(raw: string): boolean {
+	const text = raw.replace(/\s+/g, ' ').trim()
+	// Посилання й data:URL на чохлі — майже завжди випадкова вставка, а не задум
+	if (!text || /^(data:|\w+:\/\/)/i.test(text)) return false
+
+	if (text.length > PASTE_TEXT_MAX) {
+		notify('info', t('printcase.pasteTextLong', { max: PASTE_TEXT_MAX }))
+		return true
+	}
+	if (!model.value) {
+		modelModalOpen.value = true
+		return true
+	}
+	pushText({ ...TEXT_DEFAULTS, text })
+	return true
+}
+
+// Ctrl+V: скрін чи скопійоване фото одразу на чохол, коротка фраза — написом.
+// Слухаємо документ: у конструкторі немає елемента, який тримає фокус.
+function onPaste(e: ClipboardEvent) {
+	if (pasteBlocked(e.target)) return
+
+	// getAsFile() валідний лише синхронно, поки подія не завершилась
+	const files = imageFilesFrom(e.clipboardData)
+	if (files.length) {
+		e.preventDefault()
+		addImageFiles(files)
+		return
+	}
+
+	if (addTextFrom(e.clipboardData?.getData('text/plain') || '')) e.preventDefault()
+}
+
+// ---------- Перетягування файлів ----------
+const dragOver = ref(false)
+// dragleave стріляє й на переходах між дочірніми елементами — рахуємо вкладеність
+let dragDepth = 0
+
+// Тягнуть саме файли, а не виділений текст чи картинку з іншої вкладки
+function hasFiles(dt: DataTransfer | null) {
+	return !!dt && Array.from(dt.types).includes('Files')
+}
+
+function onDragEnter(e: DragEvent) {
+	if (!hasFiles(e.dataTransfer)) return
+	dragDepth++
+	dragOver.value = true
+}
+
+function onDragOver(e: DragEvent) {
+	if (!hasFiles(e.dataTransfer) || !e.dataTransfer) return
+	e.dataTransfer.dropEffect = 'copy'
+}
+
+function onDragLeave() {
+	if (--dragDepth <= 0) {
+		dragDepth = 0
+		dragOver.value = false
+	}
+}
+
+function onDrop(e: DragEvent) {
+	dragDepth = 0
+	dragOver.value = false
+
+	const files = imageFilesFrom(e.dataTransfer)
+	if (files.length) return addImageFiles(files)
+
+	// Перетягнутий текст стає написом — так само, як Ctrl+V
+	if (addTextFrom(e.dataTransfer?.getData('text/plain') || '')) return
+
+	// Картинка, перетягнена з іншої вкладки, приходить посиланням, а не файлом: намалювати
+	// її вийшло б, а надрукувати — ні (чужий домен не дає CORS), тож просимо саме файл
+	notify('error', t('printcase.dropOnlyImages'))
 }
 
 function addImageFromLibrary(src: string) {
@@ -716,13 +871,16 @@ const fonts = [
 	'Oswald', 'Comfortaa', 'Marmelad', 'Caveat', 'Cormorant', 'Lora', 'Amatic SC', 'Neucha', 'Poiret One',
 ]
 
+// Стартові налаштування нового напису — і для модалки, і для вставки з буфера
+const TEXT_DEFAULTS: TextForm = { text: '', color: '#000000', font: 'Roboto', bold: false, italic: false, underline: false }
+
 const textModalOpen = ref(false)
 const textEditMode = ref(false)
-const textForm = ref<TextForm>({ text: '', color: '#000000', font: 'Roboto', bold: false, italic: false, underline: false })
+const textForm = ref<TextForm>({ ...TEXT_DEFAULTS })
 
 function openTextAdd() {
 	textEditMode.value = false
-	textForm.value = { text: '', color: '#000000', font: 'Roboto', bold: false, italic: false, underline: false }
+	textForm.value = { ...TEXT_DEFAULTS }
 	textModalOpen.value = true
 }
 
@@ -743,13 +901,8 @@ function openTextEdit(i: number | null) {
 	textModalOpen.value = true
 }
 
-function saveText(form: TextForm) {
-	if (textEditMode.value && activeIndex.value !== null) {
-		const el = elements.value[activeIndex.value]
-		if (el?.type === 'text') Object.assign(el, form)
-		return
-	}
-
+// Новий напис по центру макета
+function pushText(form: TextForm) {
 	// Ширина тексту ~ пропорційно довжині
 	const height = 44
 	const width = Math.min(STAGE_W - 20, Math.max(120, form.text.length * height * 0.55))
@@ -765,6 +918,15 @@ function saveText(form: TextForm) {
 		activated: false,
 	})
 	setActive(elements.value.length - 1)
+}
+
+function saveText(form: TextForm) {
+	if (textEditMode.value && activeIndex.value !== null) {
+		const el = elements.value[activeIndex.value]
+		if (el?.type === 'text') Object.assign(el, form)
+		return
+	}
+	pushText(form)
 }
 
 // ---------- Керування ----------
@@ -847,6 +1009,7 @@ function onDocPointerDown(e: PointerEvent) {
 
 onMounted(() => {
 	window.addEventListener('keydown', onKeydown)
+	document.addEventListener('paste', onPaste)
 	document.addEventListener('pointerdown', onDocPointerDown)
 
 	// Підключаємо шрифти для тексту
@@ -863,6 +1026,7 @@ onMounted(() => {
 
 onUnmounted(() => {
 	window.removeEventListener('keydown', onKeydown)
+	document.removeEventListener('paste', onPaste)
 	document.removeEventListener('pointerdown', onDocPointerDown)
 })
 
@@ -1264,9 +1428,36 @@ if (!isModelPage.value) {
 
 /* Обгортка: білий блок + темна панель впритик (два окремі блоки, не один поверх одного) */
 .pc-editor {
+	position: relative;
 	display: flex;
 	align-items: stretch;
 	min-width: 0;
+}
+
+/* Файл тягнуть над сторінкою: показуємо, куди він ляже. Наскрізний для подій —
+   інакше сам оверлей забирав би drop і гасив підсвітку миготінням */
+.pc-drop {
+	position: absolute;
+	inset: 0;
+	z-index: 12;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	padding: 0 20px;
+	text-align: center;
+	font-size: 15px;
+	font-weight: 700;
+	color: var(--on-overlay);
+	background: var(--overlay);
+	border: 2px dashed var(--accent);
+	border-radius: var(--radius-lg);
+	pointer-events: none;
+}
+
+.pc-drop svg {
+	color: var(--accent);
 }
 
 /* Білий блок макета — округлює лише ліві кути (правим боком стикається з панеллю) */
