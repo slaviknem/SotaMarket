@@ -18,12 +18,15 @@
 			</NuxtLink>
 
 			<div class="p-card__badges">
-				<span v-if="product.mark === 'hit' && stock === 'in'" class="badge badge-hit">HIT</span>
-				<span v-if="discount > 0" class="badge badge-sale">-{{ discount }}%</span>
-				<!-- Наявність прямо в сітці: разом із приглушеним фото видно, що товар
-				     не можна покласти в кошик, ще до переходу на його сторінку -->
-				<span v-if="stock === 'pre_order'" class="badge badge-pre-order">{{ t('product.preOrder') }}</span>
-				<span v-else-if="stock === 'out'" class="badge badge-out">{{ t('product.notStock') }}</span>
+				<!-- Або промо (HIT/знижка), або наявність — ніколи разом: купити зараз усе одно
+				     не можна, а стос із двох плашок перекриває фото. Разом із приглушеним превʼю
+				     видно, що товар не в кошик, ще до переходу на його сторінку. -->
+				<template v-if="stock === 'in'">
+					<span v-if="product.mark === 'hit'" class="badge badge-hit">HIT</span>
+					<span v-if="discount > 0" class="badge badge-sale">-{{ discount }}%</span>
+				</template>
+				<span v-else-if="stock === 'pre_order'" class="badge badge-pre-order">{{ t('product.preOrder') }}</span>
+				<span v-else class="badge badge-out">{{ t('product.notStock') }}</span>
 			</div>
 
 			<div class="p-card__quick-actions">

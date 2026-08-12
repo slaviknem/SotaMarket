@@ -6,12 +6,11 @@
 			</NuxtLink>
 
 			<div class="p-card__badges">
-				<span v-if="discount > 0" class="badge badge-sale">-{{ discount }}%</span>
-				<span class="np-card__badge" :title="t('neoprint.badge')" :aria-label="t('neoprint.badge')">
-					<AppIcon name="printer" :size="15" />
-				</span>
-				<!-- Друк на цю модель зараз недоступний: стан видно одразу в сітці -->
-				<span v-if="stock === 'pre_order'" class="badge badge-pre-order">{{ t('product.preOrder') }}</span>
+				<!-- Рівно одна плашка (як у ProductCard): знижка — лише коли друк доступний,
+				     інакше на її місці стан друку на цю модель. Що це готовий дизайн, каже
+				     заголовок секції над сіткою, тож окремий значок тут зайвий. -->
+				<span v-if="stock === 'in' && discount > 0" class="badge badge-sale">-{{ discount }}%</span>
+				<span v-else-if="stock === 'pre_order'" class="badge badge-pre-order">{{ t('product.preOrder') }}</span>
 				<span v-else-if="stock === 'out'" class="badge badge-out">{{ t('product.notStock') }}</span>
 			</div>
 		</div>
@@ -74,17 +73,4 @@ const buyTitle = computed(() =>
 	padding: 14px;
 	aspect-ratio: auto;
 }
-
-/* Компактний значок «готовий дизайн»: лише іконка принтера (сенс — у title/aria-label) */
-.np-card__badge {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 26px;
-	height: 26px;
-	border-radius: var(--radius-pill);
-	background: var(--accent);
-	color: var(--on-accent);
-}
-
 </style>

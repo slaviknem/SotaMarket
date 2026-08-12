@@ -583,6 +583,9 @@ textarea.form-control {
 	left: 10px;
 	display: flex;
 	flex-direction: column;
+	/* кожна плашка по своєму тексту: без цього коротка («-3%») розтягується
+	   на ширину сусідньої довгої («Передзамовлення») */
+	align-items: flex-start;
 	gap: 6px;
 }
 
