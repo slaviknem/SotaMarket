@@ -13,15 +13,19 @@ import sharp from 'sharp'
 
 // Кадри — рівно під місця у верстці (1x/2x). Довільні розміри не приймаємо: кожен новий
 // варіант це ще один файл у кеші на КОЖНУ пару «модель + дизайн».
+// pad — поля зверху/знизу, частка висоти кадру з КОЖНОГО боку. Потрібні там, де картинку
+// показує хтось чужий впритул до країв (Розетка, соцмережі): чохол не має впиратися в рамку.
+// У card/hero полів немає навмисно — там кадр і так із запасом по ширині, а висоту ми
+// вибираємо повністю, щоб принт був більший при тій самій ширині колонки.
 const PRESETS = {
-	og: { w: 600, h: 600 }, // соцмережі, JSON-LD, кошик — квадрат (URL без суфікса)
+	og: { w: 600, h: 600, pad: 0.07 }, // Розетка, соцмережі, JSON-LD, кошик — квадрат (URL без суфікса)
 	// Картка в сітці товарів і мініатюра в рейлі дизайнів — той самий кадр 4:5, що й hero:
 	// ширина кадру та сама, що була в квадраті, але чохол вписаний у більшу висоту, тож
 	// сам принт на 25% більший при тій самій ширині колонки
-	card: { w: 252, h: 315 },
-	card2x: { w: 504, h: 630 },
-	hero: { w: 402, h: 502 }, // головне фото сторінки дизайну — кадр 4:5 (телефон займає більше кадру)
-	hero2x: { w: 804, h: 1004 },
+	card: { w: 252, h: 315, pad: 0 },
+	card2x: { w: 504, h: 630, pad: 0 },
+	hero: { w: 402, h: 502, pad: 0 }, // головне фото сторінки дизайну — кадр 4:5 (телефон займає більше кадру)
+	hero2x: { w: 804, h: 1004, pad: 0 },
 } as const
 
 type Preset = keyof typeof PRESETS
@@ -67,8 +71,9 @@ async function loadTemplate(storage: string, alias: string, height: number) {
 	)
 }
 
-// Шар, вписаний по висоті кадру (як Intervention::heighten) і обрізаний до його ширини:
-// маска квадратна (800×800), тож у кадрі 4:5 її прозорі поля виходять за краї
+// Шар, вписаний у задану висоту (як Intervention::heighten) і обрізаний до ширини кадру:
+// маска квадратна (800×800), тож у кадрі 4:5 її прозорі поля виходять за краї.
+// h тут — висота ЧОХЛА (кадр мінус поля), а не висота кадру
 async function layer(buf: Buffer, w: number, h: number) {
 	const resized = await sharp(buf).resize({ height: h }).toBuffer()
 	const width = (await sharp(resized).metadata()).width ?? 0
@@ -81,7 +86,11 @@ async function layer(buf: Buffer, w: number, h: number) {
 }
 
 async function compose(storage: string, category: string, alias: string, preset: Preset, ext: string) {
-	const { w, h } = PRESETS[preset]
+	const { w, h, pad } = PRESETS[preset]
+
+	// Висота самого чохла: кадр лишається w×h, а шари вписуємо в менший прямокутник —
+	// composite(gravity:'center') сам розкладе поля порівну зверху й знизу
+	const inner = Math.round(h * (1 - pad * 2))
 
 	const [template, mask] = await Promise.all([
 		loadTemplate(storage, alias, h),
@@ -90,8 +99,9 @@ async function compose(storage: string, category: string, alias: string, preset:
 
 	if (!template) throw createError({ statusCode: 404, statusMessage: 'Template not found' })
 
-	// Маску малюють не для кожної моделі — без неї показуємо сам принт, це краще за порожнє місце
-	const layers = await Promise.all([layer(template, w, h), mask ? layer(mask, w, h) : null])
+	// Маску малюють не для кожної моделі — без неї показуємо сам принт, це краще за порожнє місце.
+	// Обидва шари масштабуються ОДНАКОВО, інакше маска зʼїде відносно принта.
+	const layers = await Promise.all([layer(template, w, inner), mask ? layer(mask, w, inner) : null])
 
 	const image = sharp({
 		create: { width: w, height: h, channels: 3, background: '#ffffff' },
