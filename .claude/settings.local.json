@@ -260,7 +260,8 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code} %{content_type} %{size_download}\\\\n\" -H \"Referer: https://admin.floy.com.ua/orders\" -H \"User-Agent: Mozilla/5.0\" \"https://floy.com.ua/img/neoprint/xiaomi-poco-c81-pro/3662.jpg\")",
       "Bash(curl -s -I \"https://admin.floy.com.ua/\")",
       "Bash(curl -s \"https://admin.floy.com.ua/apisite/categories/category/xiaomi-poco-c81-pro?site=floy&lang=uk\")",
-      "Bash(curl -s \"https://admin.floy.com.ua/apisite/attributes/neo_prints?site=smarket&lang=uk\")"
+      "Bash(curl -s \"https://admin.floy.com.ua/apisite/attributes/neo_prints?site=smarket&lang=uk\")",
+      "Bash(curl -s -o /dev/null -w \"neoprint page: %{http_code}\\\\n\" \"https://floy.com.ua/neoprint/xiaomi-poco-c81-pro/3662\")"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [
