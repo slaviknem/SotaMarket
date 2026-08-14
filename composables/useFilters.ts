@@ -14,13 +14,31 @@ export interface IFilterNode {
 	synthetic?: boolean
 }
 
-// Листкові типи (пункти з порожнім items), які групуємо під синтетичними батьками
-const LEAF_TYPES = ['cat', 'form_factor', 'material'] as const
+// Листкові типи (пункти з порожнім items), які групуємо під синтетичними батьками.
+// Це фасети каталогу (Категорія/Форм-фактор/Матеріал), а не теми принтів.
+export const LEAF_TYPES = ['cat', 'form_factor', 'material'] as const
+
+const isLeafType = (type: string) => (LEAF_TYPES as readonly string[]).includes(type)
 
 // Плоский перелік усіх фільтрів (батьки + діти) — коли потрібен пошук за id/alias
 export function flattenFilters(raw: IFilterNode[] = []): IFilterNode[] {
 	const list = Array.isArray(raw) ? raw : []
 	return list.flatMap((f) => [f, ...(f.items || [])])
+}
+
+// Відмічені в сайдбарі теми як вузли дерева (з id — за ним тягнемо готові дизайни).
+// Ключ групи у виборі — alias теми-батька для тем і сам type для фасетів, тож фасетні
+// групи просто пропускаємо: власних принтів у них немає.
+export function selectedThemeNodes(
+	raw: IFilterNode[] = [],
+	selected: Record<string, string[]> = {}
+): IFilterNode[] {
+	const flat = flattenFilters(raw)
+	return Object.entries(selected)
+		.filter(([group]) => !isLeafType(group))
+		.flatMap(([, aliases]) => aliases)
+		.map((alias) => flat.find((f) => f.alias === alias))
+		.filter((f): f is IFilterNode => !!f?.id)
 }
 
 export function useFilters() {
@@ -63,7 +81,7 @@ export function useFilters() {
 			if (g.items?.some((i) => i.alias === alias)) return g.alias
 		}
 		const leaf = list.find((f) => f.alias === alias && (!f.items || !f.items.length))
-		if (leaf?.type && (LEAF_TYPES as readonly string[]).includes(leaf.type)) return leaf.type
+		if (leaf?.type && isLeafType(leaf.type)) return leaf.type
 		return alias
 	}
 

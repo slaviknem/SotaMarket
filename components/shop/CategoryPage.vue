@@ -26,7 +26,7 @@
 			<div class="cat-layout__content">
 				<header class="cat-head">
 					<h1 class="cat-head__title">{{ pageTitle }}</h1>
-					<span v-if="displayTotal" class="cat-head__count">
+					<span v-if="displayTotal || showNeoPrints" class="cat-head__count">
 						<template v-if="showNeoPrints">
 							<template v-if="productsCount > 0">{{ productsCount }} {{ t('category.products') }} + </template>
 							<a class="cat-head__count-designs" href="#cat-neoprints" @click.prevent="scrollToNeoprints">
@@ -128,7 +128,7 @@
 					     Товару в БД немає — картка веде на /neoprint/{модель}/{дизайн}. -->
 					<section v-if="showNeoPrints" id="cat-neoprints" class="cat-neoprints">
 						<div class="section-title">
-							<h2>{{ t('neoprint.sectionTitle', { filter: filterPage.title }) }}</h2>
+							<h2>{{ t('neoprint.sectionTitle', { filter: neoprintsTitle }) }}</h2>
 						</div>
 
 						<p class="cat-neoprints__note text-muted">
@@ -427,13 +427,44 @@ const showPrintcaseCard = computed(
 )
 
 // ---------- Готові дизайни (NeoPrint) ----------
-const neoprints = computed<INeoPrint[]>(() => filterPage.value?.neoprints || [])
+// Дизайни показуємо для тем, відмічених у сайдбарі, — і для теми сторінки /filter/, і для
+// галочок ?filter_*. Галочка не змінює роут, тож SSR-фетч filterPage про неї не знає:
+// такі теми довантажуємо окремим watch-запитом.
+const selectedThemes = computed(() => selectedThemeNodes(filtersTree.value || [], selectedForSidebar.value))
+const themesKey = computed(() => selectedThemes.value.map((n) => n.id).join(','))
 
-// Окремою секцією під товарами і лише на «чистій» 1-й сторінці теми — інакше той самий
-// перелік дублювався б на пагінації та на комбінаціях ?filter_*
-const showNeoPrints = computed(
-	() => neoprints.value.length > 0 && currentPage.value === 1 && !hasFilterQuery.value
+// Сама лише тема сторінки /filter/ — її дизайни вже прийшли разом із filterPage,
+// повторний запит не потрібен
+const fromSelectedThemes = computed(() => {
+	const themes = selectedThemes.value
+	return themes.length > 0 && !(themes.length === 1 && themes[0].alias === props.filterAlias)
+})
+
+const { data: selectedThemeNeoprints } = await useAsyncData(
+	'cat-theme-neoprints-' + keySuffix.value,
+	async () => {
+		if (!fromSelectedThemes.value || !category.value?.printcase) return []
+		const batches = await Promise.all(selectedThemes.value.map((n) => shopApi.getNeoPrints(n.id!)))
+		return interleave(batches).slice(0, NEOPRINT_MAX)
+	},
+	{ watch: [themesKey] }
 )
+
+const neoprints = computed<INeoPrint[]>(() =>
+	fromSelectedThemes.value ? selectedThemeNeoprints.value || [] : filterPage.value?.neoprints || []
+)
+
+// Назва теми (чи перелік тем) у заголовку секції — рівно ті, чиї дизайни показуємо
+const neoprintsTitle = computed(() =>
+	fromSelectedThemes.value
+		? selectedThemes.value.map((n) => n.title).join(', ')
+		: filterPage.value?.title || ''
+)
+
+// Окремою секцією під товарами і лише на 1-й сторінці — інакше той самий перелік
+// дублювався б на пагінації. Комбінації ?filter_* канонікалізуються на базову категорію,
+// тож окремим дублем в індексі вони не стають.
+const showNeoPrints = computed(() => neoprints.value.length > 0 && currentPage.value === 1)
 
 // Дизайни: до 48 показуємо всі одразу (як на листкових темах, напр. BMW). Більше — теми-батьки
 // з підтемами — вантажимо порціями по 24 («показати ще»), щоб не роздувати SSR-HTML.
@@ -448,22 +479,33 @@ const hasMoreNeoprints = computed(() => paginateNeoprints.value && neoprintsShow
 function showMoreNeoprints() {
 	neoprintsShown.value = Math.min(neoprintsShown.value + NEOPRINT_STEP, neoprints.value.length)
 }
-// Скидаємо показ при переході на іншу тему
-watch(() => props.filterAlias, () => { neoprintsShown.value = NEOPRINT_STEP })
+// Скидаємо показ при зміні набору тем (перехід на іншу тему або нова галочка)
+watch([() => props.filterAlias, themesKey], () => { neoprintsShown.value = NEOPRINT_STEP })
 
-// Лічильник у шапці. На сторінці фільтра meta.total рахує ТОВАРИ (1), а в сітці кожен
-// атрибут — окрема картка (5) плюс дизайни (41). Бекенд у count фільтра рахує рівно те,
-// що ми показуємо (варіанти + дизайни = 46) — і це ж число стоїть у сайдбарі.
-// Для комбінацій ?filter_* count не підходить: він не враховує додаткові фільтри.
-const displayTotal = computed(() =>
-	props.filterAlias && !hasFilterQuery.value && filterPage.value?.count
-		? filterPage.value.count
-		: total.value
+// Лічильник у шапці. meta.total рахує ТОВАРИ (1), а в сітці кожен атрибут — окрема картка
+// (5) плюс дизайни (20). Бекенд у count фільтра рахує рівно те, що ми показуємо
+// (варіанти + дизайни = 26) — і це ж число стоїть у сайдбарі. Тому беремо його і на
+// сторінці /filter/, і коли тема вибрана однією галочкою. Для комбінацій кількох фільтрів
+// count не підходить (він не враховує сусідні фільтри) — там лишається meta.total.
+const filterCount = computed(() => {
+	// Сторінка /filter/ без галочок — count самого фільтра (він знає і про тему-батька)
+	if (!hasFilterQuery.value) return props.filterAlias ? Number(filterPage.value?.count) || 0 : 0
+
+	// Відмічена рівно одна тема і більше нічого — беремо її count прямо з сайдбара
+	const checked = Object.values(selectedForSidebar.value).flat()
+	return checked.length === 1 && selectedThemes.value.length === 1
+		? Number(selectedThemes.value[0].count) || 0
+		: 0
+})
+
+const displayTotal = computed(() => filterCount.value || total.value)
+
+// Скільки з лічильника — реальні варіанти товарів (решта — готові дизайни).
+// Для count фільтра сума лишається тією ж (те саме число, що й у сайдбарі), а meta.total
+// дизайнів узагалі не рахує — там віднімати нічого.
+const productsCount = computed(() =>
+	filterCount.value ? Math.max(0, filterCount.value - neoprints.value.length) : total.value
 )
-
-// Скільки з displayTotal — реальні варіанти товарів (решта — готові дизайни).
-// Сума лишається = count фільтра (те саме число, що й у сайдбарі).
-const productsCount = computed(() => Math.max(0, displayTotal.value - neoprints.value.length))
 
 // Порожньо — лише коли немає ні товарів, ні дизайнів
 const hasItems = computed(() => products.value.length > 0 || showNeoPrints.value)

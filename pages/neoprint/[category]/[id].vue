@@ -20,6 +20,8 @@
 			<div class="np-layout__info">
 				<h1 class="np-title">{{ pageTitle }}</h1>
 
+				<span class="np-code">{{ t('product.codeProduct') }}: {{ productCode }}</span>
+
 				<div class="np-prices">
 					<span class="np-prices__now">{{ formatPrice(price) }}</span>
 					<span v-if="discount > 0" class="np-prices__old">{{ formatPrice(priceOld) }}</span>
@@ -294,6 +296,11 @@ const slides = computed(() =>
 )
 
 const pageTitle = computed(() => title(activeDesign.value, category.value))
+
+// Код віртуального товару: товару в БД немає, тож комбінацію задають модель і дизайн —
+// «n{категорія}-{атрибут}». Рівно ці id їдуть у замовлення (category_id + attribute_id),
+// тож менеджер за кодом знаходить ту саму пару.
+const productCode = computed(() => `n${category.value.id}-${activeDesign.value.id}`)
 const description = computed(() => descCache[activeId.value] || '')
 const discount = computed(() => discountPercent(price.value, priceOld.value))
 
@@ -428,7 +435,9 @@ useJsonLd(() => ({
 	name: pageTitle.value,
 	description: description.value,
 	image: [shareImage.value],
-	sku: `NP-${activeDesign.value.id}-${category.value.id}`,
+	// SKU = видимий на сторінці код товару (модель+дизайн) — одна й та сама ідентифікація
+	// для покупця, пошуковиків і AI
+	sku: productCode.value,
 	brand: { '@type': 'Brand', name: config.public.siteName },
 	url: url.absolute(url.neoprint(category.value.alias, activeDesign.value.id)),
 	// Чим цей варіант відрізняється від інших дизайнів теми
@@ -491,11 +500,19 @@ onMounted(() => shopApi.addVisit(category.value.id, 0, activeId.value, activeDes
 }
 
 .np-title {
-	margin: 0 0 14px;
+	margin: 0 0 8px;
 	font-size: 22px;
 	font-weight: 800;
 	letter-spacing: -0.02em;
 	line-height: 1.3;
+}
+
+/* Код товару під H1 — як .product__code на сторінці товару */
+.np-code {
+	display: block;
+	margin-bottom: 14px;
+	font-size: 13px;
+	color: var(--text-muted);
 }
 
 .np-prices {

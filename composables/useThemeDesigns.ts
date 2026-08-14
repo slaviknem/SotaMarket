@@ -6,7 +6,7 @@
 // підвантажує її дизайни на місці, а сам чип лишається справжнім <a href> (краулери,
 // нова вкладка, копіювання посилання).
 
-import type { IFilterNode } from '~/composables/useFilters'
+import { LEAF_TYPES, type IFilterNode } from '~/composables/useFilters'
 
 // Дизайн у сітці/галереї — рівно те, що малює картка (решта полів роздула б SSR-payload)
 export interface IThemeDesign {
@@ -23,14 +23,12 @@ export interface IThemeNode {
 	children: { alias: string; title: string; id: number }[]
 }
 
-// Службові фільтри каталогу — це фасети (Категорія/Форм-фактор/Матеріал), а не теми принтів
-const FILTER_TYPES = ['cat', 'form_factor', 'material']
-
 // Дерево тем для меню: верхній рівень + підтеми з id. id потрібні, щоб вантажити дизайни
 // теми прямо на кліку, без переходу на фільтр-сторінку.
+// Фасети каталогу (LEAF_TYPES: Категорія/Форм-фактор/Матеріал) темами принтів не є.
 export function buildThemeTree(filters: IFilterNode[] | null | undefined): IThemeNode[] {
 	return ((filters as IFilterNode[]) || [])
-		.filter((f) => !FILTER_TYPES.includes(f.type || ''))
+		.filter((f) => !(LEAF_TYPES as readonly string[]).includes(f.type || ''))
 		.map((f) => ({
 			alias: f.alias,
 			title: f.title,
