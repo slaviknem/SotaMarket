@@ -8,7 +8,7 @@
 					</div>
 					<div>
 						<div class="feature__title">{{ t('index.freeDelivery') }}</div>
-						<div class="feature__text">{{ t('index.freeDeliveryFrom') }}</div>
+						<div class="feature__text">{{ t('index.freeDeliveryFrom', { sum: freeDeliveryFrom }) }}</div>
 					</div>
 				</div>
 
@@ -38,6 +38,7 @@
 
 <script setup lang="ts">
 const { t } = useI18n()
+const { freeDeliveryFrom } = useSiteSettings()
 </script>
 
 <style scoped>

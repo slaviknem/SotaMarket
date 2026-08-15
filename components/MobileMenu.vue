@@ -65,8 +65,8 @@
 							{{ link.title }}
 						</NuxtLink>
 
-						<a :href="`tel:+38${config.public.phone.replace(/\D/g, '')}`" class="mobile-menu__phone">
-							{{ config.public.phone }}
+						<a :href="`tel:+38${phoneDigits}`" class="mobile-menu__phone">
+							{{ phone }}
 						</a>
 					</div>
 				</div>
@@ -80,7 +80,7 @@ defineProps<{ menu: any }>()
 
 const { t } = useI18n()
 const localePath = useLocalePath()
-const config = useRuntimeConfig()
+const { phone, phoneDigits } = useSiteSettings()
 
 const open = useState('mobileMenuOpen', () => false)
 const openedBrand = ref<number | null>(null)

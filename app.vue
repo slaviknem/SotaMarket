@@ -54,6 +54,7 @@ useHead(() => ({
 // контактами, соцпрофілями та політикою повернення. Вузол компактний і статичний.
 const config = useRuntimeConfig()
 const localePath = useLocalePath()
+const { contacts, social, phone } = useSiteSettings()
 
 useJsonLd(() => [
 	{
@@ -65,12 +66,12 @@ useJsonLd(() => [
 		description: t('metaDescription.index'),
 		logo: config.public.siteUrl + '/images/logo.svg',
 		image: config.public.siteUrl + '/images/logo.svg',
-		email: config.public.email,
-		telephone: config.public.phone,
+		email: contacts.value.email,
+		telephone: phone.value,
 		address: {
 			'@type': 'PostalAddress',
-			streetAddress: config.public.addressStreet,
-			addressLocality: config.public.addressCity,
+			streetAddress: contacts.value.address_street,
+			addressLocality: contacts.value.address_city,
 			addressCountry: 'UA',
 		},
 		areaServed: 'UA',
@@ -78,11 +79,11 @@ useJsonLd(() => [
 		// Соцпрофілі: зв'язують сайт із тими самими акаунтами в графі знань
 		// (той самий список, що й в іконках футера — SocialLinks)
 		sameAs: [
-			config.public.instagram,
-			config.public.facebook,
-			config.public.telegram,
-			config.public.youtube,
-		],
+			social.value.instagram,
+			social.value.facebook,
+			social.value.telegram,
+			social.value.youtube,
+		].filter(Boolean),
 		// TODO: hasMerchantReturnPolicy (термін повернення, хто платить за пересилку) —
 		// Google показує ці умови покупцям, тож вносити їх можна лише з підтверджених
 		// даних магазину, а не з тексту статті /povernennya «на око».

@@ -38,12 +38,12 @@ export function useNeoPrint() {
 	const { t } = useI18n()
 	const url = useUrl()
 	const cart = useCart()
-	const config = useRuntimeConfig()
 	const { openCart } = useCartDrawer()
 	const { openPreOrder } = usePreOrder()
 
-	const price = computed(() => config.public.neoprintPrice as number)
-	const priceOld = computed(() => config.public.neoprintPriceOld as number)
+	const { prices } = useSiteSettings()
+	const price = computed(() => prices.value.neoprint)
+	const priceOld = computed(() => prices.value.neoprint_old)
 
 	// Назва варіанта: «Чохол для iPhone 11 з картинкою «BMW Performance стиль»»
 	const title = (np: { title: string }, category: any) =>

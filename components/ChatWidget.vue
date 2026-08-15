@@ -49,7 +49,7 @@
 							<div class="chat__messengers-row">
 								<a
 									class="chat__messenger"
-									:href="config.public.telegram"
+									:href="social.telegram"
 									target="_blank"
 									rel="noopener nofollow"
 									aria-label="Telegram"
@@ -58,7 +58,7 @@
 								</a>
 								<a
 									class="chat__messenger"
-									:href="config.public.viber"
+									:href="social.viber"
 									target="_blank"
 									rel="noopener nofollow"
 									aria-label="Viber"
@@ -67,7 +67,7 @@
 								</a>
 								<a
 									class="chat__messenger"
-									:href="config.public.whatsapp"
+									:href="social.whatsapp"
 									target="_blank"
 									rel="noopener nofollow"
 									aria-label="WhatsApp"
@@ -216,7 +216,7 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const { notify } = useNotify()
-const config = useRuntimeConfig()
+const { social } = useSiteSettings()
 const chat = useChat()
 
 // Інтро (привітання + месенджери) показуємо, доки клієнт не написав перше повідомлення

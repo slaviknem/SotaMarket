@@ -20,25 +20,13 @@ export default defineNuxtConfig({
 			urlApi: process.env.URL_API || 'https://admin.floy.com.ua/apisite/',
 			urlStorage: process.env.URL_STORAGE || 'https://admin.floy.com.ua/storage/',
 			siteUrl: process.env.SITE_URL || 'https://floy.com.ua',
+			// Ключ сайту: з ним ідуть усі запити до apisite і за ним же беруться
+			// налаштування цього сайту (composables/useSiteSettings.ts)
 			site: 'floy',
 			siteName: 'FLOY',
-			phone: '099 072 14 12',
-			phones: ['099 072 14 12', '098 072 14 12', '093 072 14 12'],
-			address: 'м. Полтава, проспект Віталія Грицаєнка, 15А',
-			// Та сама адреса по частинах — для PostalAddress у schema.org (app.vue),
-			// щоб не дублювати літерали в розмітці
-			addressCity: 'Полтава',
-			addressStreet: 'проспект Віталія Грицаєнка, 15А',
-			email: 'info@floy.com.ua',
-			// Месенджери (кнопки швидкого переходу в онлайн-чаті)
-			telegram: 'https://t.me/floyshop',
-			viber: 'viber://chat?number=%2B380990721412',
-			whatsapp: 'https://wa.me/380990721412',
-			// Соцпрофілі: одне джерело для іконок у футері (SocialLinks) і для sameAs
-			// у schema.org (app.vue) — інакше два списки роз'їхались би
-			instagram: 'https://www.instagram.com/floy.com.ua/',
-			facebook: 'https://www.facebook.com/floy.com.ua',
-			youtube: 'https://www.youtube.com/channel/UCmxlccT0fGh6hF79LSKYIPQ',
+			// Ціни, доставка, телефони, адреса та соцмережі сюди НЕ повертати — вони
+			// редагуються в адмінці (вузол public.floy) і приїжджають через useSiteSettings.
+			// Тут лишається тільки те, що залежить від оточення, а не від бізнесу.
 			// Лічильники аналітики. Порожній ID = провайдер вимкнений (жодного запиту й байта JS).
 			// Самі скрипти вантажаться відкладено — plugins/analytics.client.ts.
 			// Зазвичай потрібен ЛИШЕ один із двох Google-варіантів: або GTM (з GA4-тегом
@@ -49,11 +37,6 @@ export default defineNuxtConfig({
 				metaPixel: process.env.META_PIXEL_ID || '', // 15-16 цифр
 				dev: process.env.ANALYTICS_DEV === '1', // рахувати й у dev (для перевірки)
 			},
-			printcasePrice: 289,
-			printcasePriceOld: 299,
-			// Готовий дизайн (NeoPrint) — дешевший за індивідуальний друк у конструкторі
-			neoprintPrice: 259,
-			neoprintPriceOld: 299,
 		},
 	},
 

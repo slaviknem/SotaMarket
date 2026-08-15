@@ -71,7 +71,7 @@
 						</div>
 						<div class="cart-summary__row">
 							<span>{{ t('cart.shipping') }}</span>
-							<b>{{ t('cart.from') }} {{ formatPrice(cart.shipping.delivery) }}</b>
+							<b>{{ t('cart.from') }} {{ formatPrice(cart.shipping.value.delivery) }}</b>
 						</div>
 						<div v-if="codFee" class="cart-summary__row">
 							<span>{{ t('cart.nalogka') }}</span>

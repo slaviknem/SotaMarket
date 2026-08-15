@@ -26,7 +26,7 @@
 	"index": {
 		"more": "Подробнее",
 		"freeDelivery": "Бесплатная доставка",
-		"freeDeliveryFrom": "При заказет от 1000грн.",
+		"freeDeliveryFrom": "При заказе от {sum} грн.",
 		"payNalogka": "Наложенный платеж",
 		"payNalogkaInfo": "Оплата за товар при получении",
 		"discount": "Скидка на покупку",

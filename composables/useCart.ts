@@ -29,11 +29,6 @@ export interface CartState {
 	discount: number
 }
 
-// Приблизна вартість доставки — показуємо орієнтовно в кошику.
-// Точну вартість визначає перевізник (Нова Пошта) при отриманні (накладений платіж).
-// Локальна константа (не export) — щоб не плодити глобальний авто-імпорт; назовні віддаємо через cart.shipping.
-const SHIPPING = { delivery: 60, nalogka: 20 }
-
 export function useCartState() {
 	return useState<CartState>('cart', () => ({
 		lastItemId: 0,
@@ -49,11 +44,20 @@ export function useCart() {
 	const subtotal = computed(() => state.value.items.reduce((s, i) => s + i.total, 0))
 	const total = computed(() => subtotal.value - state.value.discount)
 
+	// Приблизна вартість доставки — показуємо орієнтовно в кошику за тарифом Нової Пошти,
+	// якою йде переважна більшість замовлень. Точну суму визначає перевізник при отриманні.
+	const { delivery } = useSiteSettings()
+	const shipping = computed(() => ({
+		delivery: delivery.value.n_pochta.delivery,
+		nalogka: delivery.value.n_pochta.nal_plateg,
+	}))
+
 	// Комісія за накладений платіж є лише при оплаті під час отримання —
 	// для перед-/онлайн-оплати її не має бути в підсумку.
-	const codFee = (payment = 'nal_plateg') => (payment === 'nal_plateg' ? SHIPPING.nalogka : 0)
+	const codFee = (payment = 'nal_plateg') => (payment === 'nal_plateg' ? shipping.value.nalogka : 0)
 	// Орієнтовний підсумок із доставкою (показуємо з «≈»)
-	const grandTotalFor = (payment = 'nal_plateg') => total.value + SHIPPING.delivery + codFee(payment)
+	const grandTotalFor = (payment = 'nal_plateg') =>
+		total.value + shipping.value.delivery + codFee(payment)
 	const grandTotal = computed(() => grandTotalFor())
 
 	function add(payload: {
@@ -120,7 +124,7 @@ export function useCart() {
 		state.value.discount = discount
 	}
 
-	return { state, quantity, subtotal, total, grandTotal, grandTotalFor, codFee, shipping: SHIPPING, add, remove, removeAll, updateQuantity, setDiscount }
+	return { state, quantity, subtotal, total, grandTotal, grandTotalFor, codFee, shipping, add, remove, removeAll, updateQuantity, setDiscount }
 }
 
 // Слайдер-кошик (mini-cart): глобальний стан відкриття.

@@ -75,11 +75,11 @@
 							</div>
 							<div class="cart-drawer__sum">
 								<span>{{ t('cart.shipping') }}</span>
-								<b>{{ t('cart.from') }} {{ formatPrice(cart.shipping.delivery) }}</b>
+								<b>{{ t('cart.from') }} {{ formatPrice(cart.shipping.value.delivery) }}</b>
 							</div>
 							<div class="cart-drawer__sum">
 								<span>{{ t('cart.nalogka') }}</span>
-								<b>{{ formatPrice(cart.shipping.nalogka) }}</b>
+								<b>{{ formatPrice(cart.shipping.value.nalogka) }}</b>
 							</div>
 							<div class="cart-drawer__sum cart-drawer__sum--total">
 								<span>{{ t('cart.total') }}</span>

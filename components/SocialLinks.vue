@@ -17,18 +17,21 @@
 
 <script setup lang="ts">
 // Іконки соцмереж з посиланнями (перевикористовується у футері / контактах).
-// Гліфи — у реєстрі AppIcon, адреси — з runtimeConfig (спільні з sameAs у schema.org).
+// Гліфи — у реєстрі AppIcon, адреси — з налаштувань адмінки (спільні з sameAs у schema.org).
 const { t } = useI18n()
-const config = useRuntimeConfig()
+const { social } = useSiteSettings()
 
 withDefaults(defineProps<{ size?: number }>(), { size: 18 })
 
-const socials = [
-	{ name: 'Instagram', icon: 'instagram', url: config.public.instagram },
-	{ name: 'Facebook', icon: 'facebook', url: config.public.facebook },
-	{ name: 'Telegram', icon: 'telegram', url: config.public.telegram },
-	{ name: 'YouTube', icon: 'youtube', url: config.public.youtube },
-]
+// Порожня адреса = мережу не ведемо: іконку не показуємо взагалі
+const socials = computed(() =>
+	[
+		{ name: 'Instagram', icon: 'instagram', url: social.value.instagram },
+		{ name: 'Facebook', icon: 'facebook', url: social.value.facebook },
+		{ name: 'Telegram', icon: 'telegram', url: social.value.telegram },
+		{ name: 'YouTube', icon: 'youtube', url: social.value.youtube },
+	].filter((s) => s.url)
+)
 </script>
 
 <style scoped>

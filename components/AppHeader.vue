@@ -13,9 +13,9 @@
 				</nav>
 
 				<div class="topbar-right">
-					<a :href="`tel:+38${phoneClean}`" class="topbar-phone">
+					<a :href="`tel:+38${phoneDigits}`" class="topbar-phone">
 						<AppIcon name="phone" :size="14" />
-						{{ config.public.phone }}
+						{{ phone }}
 					</a>
 					<LangSwitcher />
 				</div>
@@ -152,7 +152,7 @@ const props = defineProps<{ menu: any }>()
 
 const { t } = useI18n()
 const localePath = useLocalePath()
-const config = useRuntimeConfig()
+const { phone, phoneDigits } = useSiteSettings()
 
 const cart = useCart()
 const cartQty = cart.quantity
@@ -174,8 +174,6 @@ function onCartClick(e: MouseEvent) {
 }
 
 const mobileOpen = useState('mobileMenuOpen', () => false)
-
-const phoneClean = computed(() => config.public.phone.replace(/\D/g, ''))
 
 const catLink = (cat: any) =>
 	localePath(cat.url.startsWith('/') ? cat.url : `/${cat.url}`)

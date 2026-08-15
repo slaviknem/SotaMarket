@@ -261,7 +261,17 @@
       "Bash(curl -s -I \"https://admin.floy.com.ua/\")",
       "Bash(curl -s \"https://admin.floy.com.ua/apisite/categories/category/xiaomi-poco-c81-pro?site=floy&lang=uk\")",
       "Bash(curl -s \"https://admin.floy.com.ua/apisite/attributes/neo_prints?site=smarket&lang=uk\")",
-      "Bash(curl -s -o /dev/null -w \"neoprint page: %{http_code}\\\\n\" \"https://floy.com.ua/neoprint/xiaomi-poco-c81-pro/3662\")"
+      "Bash(curl -s -o /dev/null -w \"neoprint page: %{http_code}\\\\n\" \"https://floy.com.ua/neoprint/xiaomi-poco-c81-pro/3662\")",
+      "Bash(grep -rn 'urlApi\\\\|apiFetch\\\\|$fetch\\(' composables/useShopApi.ts)",
+      "Bash(awk -F' -> ' '{print $2}')",
+      "Bash(node parse.js \"c:/Web-SERVER/domains/FLOY-NEW/.claude/settings.sql\" rows.json)",
+      "Bash(node tree.js)",
+      "PowerShell($env:PATH = \"c:\\\\Web-SERVER\\\\domains\\\\FLOY-NEW\\\\.node\\\\node-v22.14.0-win-x64;$env:PATH\"; node -v; & \"c:\\\\Web-SERVER\\\\domains\\\\FLOY-NEW\\\\node_modules\\\\.bin\\\\nuxt.cmd\" prepare 2>&1 | Select-Object -Last 25)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} | %{size_download} bytes\\\\n\" https://admin.floy.com.ua/storage/settings/floy.json)",
+      "Bash(curl -s https://admin.floy.com.ua/storage/settings/floy.json)",
+      "Bash(curl -s -m 5 -o /dev/null -w \"localhost:3000 → HTTP %{http_code}\\\\n\" http://localhost:3000/api/settings)",
+      "Bash(curl -s -m 10 http://localhost:3000/api/settings)",
+      "Bash(curl -s -m 20 http://localhost:3000/printcase)"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [

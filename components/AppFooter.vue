@@ -12,15 +12,15 @@
 					<ul class="footer__contacts">
 						<li>
 							<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
-							{{ config.public.address }}
+							{{ contacts.address }}
 						</li>
-						<li v-for="phone in config.public.phones" :key="phone">
+						<li v-for="phone in phones" :key="phone">
 							<AppIcon name="phone" :size="15" />
 							<a :href="`tel:+38${phone.replace(/\D/g, '')}`">{{ phone }}</a>
 						</li>
 						<li>
 							<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-							<a :href="`mailto:${config.public.email}`">{{ config.public.email }}</a>
+							<a :href="`mailto:${contacts.email}`">{{ contacts.email }}</a>
 						</li>
 					</ul>
 				</div>
@@ -76,7 +76,7 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const localePath = useLocalePath()
-const config = useRuntimeConfig()
+const { contacts, phones } = useSiteSettings()
 </script>
 
 <style scoped>

@@ -391,8 +391,12 @@ const { openPreOrder } = usePreOrder()
 const { notify } = useNotify()
 const url = useUrl()
 
-const price = config.public.printcasePrice as number
-const priceOld = config.public.printcasePriceOld as number
+// Ціни з налаштувань адмінки. Читаємо один раз значенням, а не computed: на SSR стан уже
+// заповнений, а всередині сторінки ціна не змінюється — зате її можна класти в замовлення,
+// JSON-LD і тексти напряму, без .value у двадцяти місцях.
+const { prices } = useSiteSettings()
+const price = prices.value.printcase
+const priceOld = prices.value.printcase_old
 
 // Модель у конструкторі: рівно те, що потрібно сцені, кошику і текстам
 interface PcModel {

@@ -21,8 +21,8 @@
 
 			<div class="p-card__bottom">
 				<div class="p-card__prices">
-					<span class="p-card__price-old">{{ formatPrice(config.public.printcasePriceOld) }}</span>
-					<span class="p-card__price">{{ formatPrice(config.public.printcasePrice) }}</span>
+					<span class="p-card__price-old">{{ formatPrice(prices.printcase_old) }}</span>
+					<span class="p-card__price">{{ formatPrice(prices.printcase) }}</span>
 				</div>
 
 				<NuxtLink :to="url.printcase(category.alias)" class="pc-card__go" :title="title">
@@ -39,7 +39,7 @@ const props = defineProps<{ category: any; eager?: boolean }>()
 
 const { t } = useI18n()
 const url = useUrl()
-const config = useRuntimeConfig()
+const { prices } = useSiteSettings()
 
 const title = computed(() =>
 	t('printcase.card.titleProduct', { model: props.category.title_full || props.category.title })
