@@ -73,11 +73,13 @@
 								<span>{{ t('cart.discount') }}</span>
 								<b>−{{ formatPrice(cart.state.value.discount) }}</b>
 							</div>
+							<!-- Перевізника тут ще не обирали, тож показуємо найдешевший варіант — «від» -->
 							<div class="cart-drawer__sum">
 								<span>{{ t('cart.shipping') }}</span>
-								<b>{{ t('cart.from') }} {{ formatPrice(cart.shipping.value.delivery) }}</b>
+								<b v-if="cart.freeDelivery.value">{{ t('cart.freeDelivery') }}</b>
+								<b v-else>{{ t('cart.from') }} {{ formatPrice(cart.shipping.value.delivery) }}</b>
 							</div>
-							<div class="cart-drawer__sum">
+							<div v-if="!cart.freeDelivery.value" class="cart-drawer__sum">
 								<span>{{ t('cart.nalogka') }}</span>
 								<b>{{ formatPrice(cart.shipping.value.nalogka) }}</b>
 							</div>

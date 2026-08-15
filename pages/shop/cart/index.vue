@@ -69,9 +69,14 @@
 							<span>{{ t('cart.discount') }}</span>
 							<b>−{{ formatPrice(cart.state.value.discount) }}</b>
 						</div>
+						<!-- «від» доречне лише поки перевізник не обраний: тоді це найдешевший
+						     з варіантів. Після вибору сума точна — саме її виставить адмінка. -->
 						<div class="cart-summary__row">
 							<span>{{ t('cart.shipping') }}</span>
-							<b>{{ t('cart.from') }} {{ formatPrice(cart.shipping.value.delivery) }}</b>
+							<b v-if="cart.freeDelivery.value">{{ t('cart.freeDelivery') }}</b>
+							<b v-else>
+								<template v-if="!order.delivery">{{ t('cart.from') }} </template>{{ formatPrice(shipping.delivery) }}
+							</b>
 						</div>
 						<div v-if="codFee" class="cart-summary__row">
 							<span>{{ t('cart.nalogka') }}</span>
@@ -139,7 +144,7 @@
 						<div class="form-group">
 							<div class="radio-group radio-group--row">
 								<label
-									v-for="method in deliveries"
+									v-for="method in DELIVERY_METHODS"
 									:key="method.key"
 									class="radio"
 									:class="{ 'is-active': order.delivery === method.key }"
@@ -352,11 +357,6 @@ const order = reactive<Record<string, any>>({
 	comments: '',
 })
 
-const deliveries = [
-	{ key: 'n_pochta', title: 'titleNovaPochta' },
-	{ key: 'ukrpochta', title: 'titleUkrPochta' },
-]
-
 const payments = [
 	{ key: 'nal_plateg', title: 'titleNalogka', description: 'descriptionNalogka' },
 	{ key: 'predoplata', title: 'titlePredoplata', description: 'descriptionPredoplata' },
@@ -368,9 +368,12 @@ const sending = ref(false)
 
 const isNovaPochta = computed(() => order.delivery === 'n_pochta')
 
-// Підсумок залежить від способу оплати: комісія накладеного платежу є лише при оплаті при отриманні
-const codFee = computed(() => cart.codFee(order.payment))
-const grandTotal = computed(() => cart.grandTotalFor(order.payment))
+// Підсумок залежить і від перевізника (у Нової Пошти й Укрпошти різні тарифи), і від
+// способу оплати: комісія накладеного платежу є лише при оплаті при отриманні.
+// Поки перевізник не обраний — показуємо найдешевший варіант із приміткою «від».
+const shipping = computed(() => cart.shippingFor(order.delivery))
+const codFee = computed(() => cart.codFee(order.payment, order.delivery))
+const grandTotal = computed(() => cart.grandTotalFor(order.payment, order.delivery))
 
 // ---------- Нова Пошта ----------
 const cityQuery = ref('')

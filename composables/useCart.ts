@@ -29,6 +29,13 @@ export interface CartState {
 	discount: number
 }
 
+// Перевізники, доступні на сайті (порядок = порядок кнопок у формі кошика).
+// Тарифи тут не тримаємо — вони в налаштуваннях адмінки; це лише перелік і ключі назв.
+export const DELIVERY_METHODS = [
+	{ key: 'n_pochta', title: 'titleNovaPochta' },
+	{ key: 'ukrpochta', title: 'titleUkrPochta' },
+]
+
 export function useCartState() {
 	return useState<CartState>('cart', () => ({
 		lastItemId: 0,
@@ -44,20 +51,43 @@ export function useCart() {
 	const subtotal = computed(() => state.value.items.reduce((s, i) => s + i.total, 0))
 	const total = computed(() => subtotal.value - state.value.discount)
 
-	// Приблизна вартість доставки — показуємо орієнтовно в кошику за тарифом Нової Пошти,
-	// якою йде переважна більшість замовлень. Точну суму визначає перевізник при отриманні.
+	// Вартість доставки рахуємо ТАК САМО, як адмінка при створенні замовлення
+	// (OrderAction::calculateDeliveryCost) — з тих самих налаштувань, щоб підсумок у кошику
+	// не розійшовся з рахунком у замовленні.
 	const { delivery } = useSiteSettings()
-	const shipping = computed(() => ({
-		delivery: delivery.value.n_pochta.delivery,
-		nalogka: delivery.value.n_pochta.nal_plateg,
-	}))
+
+	// Поріг безкоштовної доставки адмінка звіряє з suma_order, а це сума ДО знижки —
+	// саме її ми й відправляємо в замовленні (див. sendOrder на сторінці кошика).
+	const freeDelivery = computed(() => subtotal.value >= delivery.value.free_delivery_from)
+
+	// Тариф перевізника: обраного, а поки не обрано — найдешевшого з доступних,
+	// бо в підсумку тоді стоїть «від».
+	const tariffFor = (method?: string): DeliveryTariff => {
+		const table = delivery.value as unknown as Record<string, DeliveryTariff>
+		if (method && table[method]) return table[method]
+
+		const available = DELIVERY_METHODS.map((m) => table[m.key]).filter(Boolean)
+		return available.reduce((min, t) => (t.delivery < min.delivery ? t : min), available[0])
+	}
+
+	// Понад поріг адмінка обнуляє всю доставку разом із комісією за накладений платіж —
+	// повторюємо це, а не тільки саму доставку.
+	const shippingFor = (method?: string) => {
+		const tariff = tariffFor(method)
+		return freeDelivery.value
+			? { delivery: 0, nalogka: 0 }
+			: { delivery: tariff.delivery, nalogka: tariff.nal_plateg }
+	}
+
+	const shipping = computed(() => shippingFor())
 
 	// Комісія за накладений платіж є лише при оплаті під час отримання —
 	// для перед-/онлайн-оплати її не має бути в підсумку.
-	const codFee = (payment = 'nal_plateg') => (payment === 'nal_plateg' ? shipping.value.nalogka : 0)
+	const codFee = (payment = 'nal_plateg', method?: string) =>
+		payment === 'nal_plateg' ? shippingFor(method).nalogka : 0
 	// Орієнтовний підсумок із доставкою (показуємо з «≈»)
-	const grandTotalFor = (payment = 'nal_plateg') =>
-		total.value + shipping.value.delivery + codFee(payment)
+	const grandTotalFor = (payment = 'nal_plateg', method?: string) =>
+		total.value + shippingFor(method).delivery + codFee(payment, method)
 	const grandTotal = computed(() => grandTotalFor())
 
 	function add(payload: {
@@ -124,7 +154,7 @@ export function useCart() {
 		state.value.discount = discount
 	}
 
-	return { state, quantity, subtotal, total, grandTotal, grandTotalFor, codFee, shipping, add, remove, removeAll, updateQuantity, setDiscount }
+	return { state, quantity, subtotal, total, grandTotal, grandTotalFor, codFee, shipping, shippingFor, freeDelivery, add, remove, removeAll, updateQuantity, setDiscount }
 }
 
 // Слайдер-кошик (mini-cart): глобальний стан відкриття.

@@ -271,7 +271,15 @@
       "Bash(curl -s https://admin.floy.com.ua/storage/settings/floy.json)",
       "Bash(curl -s -m 5 -o /dev/null -w \"localhost:3000 → HTTP %{http_code}\\\\n\" http://localhost:3000/api/settings)",
       "Bash(curl -s -m 10 http://localhost:3000/api/settings)",
-      "Bash(curl -s -m 20 http://localhost:3000/printcase)"
+      "Bash(curl -s -m 20 http://localhost:3000/printcase)",
+      "Bash(node -e \"let s='';process.stdin.on\\('data',d=>s+=d\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(s\\);console.log\\(JSON.stringify\\(j.delivery,null,1\\)\\);console.log\\('prices:',JSON.stringify\\(j.prices\\)\\);}\\)\")",
+      "PowerShell($env:PATH = \"c:\\\\Web-SERVER\\\\domains\\\\FLOY-NEW\\\\.node\\\\node-v22.14.0-win-x64;$env:PATH\"; & \"c:\\\\Web-SERVER\\\\domains\\\\FLOY-NEW\\\\node_modules\\\\.bin\\\\nuxt.cmd\" prepare 2>&1 | Select-Object -Last 5; Select-String -Path \"c:\\\\Web-SERVER\\\\domains\\\\FLOY-NEW\\\\.nuxt\\\\imports.d.ts\" -Pattern \"DELIVERY_METHODS\")",
+      "Bash(curl -s -m 30 -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/shop/cart)",
+      "Bash(curl -s -m 30 http://localhost:3000/shop/cart)",
+      "Bash(grep -o \"500[^;]\\\\{0,12\\\\}\")",
+      "Bash(curl -s -m 15 -o /dev/null -w \"HTTP %{http_code}\\\\n\" https://floy.com.ua/api/settings)",
+      "Bash(curl -s -m 15 https://floy.com.ua/api/settings)",
+      "Bash(curl -s -m 20 https://floy.com.ua/printcase)"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [
