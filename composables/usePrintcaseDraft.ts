@@ -219,5 +219,6 @@ export function usePrintcaseDraft() {
 		})
 	}
 
-	return { save, load, latest, remove, flush }
+	// flush назовні не віддаємо: відкладений запис скидають самі хуки вище
+	return { save, load, latest, remove }
 }
