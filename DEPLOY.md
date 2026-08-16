@@ -144,9 +144,40 @@ curl -I https://floy.com.ua                               # знову стар�
 ## 7. Оновлення після пушу в GitHub
 
 ```bash
-cd /root/nodeapps/FLOY-PROD && git pull && nvm use 22 && npm install && npx nuxi build && nvm use 16 && pm2 restart floy-prod
+cd /root/nodeapps/FLOY-PROD && git pull && nvm use 22 && npm install && \
+  cp -rp .output/public/_nuxt /tmp/_nuxt-prev 2>/dev/null; \
+  npx nuxi build && \
+  cp -rpn /tmp/_nuxt-prev/. .output/public/_nuxt/ 2>/dev/null; \
+  find .output/public/_nuxt -type f -mtime +14 -delete; \
+  nvm use 16 && pm2 restart floy-prod
 ```
 (`npm install` можна пропустити, якщо залежності не мінялись.)
+
+### Чому тут копіювання `_nuxt`, а не просто `nuxi build`
+
+`nuxi build` **чистить `.output`**, тобто старі чанки зникають із сервера в ту саму секунду.
+А в браузерів, які в цей момент мають сторінку відкритою (або відновлюють вкладку минулого
+сеансу — мобільні це роблять постійно), у розмітці записані саме старі імена. Наступне
+довантаження шматка коду отримує 404, і сторінка лишається напівживою: сама працює,
+а частина функцій мовчки ні — так, наприклад, у конструкторі зникала маска чохла.
+
+Тому:
+
+- **`cp -rp` до збірки + `cp -rpn` після** — старі чанки повертаються поруч із новими
+  (`-n` = не чіпати нові, імена з хешем ніколи не конфліктують, `-p` зберігає дати);
+- **`find -mtime +14 -delete`** — інакше `_nuxt` ріс би з кожною викладкою назавжди;
+  два тижні старих чанків покривають будь-яку живу вкладку;
+- документ (HTML) віддається з `Cache-Control: no-cache` (`server/middleware/no-cache-html.ts`),
+  тож наступне відкриття сторінки завжди приносить свіжу розмітку з новими іменами;
+- якщо шматок коду все ж не завантажився, `plugins/chunk-reload.client.ts` перезавантажує
+  сторінку один раз — далі вона приїжджає новою.
+
+Перевірити після викладки, що заголовки на місці:
+
+```bash
+curl -sI https://floy.com.ua/printcase | grep -i cache-control     # має бути no-cache
+curl -sI https://floy.com.ua/_nuxt/<будь-який-чанк>.js | grep -i cache-control  # immutable
+```
 
 ---
 

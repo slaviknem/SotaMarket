@@ -664,13 +664,21 @@ const buyLabel = computed(() => {
 // у SSR-payload вона важила б сотні кілобайт.
 async function loadMask(alias: string) {
 	maskUrl.value = DEFAULT_MASK
-	try {
-		const res = await $fetch<{ base64Image?: string }>(
-			`${config.public.urlApi}printcase/get_image_b64/${alias}.png/masks`
-		)
-		if (res?.base64Image) maskUrl.value = res.base64Image
-	} catch {
-		/* стандартна маска */
+
+	// Друга спроба: на мобільному інтернеті один зірваний запит лишав би чохол без вирізів
+	// під камери на весь сеанс — і людина малювала б макет по неправильному силуету
+	for (const attempt of [0, 1]) {
+		try {
+			const res = await $fetch<{ base64Image?: string }>(
+				`${config.public.urlApi}printcase/get_image_b64/${alias}.png/masks`
+			)
+			if (res?.base64Image) maskUrl.value = res.base64Image
+			return
+		} catch (e: any) {
+			// 404 — маски для моделі просто немає, повторювати нема сенсу
+			if (attempt || e?.response?.status === 404) return
+			await new Promise((r) => setTimeout(r, 1200))
+		}
 	}
 }
 
