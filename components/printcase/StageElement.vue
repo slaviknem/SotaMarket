@@ -59,6 +59,10 @@
 export interface StageEl {
 	type: 'image' | 'text'
 	url?: string
+	// Звідки картинка, у форматі маніфесту: 'sha:{файл}' — фото клієнта, 'lib:…' — галерея,
+	// 'neo:…' — готовий дизайн. url при цьому може бути тимчасовим (blob:/base64),
+	// тож зберігати макет можна тільки за origin (див. usePrintcaseDesign)
+	origin?: string
 	text?: string
 	x: number
 	y: number

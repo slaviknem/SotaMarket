@@ -8,6 +8,20 @@
 		<h1 class="pc-title">{{ h1 }}</h1>
 		<p v-if="lead" class="pc-lead">{{ lead }}</p>
 
+		<!-- Одна смужка на два випадки: відновлена чернетка (людина повернулась до свого макета)
+		     і правка вже збереженого макета за посиланням з адмінки -->
+		<div v-if="restored || designDir" class="pc-note" :class="{ 'pc-note--edit': designDir }">
+			<AppIcon :name="designDir ? 'edit' : 'clock'" :size="15" />
+			<span v-if="designDir">
+				{{ t('printcase.editingDesign') }}
+				<b v-if="designMissing"> {{ t('printcase.designMissing', { count: designMissing }) }}</b>
+			</span>
+			<template v-else>
+				<span>{{ t('printcase.draftRestored') }}</span>
+				<button class="pc-note__btn" @click="resetDraft">{{ t('printcase.draftReset') }}</button>
+			</template>
+		</div>
+
 		<!-- Перетягування файлів ловимо на всій робочій зоні (макет + панель дій): кинутий
 		     повз конструктор файл браузер просто відкрив би замість вкладки -->
 		<div
@@ -225,14 +239,20 @@
 						<span class="pc-buy__price-old">{{ formatPrice(priceOld) }}</span>
 					</div>
 
+					<!-- У режимі правки макета кнопка зберігає зміни: знятий із друку статус моделі
+					     тут не має блокувати — замовлення вже існує, міняється лише картинка -->
 					<button
 						v-if="model"
 						class="btn btn-lg btn-block"
-						:class="modelStock === 'in' ? 'btn-primary' : 'btn-outline'"
-						:disabled="generating || !visibleElements.length || modelStock === 'out'"
+						:class="modelStock === 'in' || designDir ? 'btn-primary' : 'btn-outline'"
+						:disabled="generating || !visibleElements.length || (modelStock === 'out' && !designDir)"
 						@click="order"
 					>
-						<AppIcon v-if="!generating" :name="modelStock === 'pre_order' ? 'clock' : 'cart'" :size="18" />
+						<AppIcon
+							v-if="!generating"
+							:name="designDir ? 'edit' : modelStock === 'pre_order' ? 'clock' : 'cart'"
+							:size="18"
+						/>
 						{{ buyLabel }}
 					</button>
 
@@ -390,6 +410,9 @@ const { openCart } = useCartDrawer()
 const { openPreOrder } = usePreOrder()
 const { notify } = useNotify()
 const url = useUrl()
+// Макет: маніфест + фото клієнта (сервер) і чернетка (браузер)
+const design = usePrintcaseDesign()
+const draft = usePrintcaseDraft()
 
 // Ціни з налаштувань адмінки. Читаємо один раз значенням, а не computed: на SSR стан уже
 // заповнений, а всередині сторінки ціна не змінюється — зате її можна класти в замовлення,
@@ -597,11 +620,24 @@ const orderId = computed(() => {
 	return (Array.isArray(v) ? v[0] : v) || null
 })
 
+// Правка вже збереженого макета: адмінка відкриває конструктор із ?design={id}_{token}
+// (посилання будує редірект /printcase_edit/{id}/{модель}). Кнопка купівлі стає «зберегти»,
+// і всі файли переписуються на місці — під тим самим id, який уже стоїть у замовленні.
+const designDir = computed(() => {
+	const v = route.query.design
+	const dir = (Array.isArray(v) ? v[0] : v) || ''
+	return /^\d{9,12}_[a-f0-9]{10}$/.test(dir) ? dir : null
+})
+
+// Скільки фото макета не знайшлось (минуло 30 днів або не долились) — про це кажемо вголос
+const designMissing = ref(0)
+
 // Стан друку обраної моделі веде і напис на кнопці, і саму дію
 const modelStock = computed<StockState>(() => model.value?.stock || 'in')
 
 const buyLabel = computed(() => {
 	if (generating.value) return t('category.loading')
+	if (designDir.value) return t('printcase.saveDesign')
 	if (orderId.value) return `+ № ${orderId.value}`
 	if (modelStock.value === 'out') return t('product.notStock')
 	return modelStock.value === 'in' ? t('product.inCart') : t('quick.quickPreOrder')
@@ -635,6 +671,12 @@ async function selectModel(m: any) {
 		name: [m.brend, m.title].filter(Boolean).join(' '),
 		stock: 'in',
 	}
+	await loadModelPage(alias)
+}
+
+// Маска, адреса та контент сторінки під обрану модель. Тим самим шляхом іде і відновлена
+// з чернетки модель на хабі — там теж потрібні і маска, і стаття, і дизайни саме цієї моделі.
+async function loadModelPage(alias: string) {
 	loadMask(alias)
 
 	const href = url.printcase(alias) + location.search
@@ -717,41 +759,54 @@ function editLayerText(i: number) {
 	openTextEdit(i)
 }
 
-// Додаємо зображення (вписане в сцену, по центру)
-function pushImage(src: string) {
-	const img = new Image()
-	img.onload = () => {
-		const aspect = img.width / img.height
-		const width = Math.min(STAGE_W, STAGE_H * aspect)
-		const height = Math.min(STAGE_H, STAGE_W / aspect)
+// Додаємо зображення (вписане в сцену, по центру). origin — звідки воно взялося: саме він
+// іде в маніфест, бо url буває тимчасовим (blob:/base64) і після перезавантаження мертвий.
+function pushImage(src: string, origin?: string): Promise<void> {
+	return new Promise((resolve) => {
+		const img = new Image()
+		img.onload = () => {
+			const aspect = img.width / img.height
+			const width = Math.min(STAGE_W, STAGE_H * aspect)
+			const height = Math.min(STAGE_H, STAGE_W / aspect)
 
-		elements.value.push({
-			type: 'image',
-			url: src,
-			x: (STAGE_W - width) / 2,
-			y: (STAGE_H - height) / 2,
-			width,
-			height,
-			rotation: 0,
-			activated: false,
-		})
-		setActive(elements.value.length - 1)
+			elements.value.push({
+				type: 'image',
+				url: src,
+				origin,
+				x: (STAGE_W - width) / 2,
+				y: (STAGE_H - height) / 2,
+				width,
+				height,
+				rotation: 0,
+				activated: false,
+			})
+			setActive(elements.value.length - 1)
+			resolve()
+		}
+		img.onerror = () => resolve()
+		img.src = src
+	})
+}
+
+// Файл з диска, буфера чи перетягування. Спершу зменшуємо: телефон дає 3000–4000 px, а друк
+// рендериться у 800×1600, тож усе понад 2000 px — це лише вага. На макет кладемо блобом:
+// canvas працює з ним так само, як із data:URL (свій origin, полотно не «отруюється»),
+// але пам'ять не тримає мегабайтні рядки, і чернетка в IndexedDB виходить компактною.
+async function pushImageFile(file: File) {
+	try {
+		const asset = await design.prepareImage(file)
+		await pushImage(asset.url, `sha:${asset.name}`)
+	} catch {
+		notify('error', t('printcase.dropOnlyImages'))
 	}
-	img.src = src
 }
 
-// Файл (з диска чи з буфера) кладемо на макет як data:URL — тоді він не залежить від
-// CORS і йде в canvas-рендер напряму
-function pushImageFile(file: File) {
-	const reader = new FileReader()
-	reader.onload = () => pushImage(String(reader.result))
-	reader.readAsDataURL(file)
-}
-
-function addImagesFromDisk(e: Event) {
+async function addImagesFromDisk(e: Event) {
 	const input = e.target as HTMLInputElement
-	for (const file of Array.from(input.files || [])) pushImageFile(file)
+	const files = Array.from(input.files || [])
 	input.value = ''
+	// Послідовно — щоб порядок шарів збігався з порядком вибраних файлів
+	for (const file of files) await pushImageFile(file)
 }
 
 // Картинки з DataTransfer — і буфер обміну, і перетягування дають той самий об'єкт.
@@ -766,12 +821,12 @@ function imageFilesFrom(dt: DataTransfer | null | undefined): File[] {
 }
 
 // Без моделі малювати нікуди — ведемо до її вибору, як заблоковані кнопки
-function addImageFiles(files: File[]) {
+async function addImageFiles(files: File[]) {
 	if (!model.value) {
 		modelModalOpen.value = true
 		return
 	}
-	files.forEach(pushImageFile)
+	for (const file of files) await pushImageFile(file)
 }
 
 // ---------- Буфер обміну ----------
@@ -864,8 +919,10 @@ function onDrop(e: DragEvent) {
 	notify('error', t('printcase.dropOnlyImages'))
 }
 
+// Картинка з галереї лежить у сховищі — у маніфест іде її шлях, а не самі байти
 function addImageFromLibrary(src: string) {
-	pushImage(src)
+	const m = src.match(/library\/([^/]+\/[^/]+)$/)
+	pushImage(src, m ? `lib:${m[1]}` : undefined)
 }
 
 // ---------- Текст ----------
@@ -874,6 +931,10 @@ const fonts = [
 	'Stalinist One', 'Lobster', 'Pacifico', 'Rubik Bubbles', 'Pangolin', 'Montserrat', 'Quicksand', 'Merriweather',
 	'Oswald', 'Comfortaa', 'Marmelad', 'Caveat', 'Cormorant', 'Lora', 'Amatic SC', 'Neucha', 'Poiret One',
 ]
+
+// Готовність таблиці шрифтів. Поки вона не розібрана, document.fonts про ці шрифти ще нічого
+// не знає — і load() повернеться порожнім, нічого не дочекавшись (див. ensureFonts)
+let fontsCssReady: Promise<void> = Promise.resolve()
 
 // Стартові налаштування нового напису — і для модалки, і для вставки з буфера
 const TEXT_DEFAULTS: TextForm = { text: '', color: '#000000', font: 'Roboto', bold: false, italic: false, underline: false }
@@ -1020,12 +1081,20 @@ onMounted(() => {
 	const link = document.createElement('link')
 	link.rel = 'stylesheet'
 	link.href = `https://fonts.googleapis.com/css2?family=${fonts.map((f) => f.replace(/ /g, '+')).join('&family=')}&display=swap`
+	fontsCssReady = new Promise<void>((resolve) => {
+		link.onload = () => resolve()
+		link.onerror = () => resolve() // немає шрифтів — малюємо запасними, але не зависаємо
+	})
 	document.head.appendChild(link)
 
-	// Шаблон NeoPrint (?neo_print_id=)
+	// Що показати на старті. Порядок не випадковий: правка вже оформленого макета важливіша
+	// за все інше, готовий дизайн із посилання — за власну чернетку.
 	const np = route.query.neo_print_id
 	const alias = Array.isArray(np) ? np[0] : np
-	if (alias) loadNeoPrint(alias)
+
+	if (designDir.value) openDesign(designDir.value)
+	else if (alias) loadNeoPrint(alias)
+	else restoreDraft()
 })
 
 onUnmounted(() => {
@@ -1040,12 +1109,77 @@ async function loadNeoPrint(alias: string) {
 			query: { type: 'template' },
 		})
 		if (res?.base64Image) {
-			pushImage(res.base64Image)
+			pushImage(res.base64Image, `neo:${alias}`)
 			return
 		}
 	} catch { /* fallback нижче */ }
 	// Саме оригінальний jpg: полотно конструктора йде у друк, webp дав би друге стиснення
-	pushImage(url.neoprintTemplateSource(alias))
+	pushImage(url.neoprintTemplateSource(alias), `neo:${alias}`)
+}
+
+// ---------- Чернетка та збережений макет ----------
+// Маніфест поточного макета: те саме, що на сцені, але у вигляді, придатному і для сховища,
+// і для IndexedDB (координати лишаються в координатах сцени 400×800)
+function currentState() {
+	return design.toState(elements.value, backgroundColor.value, model.value?.alias || '')
+}
+
+// Чернетка збереглась і відновлена — показуємо смужку з «почати заново».
+// Мовчки підміняти макет не можна: людина могла прийти робити новий чохол.
+const restored = ref(false)
+
+// Автозбереження: пишемо на кожну зміну, запис відкладений усередині composable.
+// У режимі правки замовлення чернетку клієнта не чіпаємо — це чужий макет.
+watch(
+	[elements, backgroundColor],
+	() => {
+		if (designDir.value || !model.value) return
+		draft.save(model.value.alias, currentState(), model.value, design.assets)
+	},
+	{ deep: true }
+)
+
+// Повернення на сторінку: макет має бути там, де його лишили (30 днів)
+async function restoreDraft() {
+	if (elements.value.length) return
+
+	const rec = model.value ? await draft.load(model.value.alias) : await draft.latest()
+	if (!rec?.state?.els?.length) return
+
+	const { elements: els } = await design.toElements(rec.state, undefined, rec.assets)
+	if (!els.length) return
+
+	elements.value = els
+	backgroundColor.value = rec.state.bg || '#FFFFFF'
+	restored.value = true
+
+	// Чернетка з хаба знає свою модель — підтягуємо разом із нею і контент сторінки
+	if (!model.value && rec.model?.alias) {
+		model.value = rec.model
+		loadModelPage(rec.model.alias)
+	}
+}
+
+function resetDraft() {
+	elements.value = []
+	setActive(null)
+	backgroundColor.value = '#FFFFFF'
+	restored.value = false
+	if (model.value) draft.remove(model.value.alias)
+}
+
+// Відкриття збереженого макета на правку (посилання з адмінки)
+async function openDesign(dir: string) {
+	const state = await design.load(dir).catch(() => null)
+	if (!state) {
+		notify('error', t('printcase.designGone'))
+		return
+	}
+
+	const { elements: els, missing } = await design.toElements(state, dir)
+	elements.value = els
+	backgroundColor.value = state.bg || '#FFFFFF'
+	designMissing.value = missing
 }
 
 // ---------- Canvas-генерація ----------
@@ -1054,7 +1188,8 @@ const generating = ref(false)
 function loadImg(src: string, cors = true): Promise<HTMLImageElement> {
 	return new Promise((resolve, reject) => {
 		const img = new Image()
-		if (cors && !src.startsWith('data:')) img.crossOrigin = 'anonymous'
+		// data: і blob: — свій origin: полотно вони не «отруюють», а crossOrigin тут зайвий
+		if (cors && !src.startsWith('data:') && !src.startsWith('blob:')) img.crossOrigin = 'anonymous'
 		img.onload = () => resolve(img)
 		img.onerror = reject
 		img.src = src
@@ -1153,23 +1288,35 @@ async function renderCanvas(width: number, withMask: boolean): Promise<string> {
 	return canvas.toDataURL('image/jpeg', 0.85)
 }
 
-async function generateAndUpload(): Promise<{ id: number; preview: string; source: string }> {
-	const id = Math.floor(Date.now() / 1000)
+// Шрифти підключаються <link>-ом і вантажаться асинхронно. Поки людина малює, вони встигають,
+// а от макет, відкритий з адмінки, можна зберегти за секунду — і canvas мовчки намалював би
+// написи запасним шрифтом. Тому перед рендером чекаємо саме ті накреслення, що є на макеті.
+async function ensureFonts() {
+	await fontsCssReady
 
+	const specs = new Set<string>(
+		visibleElements.value
+			.filter((el: StageEl) => el.type === 'text')
+			.map((el: StageEl) => `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}44px "${el.font || 'Roboto'}"`)
+	)
+	await Promise.all([...specs].map((spec) => document.fonts.load(spec).catch(() => {})))
+}
+
+// Рендер обох картинок + збереження макета одним запитом.
+// id обирає САМ СЕРВЕР: раніше він генерувався тут із Date.now(), і два замовлення в одну
+// секунду перезаписували друк одне одному. Разом із картинками йде маніфест — фото клієнта
+// доливаються у фоні, кнопка кошика на них не чекає.
+async function generateAndUpload(): Promise<{ id: number; preview: string; source: string }> {
 	// Знімаємо виділення, щоб рамки не потрапили в макет
 	setActive(null)
+	await ensureFonts()
 
 	const sourceData = await renderCanvas(800, false)
 	const previewData = await renderCanvas(400, true)
 
-	await $fetch(config.public.urlApi + 'printcase/upload_image', {
-		method: 'POST',
-		body: { image: sourceData, id, type: 'source' },
-	})
-	await $fetch(config.public.urlApi + 'printcase/upload_image', {
-		method: 'POST',
-		body: { image: previewData, id, type: 'preview' },
-	})
+	const state = currentState()
+	const { id, dir } = await design.save({ state, preview: previewData, source: sourceData })
+	design.uploadAssets(dir, state)
 
 	return {
 		id,
@@ -1178,9 +1325,37 @@ async function generateAndUpload(): Promise<{ id: number; preview: string; sourc
 	}
 }
 
+// Збереження правки з адмінки: та сама папка й той самий id, тож у замовленні нічого міняти
+// не треба — друк і CaseShop читають той самий source_{id}.jpg, уже з новим вмістом
+async function saveDesignEdit() {
+	if (!designDir.value || !visibleElements.value.length) return
+
+	generating.value = true
+	try {
+		setActive(null)
+		await ensureFonts()
+
+		const state = currentState()
+		await design.save({
+			state,
+			preview: await renderCanvas(400, true),
+			source: await renderCanvas(800, false),
+			dir: designDir.value,
+		})
+		await design.uploadAssets(designDir.value, state)
+
+		notify('success', t('printcase.designSaved'))
+	} catch (e) {
+		console.error('[printcase] saveDesignEdit', e)
+		notify('error', t('message.printcaseFailed'))
+	}
+	generating.value = false
+}
+
 // Кнопка під ціною: домалювати до вже оформленого замовлення (?order_id=), покласти в кошик
 // або — коли друк на модель лише під передзамовлення — оформити його телефоном
 function order() {
+	if (designDir.value) return saveDesignEdit()
 	if (orderId.value) return addToExistingOrder()
 	if (modelStock.value === 'pre_order') return preOrder()
 	return addToCart()
@@ -1209,6 +1384,10 @@ async function addToCart() {
 			printcase: source,
 			categoryId: model.value.id,
 		})
+
+		// Макет поїхав у замовлення — чернетка більше не потрібна (сирці тепер на сервері)
+		draft.remove(model.value.alias)
+		restored.value = false
 
 		// Як і у звичайного товару: слайдер-кошик замість тосту й переходу на сторінку кошика —
 		// щоб можна було домалювати ще один чохол, не втрачаючи макет
@@ -1346,7 +1525,8 @@ usePageSeo({
 			? t('printcase.seo.metaDescription', { model: names.value.full, price })
 			: t('printcase.seo.hubMetaDescription', { price })),
 	image: () => shareImage.value,
-	noindex: () => (isModelPage.value ? !indexable.value : false) || !!orderId.value,
+	// Службові режими (домалювати до замовлення, правка макета з адмінки) в індексі не потрібні
+	noindex: () => (isModelPage.value ? !indexable.value : false) || !!orderId.value || !!designDir.value,
 	// URL змінюється без навігації роутера (вибір іншої моделі) — canonical тримаємо на ній
 	path: () => url.printcase(model.value?.alias),
 	ogType: 'product',
@@ -1420,6 +1600,36 @@ if (!isModelPage.value) {
 	font-size: 14.5px;
 	line-height: 1.55;
 	color: var(--text-soft);
+}
+
+/* Смужка над конструктором: відновлена чернетка або правка збереженого макета */
+.pc-note {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+	margin-bottom: 14px;
+	padding: 9px 14px;
+	border-radius: var(--radius);
+	background: var(--bg-soft);
+	border: 1px solid var(--border-light);
+	font-size: 13px;
+	line-height: 1.4;
+	color: var(--text-soft);
+}
+
+.pc-note--edit {
+	background: var(--accent-soft);
+	border-color: var(--accent);
+	color: var(--text);
+}
+
+.pc-note__btn {
+	margin-left: auto;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--accent);
+	text-decoration: underline;
 }
 
 .pc-layout {
