@@ -317,8 +317,20 @@ export function usePrintcaseDesign() {
 		}
 	}
 
-	function load(dir: string) {
-		return $fetch<PcState>('/api/printcase/design', { query: { dir } })
+	// Маніфест беремо через API адмінки, а не прямим посиланням у сховище: веб-сервер віддає
+	// звідти лише картинки, на .json відповідає 403. Розбираємо самі — Content-Type звідти
+	// теж ненадійний (той самий випадок, що з webp).
+	async function load(dir: string): Promise<PcState | null> {
+		const raw = await $fetch<string>(`${config.public.urlApi}printcase/get_design/${dir}`, {
+			responseType: 'text',
+		}).catch(() => '')
+
+		try {
+			const state = JSON.parse(raw)
+			return Array.isArray(state?.els) ? state : null
+		} catch {
+			return null
+		}
 	}
 
 	return { assets, prepareImage, toState, toElements, save, uploadAssets, load }
