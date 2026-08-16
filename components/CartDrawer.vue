@@ -31,18 +31,25 @@
 						<!-- Список товарів -->
 						<div class="cart-drawer__body">
 							<div v-for="item in items" :key="item.id" class="cart-drawer__item">
-								<NuxtLink :to="url.product(item.product)" class="cart-drawer__item-img" @click="close">
+								<NuxtLink :to="url.cartItem(item)" class="cart-drawer__item-img" @click="close">
 									<img :src="itemImage(item)" :alt="item.product.title" width="64" height="64"
 										loading="lazy" />
 								</NuxtLink>
 
 								<div class="cart-drawer__item-main">
-									<NuxtLink :to="url.product(item.product)" class="cart-drawer__item-title" @click="close">
+									<NuxtLink :to="url.cartItem(item)" class="cart-drawer__item-title" @click="close">
 										{{ item.product.title }}
 									</NuxtLink>
 									<div v-if="item.product.attrib_title" class="cart-drawer__item-attr">
 										{{ item.product.attrib_title }}
 									</div>
+
+									<!-- Індивідуальний макет можна доробити, не збираючи його наново -->
+									<NuxtLink v-if="item.printcaseDir" :to="url.cartItem(item)"
+										class="cart-drawer__item-edit" @click="close">
+										<AppIcon name="edit" :size="12" />
+										{{ t('printcase.editDesign') }}
+									</NuxtLink>
 
 									<div class="cart-drawer__item-row">
 										<div class="qty-stepper">
@@ -270,6 +277,16 @@ onUnmounted(() => {
 	margin-top: 3px;
 	font-size: 12px;
 	color: var(--text-muted);
+}
+
+.cart-drawer__item-edit {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin-top: 3px;
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--accent);
 }
 
 .cart-drawer__item-row {

@@ -20,6 +20,8 @@ export interface CartItem {
 	discount: number
 	total: number
 	printcase?: any
+	// Папка збереженого макета ({id}_{token}): посилання з кошика веде одразу на його правку
+	printcaseDir?: string
 	category_id?: number
 }
 
@@ -97,6 +99,7 @@ export function useCart() {
 		image?: string | null
 		attribTitle?: string
 		printcase?: any
+		printcaseDir?: string
 		categoryId?: number
 	}) {
 		const { product, attribute = 0, quantity: qty = 1 } = payload
@@ -128,6 +131,7 @@ export function useCart() {
 				discount,
 				total: (product.price - discount) * qty,
 				printcase: payload.printcase,
+				printcaseDir: payload.printcaseDir,
 				category_id: payload.categoryId ?? product.categories?.[0]?.id,
 			})
 		}

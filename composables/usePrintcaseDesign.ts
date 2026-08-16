@@ -10,6 +10,7 @@
 
 import type { StageEl } from '~/components/printcase/StageElement.vue'
 import { STAGE_W, STAGE_H } from '~/components/printcase/PrintcaseStage.vue'
+import { getDraftAsset } from '~/composables/usePrintcaseDraft'
 
 export interface PcStateEl {
 	t: 'img' | 'txt'
@@ -216,7 +217,13 @@ export function usePrintcaseDesign() {
 			`${config.public.urlApi}printcase/get_image_b64/${name}/designs/${dir}`
 		).catch(() => null)
 
-		return res?.base64Image || ''
+		if (res?.base64Image) return res.base64Image
+
+		// На сервері фото ще немає — воно доливається у фоні після «в кошик», а людина вже
+		// натиснула «редагувати». Беремо блоб зі свого сховища: макет відкриється цілим,
+		// а наступне збереження заразом долиє фото на сервер.
+		const blob = await getDraftAsset(name)
+		return blob ? registerAsset(name, blob).url : ''
 	}
 
 	// Маніфест → елементи сцени. dir потрібен, щоб дотягнути фото з сервера (правка з адмінки),
@@ -308,11 +315,17 @@ export function usePrintcaseDesign() {
 			form.append('name', name)
 			form.append('file', asset.blob, name)
 
-			try {
-				await $fetch(config.public.urlApi + 'printcase/save_asset', { method: 'POST', body: form })
-				asset.uploaded = true
-			} catch {
-				/* макет уже збережено картинкою — фото довантажимо при наступному збереженні */
+			// Друга спроба: обірваний мобільний інтернет — єдина причина, через яку макет
+			// лишився б без оригіналів назавжди
+			for (const attempt of [0, 1]) {
+				try {
+					await $fetch(config.public.urlApi + 'printcase/save_asset', { method: 'POST', body: form })
+					asset.uploaded = true
+					break
+				} catch {
+					if (!attempt) await new Promise((r) => setTimeout(r, 2000))
+					/* не вийшло і вдруге — макет усе одно збережений картинкою */
+				}
 			}
 		}
 	}

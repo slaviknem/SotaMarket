@@ -20,7 +20,7 @@
 				<!-- Товари -->
 				<div class="cart-items">
 					<div v-for="item in cart.state.value.items" :key="item.id" class="cart-item">
-						<NuxtLink :to="url.product(item.product)" class="cart-item__img">
+						<NuxtLink :to="url.cartItem(item)" class="cart-item__img">
 							<img
 								:src="item.printcase ? (item.product.image || '/images/no-photo.svg') : url.productThumb(item.product.image)"
 								:alt="item.product.title"
@@ -31,12 +31,18 @@
 						</NuxtLink>
 
 						<div class="cart-item__info">
-							<NuxtLink :to="url.product(item.product)" class="cart-item__title">
+							<NuxtLink :to="url.cartItem(item)" class="cart-item__title">
 								{{ item.product.title }}
 							</NuxtLink>
 							<div v-if="item.product.attrib_title" class="cart-item__attr">
 								{{ item.product.attrib_title }}
 							</div>
+
+							<!-- Індивідуальний макет можна доробити перед оформленням -->
+							<NuxtLink v-if="item.printcaseDir" :to="url.cartItem(item)" class="cart-item__edit">
+								<AppIcon name="edit" :size="12" />
+								{{ t('printcase.editDesign') }}
+							</NuxtLink>
 							<div v-if="item.discount" class="cart-item__discount">
 								−{{ formatPrice(item.discount) }}
 							</div>
@@ -779,6 +785,8 @@ async function sendOrder() {
 }
 
 .cart-item__title {
+	/* Блочне: інакше наступні рядки (атрибут, правка макета) липнуть до назви в один рядок */
+	display: block;
 	font-weight: 600;
 	font-size: 14px;
 	line-height: 1.4;
@@ -792,6 +800,25 @@ async function sendOrder() {
 	margin-top: 3px;
 	font-size: 12.5px;
 	color: var(--text-muted);
+}
+
+.cart-item__edit {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	margin-top: 7px;
+	padding: 4px 10px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-pill);
+	font-size: 12.5px;
+	font-weight: 600;
+	color: var(--text-soft);
+	transition: color 0.14s, border-color 0.14s;
+}
+
+.cart-item__edit:hover {
+	color: var(--accent);
+	border-color: var(--accent);
 }
 
 .cart-item__discount {

@@ -13,12 +13,12 @@
 		<div v-if="restored || designDir" class="pc-note" :class="{ 'pc-note--edit': designDir }">
 			<AppIcon :name="designDir ? 'edit' : 'clock'" :size="15" />
 			<span v-if="designDir">
-				{{ t('printcase.editingDesign') }}
+				{{ cartItem ? t('printcase.editingCart') : t('printcase.editingDesign') }}
 				<b v-if="designMissing"> {{ t('printcase.designMissing', { count: designMissing }) }}</b>
 			</span>
 			<template v-else>
 				<span>{{ t('printcase.draftRestored') }}</span>
-				<button class="pc-note__btn" @click="resetDraft">{{ t('printcase.draftReset') }}</button>
+				<button class="pc-note__btn" @click="resetStage">{{ t('printcase.draftReset') }}</button>
 			</template>
 		</div>
 
@@ -164,6 +164,17 @@
 					<div class="pc-panel-title">
 						<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
 						{{ t('printcase.layers') }}
+
+						<!-- Очищення всього макета: другий клік підтверджує (намальоване не повернеш) -->
+						<button
+							class="pc-layers__clear"
+							:class="{ 'is-armed': clearArmed }"
+							:title="t('printcase.clearAll')"
+							@click="onClearClick"
+						>
+							<AppIcon name="close" :size="12" :stroke-width="2.6" />
+							{{ clearArmed ? t('printcase.clearConfirm') : t('printcase.clearAll') }}
+						</button>
 					</div>
 					<div
 						v-for="(el, revIdx) in reversedElements"
@@ -631,6 +642,12 @@ const designDir = computed(() => {
 
 // Скільки фото макета не знайшлось (минуло 30 днів або не долились) — про це кажемо вголос
 const designMissing = ref(0)
+
+// Той самий макет може відкриватись із двох боків: менеджером із замовлення і покупцем
+// із кошика. Механіка одна, різні лише напис і те, куди повертати після збереження.
+const cartItem = computed(() =>
+	designDir.value ? cart.state.value.items.find((i) => i.printcaseDir === designDir.value) : undefined
+)
 
 // Стан друку обраної моделі веде і напис на кнопці, і саму дію
 const modelStock = computed<StockState>(() => model.value?.stock || 'in')
@@ -1160,18 +1177,48 @@ async function restoreDraft() {
 	}
 }
 
-function resetDraft() {
+// Чистий макет: і «почати заново» у смужці відновлення, і кнопка очищення в шарах,
+// і стан після того, як чохол поїхав у кошик
+function resetStage() {
 	elements.value = []
 	setActive(null)
 	backgroundColor.value = '#FFFFFF'
 	restored.value = false
+	clearArmed.value = false
 	if (model.value) draft.remove(model.value.alias)
 }
 
-// Відкриття збереженого макета на правку (посилання з адмінки)
+// Очищення — у два кліки: намальоване не відновиш, а кнопка стоїть просто над списком шарів
+const clearArmed = ref(false)
+let clearTimer: ReturnType<typeof setTimeout> | null = null
+
+function onClearClick() {
+	if (clearTimer) clearTimeout(clearTimer)
+
+	if (clearArmed.value) return resetStage()
+
+	clearArmed.value = true
+	clearTimer = setTimeout(() => (clearArmed.value = false), 3000)
+}
+
+// Посилання «Редагувати макет» може прилетіти й тоді, коли конструктор УЖЕ відкритий:
+// слайдер-кошик живе поверх цієї ж сторінки, тож міняється лише ?design=, компонент не
+// перемонтовується — і onMounted, який вантажить макет, більше не спрацює.
+watch(designDir, (dir, prev) => {
+	if (dir) openDesign(dir)
+	else if (prev) resetStage() // вийшли з правки — далі малюємо з чистого аркуша
+})
+
+// Відкриття збереженого макета на правку (посилання з адмінки або з кошика)
 async function openDesign(dir: string) {
 	const state = await design.load(dir).catch(() => null)
 	if (!state) {
+		// Сцену чистимо: інакше «Зберегти зміни» записало б у це замовлення те, що випадково
+		// лишилось на макеті від попередньої роботи. Порожня сцена ще й глушить кнопку.
+		elements.value = []
+		setActive(null)
+		restored.value = false
+		designMissing.value = 0
 		notify('error', t('printcase.designGone'))
 		return
 	}
@@ -1306,7 +1353,7 @@ async function ensureFonts() {
 // id обирає САМ СЕРВЕР: раніше він генерувався тут із Date.now(), і два замовлення в одну
 // секунду перезаписували друк одне одному. Разом із картинками йде маніфест — фото клієнта
 // доливаються у фоні, кнопка кошика на них не чекає.
-async function generateAndUpload(): Promise<{ id: number; preview: string; source: string }> {
+async function generateAndUpload(): Promise<{ id: number; dir: string; preview: string; source: string }> {
 	// Знімаємо виділення, щоб рамки не потрапили в макет
 	setActive(null)
 	await ensureFonts()
@@ -1320,6 +1367,7 @@ async function generateAndUpload(): Promise<{ id: number; preview: string; sourc
 
 	return {
 		id,
+		dir,
 		preview: `${config.public.urlStorage}images/printcase/orders/preview_${id}.jpg`,
 		source: `${config.public.urlStorage}images/printcase/orders/source_${id}.jpg`,
 	}
@@ -1344,7 +1392,17 @@ async function saveDesignEdit() {
 		})
 		await design.uploadAssets(designDir.value, state)
 
-		notify('success', t('printcase.designSaved'))
+		// Прев'ю в кошику лежить за тим самим шляхом і вже перезаписане — показуємо кошик,
+		// щоб людина одразу побачила оновлений чохол і пішла оформлювати
+		if (cartItem.value) {
+			// Прев'ю лежить за тим самим шляхом і вже перезаписане — просимо браузер оновити
+			// свою копію, інакше в кошику могла б лишитись стара картинка з кешу
+			fetch(cartItem.value.product.image || '', { cache: 'reload', mode: 'no-cors' }).catch(() => {})
+			notify('success', t('printcase.designSavedCart'))
+			openCart(false)
+		} else {
+			notify('success', t('printcase.designSaved'))
+		}
 	} catch (e) {
 		console.error('[printcase] saveDesignEdit', e)
 		notify('error', t('message.printcaseFailed'))
@@ -1367,7 +1425,7 @@ async function addToCart() {
 
 	generating.value = true
 	try {
-		const { id, preview, source } = await generateAndUpload()
+		const { id, dir, preview, source } = await generateAndUpload()
 
 		cart.add({
 			product: {
@@ -1382,15 +1440,17 @@ async function addToCart() {
 			attribute: 0,
 			image: preview,
 			printcase: source,
+			// Клік по товару в кошику відкриє цей самий макет на правку
+			printcaseDir: dir,
 			categoryId: model.value.id,
 		})
 
-		// Макет поїхав у замовлення — чернетка більше не потрібна (сирці тепер на сервері)
-		draft.remove(model.value.alias)
-		restored.value = false
+		// Чохол поїхав у кошик — конструктор чистимо: макет тепер живе там (і правиться
+		// звідти кнопкою «Редагувати макет»), а лишати його на сцені означало б плодити
+		// випадкові дублі. Чернетка теж більше не потрібна — сирці вже на сервері.
+		resetStage()
 
-		// Як і у звичайного товару: слайдер-кошик замість тосту й переходу на сторінку кошика —
-		// щоб можна було домалювати ще один чохол, не втрачаючи макет
+		// Як і у звичайного товару: слайдер-кошик замість тосту й переходу на сторінку кошика
 		openCart()
 	} catch (e) {
 		console.error('[printcase] addToCart', e)
@@ -1998,6 +2058,22 @@ if (!isModelPage.value) {
 /* Шари */
 .pc-layers {
 	padding: 10px;
+}
+
+.pc-layers__clear {
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+	margin-left: auto;
+	font-size: 11.5px;
+	font-weight: 600;
+	color: var(--text-muted);
+	transition: color 0.14s;
+}
+
+.pc-layers__clear:hover,
+.pc-layers__clear.is-armed {
+	color: var(--danger);
 }
 
 .pc-layer {

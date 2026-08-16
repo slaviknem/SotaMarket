@@ -121,6 +121,14 @@ export function useUrl() {
 					: `/${p.alias_cat}/${p.alias}`
 			),
 
+		// Посилання з кошика. У звичайного товару — його сторінка, а в індивідуального макета
+		// воно веде одразу на правку ЦЬОГО макета в конструкторі: інакше клік відкривав би
+		// порожній конструктор, і намальоване довелось би робити наново.
+		cartItem: (item: { product: { alias: string; alias_cat: string }; printcaseDir?: string }) =>
+			item.printcaseDir
+				? `${localePath(`/printcase/${item.product.alias}`)}?design=${item.printcaseDir}`
+				: localePath(`/${item.product.alias_cat}/${item.product.alias}`),
+
 		// Сторінка готового дизайну на конкретній моделі
 		neoprint: (categoryAlias: string, id: string | number) =>
 			localePath(`/neoprint/${categoryAlias}/${id}`),

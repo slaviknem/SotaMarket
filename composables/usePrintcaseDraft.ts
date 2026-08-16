@@ -6,6 +6,10 @@
 // чистку. localStorage тут не підходить у принципі — там ~5 МБ на домен, одне фото з телефона
 // туди просто не влізе; IndexedDB зберігає блоби без такого обмеження.
 //
+// Два сховища, а не одне: опис макета переписується на кожну зміну (сотні разів за сеанс),
+// а фото — важкі й незмінні. Тримати їх в одному записі означало б перезаписувати мегабайти
+// щоразу, коли посунули шар.
+//
 // Термін той самий, що й у серверних сирців (printcase:cleanup) — 30 днів.
 
 import type { PcAsset, PcState } from '~/composables/usePrintcaseDesign'
@@ -14,12 +18,20 @@ export interface PcDraft {
 	key: string // alias моделі
 	state: PcState
 	model: any // обрана модель: з хаба макет відновлюється разом із нею
-	assets: Record<string, Blob>
+	assets: string[] // імена фото; самі блоби — в окремому сховищі
 	saved: number
 }
 
+// Те, що віддає load(): фото вже підставлені блобами
+export interface PcDraftLoaded extends Omit<PcDraft, 'assets'> {
+	assets: Record<string, Blob>
+}
+
 const DB_NAME = 'floy-printcase'
-const STORE = 'drafts'
+const DB_VERSION = 2
+const DRAFTS = 'drafts'
+const ASSETS = 'assets'
+
 const TTL = 30 * 86400 * 1000
 const KEEP = 5 // скільки макетів тримаємо; далі — найстаріші геть
 const DEBOUNCE = 1500
@@ -29,50 +41,90 @@ let dbPromise: Promise<IDBDatabase> | null = null
 function openDb(): Promise<IDBDatabase> {
 	if (!dbPromise) {
 		dbPromise = new Promise((resolve, reject) => {
-			const req = indexedDB.open(DB_NAME, 1)
-			req.onupgradeneeded = () => req.result.createObjectStore(STORE, { keyPath: 'key' })
-			req.onsuccess = () => resolve(req.result)
+			const req = indexedDB.open(DB_NAME, DB_VERSION)
+			req.onupgradeneeded = () => {
+				const db = req.result
+				if (!db.objectStoreNames.contains(DRAFTS)) db.createObjectStore(DRAFTS, { keyPath: 'key' })
+				if (!db.objectStoreNames.contains(ASSETS)) db.createObjectStore(ASSETS, { keyPath: 'name' })
+			}
+			req.onsuccess = () => {
+				// Стара вкладка не має блокувати оновлення схеми в новій
+				req.result.onversionchange = () => req.result.close()
+				resolve(req.result)
+			}
 			req.onerror = () => reject(req.error)
+			// Інакше при відкритій вкладці зі старою версією обіцянка не вирішилась би НІКОЛИ,
+			// і всі звернення до чернетки тихо зависли б
+			req.onblocked = () => reject(new Error('idb blocked'))
 		})
 	}
 	return dbPromise
 }
 
-function request<T>(mode: IDBTransactionMode, fn: (store: IDBObjectStore) => IDBRequest): Promise<T> {
+function request<T>(store: string, mode: IDBTransactionMode, fn: (s: IDBObjectStore) => IDBRequest): Promise<T> {
 	return openDb().then(
 		(db) =>
 			new Promise<T>((resolve, reject) => {
-				const req = fn(db.transaction(STORE, mode).objectStore(STORE))
+				const req = fn(db.transaction(store, mode).objectStore(store))
 				req.onsuccess = () => resolve(req.result as T)
 				req.onerror = () => reject(req.error)
 			})
 	)
 }
 
+// Фото з локального сховища за іменем — окремо від composable, без життєвого циклу.
+// Потрібне конструктору, коли макет відкривають одразу після «в кошик»: вивантаження фото
+// на сервер іде у фоні й може ще не завершитись, а блоб у браузері вже є.
+export async function getDraftAsset(name: string): Promise<Blob | null> {
+	if (!import.meta.client) return null
+
+	const rec = await request<{ blob: Blob } | undefined>(ASSETS, 'readonly', (s) => s.get(name)).catch(
+		() => undefined
+	)
+	return rec?.blob || null
+}
+
 export function usePrintcaseDraft() {
 	let timer: ReturnType<typeof setTimeout> | null = null
 	let pending: PcDraft | null = null
 
-	// Прибирає протерміноване і зайве. extra — скільки викинути понад норму
-	// (виклик після нестачі місця).
-	async function prune(extra = 0) {
-		const all = await request<PcDraft[]>('readonly', (s) => s.getAll()).catch(() => [])
-		const fresh = all.filter((d) => d.saved > Date.now() - TTL).sort((a, b) => b.saved - a.saved)
-		const drop = [
-			...all.filter((d) => d.saved <= Date.now() - TTL),
-			...fresh.slice(Math.max(0, KEEP - extra)),
-		]
+	// Що вже лежить у сховищі з цього сеансу — щоб не перекладати ті самі блоби щоразу
+	const written = new Set<string>()
 
-		for (const d of drop) await request('readwrite', (s) => s.delete(d.key)).catch(() => {})
+	// Імена фото, які реально є на макеті: видалені шари не мають лежати вічно
+	function usedAssets(state: PcState): string[] {
+		return [...new Set(state.els.filter((el) => el.src?.startsWith('sha:')).map((el) => el.src!.slice(4)))]
+	}
+
+	async function prune(extra = 0) {
+		const drafts = await request<PcDraft[]>(DRAFTS, 'readonly', (s) => s.getAll()).catch(() => [])
+		const fresh = drafts.filter((d) => d.saved > Date.now() - TTL).sort((a, b) => b.saved - a.saved)
+		const keep = fresh.slice(0, Math.max(0, KEEP - extra))
+
+		for (const d of drafts.filter((d) => !keep.includes(d))) {
+			await request(DRAFTS, 'readwrite', (s) => s.delete(d.key)).catch(() => {})
+		}
+
+		// Фото, на які вже ніхто не посилається. Свіжі не чіпаємо: блоб лягає раніше за опис
+		// макета, і на старті сеансу його ще ніхто не встиг згадати
+		const used = new Set(keep.flatMap((d) => d.assets || []))
+		const assets = await request<{ name: string; saved: number }[]>(ASSETS, 'readonly', (s) => s.getAll()).catch(
+			() => []
+		)
+
+		for (const a of assets) {
+			if (used.has(a.name) || a.saved > Date.now() - 86400000) continue
+			await request(ASSETS, 'readwrite', (s) => s.delete(a.name)).catch(() => {})
+		}
 	}
 
 	async function write(draft: PcDraft) {
 		try {
-			await request('readwrite', (s) => s.put(draft))
+			await request(DRAFTS, 'readwrite', (s) => s.put(draft))
 		} catch {
 			// Скінчилось місце: звільняємо найстаріші макети й пробуємо ще раз
 			await prune(2)
-			await request('readwrite', (s) => s.put(draft)).catch(() => {})
+			await request(DRAFTS, 'readwrite', (s) => s.put(draft)).catch(() => {})
 		}
 	}
 
@@ -83,18 +135,7 @@ export function usePrintcaseDraft() {
 		write(draft)
 	}
 
-	// Тільки ті фото, що реально є на макеті: видалені шари не мають лежати вічно
-	function pickAssets(state: PcState, assets: Map<string, PcAsset>): Record<string, Blob> {
-		const out: Record<string, Blob> = {}
-		for (const el of state.els) {
-			if (!el.src?.startsWith('sha:')) continue
-			const asset = assets.get(el.src.slice(4))
-			if (asset) out[asset.name] = asset.blob
-		}
-		return out
-	}
-
-	// Викликається на кожну зміну макета — запис відкладаємо, щоб перетягування шару
+	// Викликається на кожну зміну макета — сам запис відкладаємо, щоб перетягування шару
 	// не било в базу сотні разів
 	function save(key: string, state: PcState, model: any, assets: Map<string, PcAsset>) {
 		if (!import.meta.client) return
@@ -102,48 +143,80 @@ export function usePrintcaseDraft() {
 		// Порожній макет — це не чернетка, а «почав заново»
 		if (!state.els.length) return remove(key)
 
-		pending = { key, state, model, assets: pickAssets(state, assets), saved: Date.now() }
+		const names = usedAssets(state)
+
+		// Копія моделі, а не сама вона: IndexedDB не вміє клонувати реактивні проксі Vue
+		// і падає на них з DataCloneError — тобто чернетка мовчки не збереглась би
+		pending = { key, state, model: model ? { ...model } : null, assets: names, saved: Date.now() }
+
 		if (timer) clearTimeout(timer)
 		timer = setTimeout(flush, DEBOUNCE)
+
+		// Фото кладемо одразу й лише раз: вони незмінні, а їхній перезапис на кожен рух шару
+		// підвішував би вкладку на кожні півтори секунди
+		for (const name of names) {
+			const asset = assets.get(name)
+			if (!asset || written.has(name)) continue
+			written.add(name)
+			request(ASSETS, 'readwrite', (s) => s.put({ name, blob: asset.blob, saved: Date.now() })).catch(() =>
+				written.delete(name)
+			)
+		}
 	}
 
-	async function load(key: string): Promise<PcDraft | null> {
+	async function hydrate(draft: PcDraft): Promise<PcDraftLoaded> {
+		const assets: Record<string, Blob> = {}
+
+		for (const name of Array.isArray(draft.assets) ? draft.assets : []) {
+			const rec = await request<{ blob: Blob } | undefined>(ASSETS, 'readonly', (s) => s.get(name)).catch(
+				() => undefined
+			)
+			if (rec?.blob) {
+				assets[name] = rec.blob
+				written.add(name) // уже в сховищі — перекладати не треба
+			}
+		}
+
+		return { ...draft, assets }
+	}
+
+	async function load(key: string): Promise<PcDraftLoaded | null> {
 		if (!import.meta.client) return null
 
-		const draft = await request<PcDraft | undefined>('readonly', (s) => s.get(key)).catch(() => undefined)
+		const draft = await request<PcDraft | undefined>(DRAFTS, 'readonly', (s) => s.get(key)).catch(() => undefined)
 		if (!draft) return null
 
 		if (draft.saved <= Date.now() - TTL) {
 			remove(key)
 			return null
 		}
-		return draft
+		return hydrate(draft)
 	}
 
 	// Найсвіжіший макет будь-якої моделі — для хаба /printcase, де моделі ще немає
-	async function latest(): Promise<PcDraft | null> {
+	async function latest(): Promise<PcDraftLoaded | null> {
 		if (!import.meta.client) return null
 
-		const all = await request<PcDraft[]>('readonly', (s) => s.getAll()).catch(() => [])
+		const all = await request<PcDraft[]>(DRAFTS, 'readonly', (s) => s.getAll()).catch(() => [])
 		const fresh = all.filter((d) => d.saved > Date.now() - TTL).sort((a, b) => b.saved - a.saved)
-		return fresh[0] || null
+		return fresh[0] ? hydrate(fresh[0]) : null
 	}
 
 	function remove(key: string) {
 		if (!import.meta.client) return
 		if (pending?.key === key) pending = null
-		request('readwrite', (s) => s.delete(key)).catch(() => {})
+		request(DRAFTS, 'readwrite', (s) => s.delete(key)).catch(() => {})
 	}
 
 	if (import.meta.client) {
-		// Відкладений запис не має згоріти разом зі сторінкою
-		onMounted(() => window.addEventListener('pagehide', flush))
+		onMounted(() => {
+			window.addEventListener('pagehide', flush) // відкладений запис не має згоріти зі сторінкою
+			prune() // протерміноване прибираємо при відкритті конструктора — крон тут нікого немає
+		})
 		onUnmounted(() => {
 			window.removeEventListener('pagehide', flush)
 			flush()
 		})
-		// Протерміноване прибираємо при відкритті конструктора — крон тут нікого немає
-		onMounted(() => prune())
 	}
 
 	return { save, load, latest, remove, flush }
