@@ -86,7 +86,9 @@ export async function getDraftAsset(name: string): Promise<Blob | null> {
 
 export function usePrintcaseDraft() {
 	let timer: ReturnType<typeof setTimeout> | null = null
-	let pending: PcDraft | null = null
+	// Маніфест не будуємо на кожну зміну — лише коли доходить до запису: watch спрацьовує
+	// на кожен рух шару, тобто десятки разів на секунду, і майже вся ця робота викидалась
+	let pending: { key: string; build: () => PcState; model: any; assets: Map<string, PcAsset> } | null = null
 
 	// Що вже лежить у сховищі з цього сеансу — щоб не перекладати ті самі блоби щоразу
 	const written = new Set<string>()
@@ -130,16 +132,11 @@ export function usePrintcaseDraft() {
 
 	function flush() {
 		if (!pending) return
-		const draft = pending
+
+		const { key, build, model, assets } = pending
 		pending = null
-		write(draft)
-	}
 
-	// Викликається на кожну зміну макета — сам запис відкладаємо, щоб перетягування шару
-	// не било в базу сотні разів
-	function save(key: string, state: PcState, model: any, assets: Map<string, PcAsset>) {
-		if (!import.meta.client) return
-
+		const state = build()
 		// Порожній макет — це не чернетка, а «почав заново»
 		if (!state.els.length) return remove(key)
 
@@ -147,13 +144,10 @@ export function usePrintcaseDraft() {
 
 		// Копія моделі, а не сама вона: IndexedDB не вміє клонувати реактивні проксі Vue
 		// і падає на них з DataCloneError — тобто чернетка мовчки не збереглась би
-		pending = { key, state, model: model ? { ...model } : null, assets: names, saved: Date.now() }
+		write({ key, state, model: model ? { ...model } : null, assets: names, saved: Date.now() })
 
-		if (timer) clearTimeout(timer)
-		timer = setTimeout(flush, DEBOUNCE)
-
-		// Фото кладемо одразу й лише раз: вони незмінні, а їхній перезапис на кожен рух шару
-		// підвішував би вкладку на кожні півтори секунди
+		// Фото кладемо один раз: вони незмінні, а перезапис мегабайтів на кожне збереження
+		// підвішував би вкладку
 		for (const name of names) {
 			const asset = assets.get(name)
 			if (!asset || written.has(name)) continue
@@ -162,6 +156,17 @@ export function usePrintcaseDraft() {
 				written.delete(name)
 			)
 		}
+	}
+
+	// Викликається на кожну зміну макета. Тут — лише запамʼятати, ЩО зберігати;
+	// сам маніфест будується й пишеться відкладено, у flush()
+	function save(key: string, build: () => PcState, model: any, assets: Map<string, PcAsset>) {
+		if (!import.meta.client) return
+
+		pending = { key, build, model, assets }
+
+		if (timer) clearTimeout(timer)
+		timer = setTimeout(flush, DEBOUNCE)
 	}
 
 	async function hydrate(draft: PcDraft): Promise<PcDraftLoaded> {

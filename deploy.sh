@@ -22,9 +22,15 @@ PREV="/tmp/_nuxt-prev-${APP}"
 cd "$(dirname "$(readlink -f "$0")")"
 echo "→ каталог: $(pwd), pm2-процес: ${APP}"
 
-# nvm — це shell-функція, у скрипті її треба підключити руками
+# nvm — це shell-функція, у скрипті її треба підключити руками.
+# Саме if, а не `[ … ] && …`: під set -e невдала перевірка обірвала б скрипт мовчки.
 export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+if [ -s "$NVM_DIR/nvm.sh" ]; then
+	. "$NVM_DIR/nvm.sh"
+else
+	echo "✗ не знайшов $NVM_DIR/nvm.sh — вкажи NVM_DIR" >&2
+	exit 1
+fi
 
 git pull
 
@@ -47,5 +53,4 @@ rm -rf "$PREV"
 nvm use 16
 pm2 restart "$APP"
 
-echo "→ готово. Перевірка заголовків:"
-curl -sI https://floy.com.ua/printcase | grep -i cache-control || true
+echo "→ готово"

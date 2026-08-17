@@ -1159,7 +1159,8 @@ watch(
 	[elements, backgroundColor],
 	() => {
 		if (designDir.value || !model.value) return
-		draft.save(model.value.alias, currentState(), model.value, design.assets)
+		// Маніфест зберемо вже при самому записі — watch спрацьовує на кожен рух шару
+		draft.save(model.value.alias, currentState, model.value, design.assets)
 	},
 	{ deep: true }
 )
@@ -1235,6 +1236,7 @@ async function openDesign(dir: string) {
 	elements.value = els
 	backgroundColor.value = state.bg || '#FFFFFF'
 	designMissing.value = missing
+	restored.value = false // на екрані вже не чернетка, а збережений макет
 }
 
 // ---------- Canvas-генерація ----------

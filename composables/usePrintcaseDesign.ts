@@ -295,6 +295,9 @@ export function usePrintcaseDesign() {
 		return $fetch<{ id: number; dir: string }>(config.public.urlApi + 'printcase/save_design', {
 			method: 'POST',
 			body: payload,
+			// Без стелі зависла мобільна мережа лишала б кнопку кошика в «зачекайте» назавжди —
+			// краще чесна помилка, після якої можна натиснути ще раз
+			timeout: 60_000,
 		})
 	}
 
@@ -319,7 +322,11 @@ export function usePrintcaseDesign() {
 			// лишився б без оригіналів назавжди
 			for (const attempt of [0, 1]) {
 				try {
-					await $fetch(config.public.urlApi + 'printcase/save_asset', { method: 'POST', body: form })
+					await $fetch(config.public.urlApi + 'printcase/save_asset', {
+						method: 'POST',
+						body: form,
+						timeout: 60_000,
+					})
 					asset.uploaded = true
 					break
 				} catch {

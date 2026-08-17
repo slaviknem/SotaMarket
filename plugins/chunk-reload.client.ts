@@ -6,20 +6,25 @@
 //
 // Ловимо саме такий збій і перезавантажуємо сторінку — з `no-cache` на документі (див.
 // server/middleware/no-cache-html) вона одразу приїде новою.
+//
+// Nuxt цю подію теж слухає, але перезавантажує лише коли збій стався ПІД ЧАС переходу між
+// сторінками (router.onError). Тут закриваємо решту: ліниві компоненти й будь-який import
+// на вже відкритій сторінці — саме через це в конструкторі мовчки відвалювались частини.
 
 const KEY = 'pc-chunk-reload'
 const COOLDOWN = 60_000
 
 export default defineNuxtPlugin(() => {
 	window.addEventListener('vite:preloadError', (e) => {
-		e.preventDefault()
-
 		// Захист від нескінченного циклу: якщо шматок недоступний з іншої причини
-		// (обірваний інтернет, впав сервер), перезавантажуємо не частіше разу на хвилину
+		// (обірваний інтернет, впав сервер), перезавантажуємо не частіше разу на хвилину.
+		// Помилку при цьому НЕ гасимо — хай спрацює вбудований механізм Nuxt: Vite кидає її
+		// далі лише коли ніхто не викликав preventDefault.
 		const last = Number(sessionStorage.getItem(KEY) || 0)
 		if (Date.now() - last < COOLDOWN) return
 
 		sessionStorage.setItem(KEY, String(Date.now()))
+		e.preventDefault() // сторінка все одно зараз піде на перезавантаження
 		window.location.reload()
 	})
 })
