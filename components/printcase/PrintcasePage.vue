@@ -38,7 +38,7 @@
 					<PrintcaseStage
 						ref="stageCmp"
 						:elements="elements"
-						:background-color="backgroundColor"
+						:background-color="bgValue"
 						:mask-url="maskUrl"
 						:has-model="!!model"
 						@activate="setActive"
@@ -83,12 +83,29 @@
 					     Обертання вмикаємо лише на старті (модель є, макет порожній) — разом з «+» на
 					     сцені це показує обидва перші кроки; щойно з'явився перший шар, панель затихає. -->
 					<label class="ctrl-bg" :class="{ 'is-hint': model && !elements.length }" :title="t('printcase.control.colorBG')">
-						<input v-model="backgroundColor" type="color" />
+						<input v-model="backgroundColor" type="color" :disabled="transparentBg" />
 						<span class="ctrl-bg__ring">
-							<span class="ctrl-bg__swatch" :style="{ background: backgroundColor }" />
+							<span
+								class="ctrl-bg__swatch"
+								:class="{ 'is-transparent': transparentBg }"
+								:style="transparentBg ? undefined : { background: backgroundColor }"
+							/>
 						</span>
 						<span class="ctrl-bg__label">{{ t('printcase.control.bgShort') }}</span>
 					</label>
+
+					<!-- Прозорий фон: там, де немає малюнка, чохол лишається прозорим, і в друк
+					     іде png зі збереженою прозорістю (jpeg її просто не має) -->
+					<button
+						class="ctrl-transparent"
+						:class="{ 'is-active': transparentBg }"
+						:title="t('printcase.control.transparentHint')"
+						:aria-pressed="transparentBg"
+						@click="transparentBg = !transparentBg"
+					>
+						<span class="ctrl-transparent__box" />
+						<span class="ctrl-bg__label">{{ t('printcase.control.transparentShort') }}</span>
+					</button>
 				</div>
 
 				<!-- Ціль перетягування: підсвічуємо весь блок макета, поки файл над сторінкою -->
@@ -1022,6 +1039,13 @@ function saveText(form: TextForm) {
 // ---------- Керування ----------
 const backgroundColor = ref('#FFFFFF')
 
+// Прозорий фон: чохол лишається прозорим там, де немає малюнка. У друк тоді йде png —
+// jpeg прозорості не має в принципі, тож формат обирає саме цей перемикач.
+const transparentBg = ref(false)
+
+// Те, чим реально малюємо: і на сцені, і на полотні друку, і в маніфесті
+const bgValue = computed(() => (transparentBg.value ? 'transparent' : backgroundColor.value))
+
 function zoomIn() { scaleActive(1.1) }
 function zoomOut() { scaleActive(0.9) }
 
@@ -1146,7 +1170,13 @@ async function loadNeoPrint(alias: string) {
 // Маніфест поточного макета: те саме, що на сцені, але у вигляді, придатному і для сховища,
 // і для IndexedDB (координати лишаються в координатах сцени 400×800)
 function currentState() {
-	return design.toState(elements.value, backgroundColor.value, model.value?.alias || '')
+	return design.toState(elements.value, bgValue.value, model.value?.alias || '')
+}
+
+// Фон із маніфесту: або 'transparent', або звичайний колір
+function applyBg(bg?: string) {
+	transparentBg.value = bg === 'transparent'
+	backgroundColor.value = bg && bg !== 'transparent' ? bg : '#FFFFFF'
 }
 
 // Чернетка збереглась і відновлена — показуємо смужку з «почати заново».
@@ -1156,7 +1186,7 @@ const restored = ref(false)
 // Автозбереження: пишемо на кожну зміну, запис відкладений усередині composable.
 // У режимі правки замовлення чернетку клієнта не чіпаємо — це чужий макет.
 watch(
-	[elements, backgroundColor],
+	[elements, backgroundColor, transparentBg],
 	() => {
 		if (designDir.value || !model.value) return
 		// Маніфест зберемо вже при самому записі — watch спрацьовує на кожен рух шару
@@ -1176,7 +1206,7 @@ async function restoreDraft() {
 	if (!els.length) return
 
 	elements.value = els
-	backgroundColor.value = rec.state.bg || '#FFFFFF'
+	applyBg(rec.state.bg)
 	restored.value = true
 
 	// Чернетка з хаба знає свою модель — підтягуємо разом із нею і контент сторінки
@@ -1191,7 +1221,7 @@ async function restoreDraft() {
 function resetStage() {
 	elements.value = []
 	setActive(null)
-	backgroundColor.value = '#FFFFFF'
+	applyBg()
 	restored.value = false
 	clearArmed.value = false
 	if (model.value) draft.remove(model.value.alias)
@@ -1234,7 +1264,7 @@ async function openDesign(dir: string) {
 
 	const { elements: els, missing } = await design.toElements(state, dir)
 	elements.value = els
-	backgroundColor.value = state.bg || '#FFFFFF'
+	applyBg(state.bg)
 	designMissing.value = missing
 	restored.value = false // на екрані вже не чернетка, а збережений макет
 }
@@ -1297,9 +1327,11 @@ async function renderCanvas(width: number, withMask: boolean): Promise<string> {
 	canvas.height = height
 	const ctx = canvas.getContext('2d')!
 
-	// Фон
-	ctx.fillStyle = backgroundColor.value
-	ctx.fillRect(0, 0, width, height)
+	// Фон. Прозорий не малюємо взагалі — полотно й так порожнє, а альфа має дійти до друку
+	if (!transparentBg.value) {
+		ctx.fillStyle = backgroundColor.value
+		ctx.fillRect(0, 0, width, height)
+	}
 
 	// Елементи в порядку шарів (сховані «оком» — повз)
 	for (const el of visibleElements.value) {
@@ -1342,7 +1374,9 @@ async function renderCanvas(width: number, withMask: boolean): Promise<string> {
 		ctx.drawImage(mask, (width - mw) / 2, (height - mh) / 2, mw, mh)
 	}
 
-	return canvas.toDataURL('image/jpeg', 0.85)
+	// png лише коли фон прозорий: він важить у рази більше, тож для звичайного макета
+	// це була б чиста витрата місця й трафіку
+	return transparentBg.value ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', 0.85)
 }
 
 // Шрифти підключаються <link>-ом і вантажаться асинхронно. Поки людина малює, вони встигають,
@@ -1372,14 +1406,14 @@ async function generateAndUpload(): Promise<{ id: number; dir: string; preview: 
 	const previewData = await renderCanvas(400, true)
 
 	const state = currentState()
-	const { id, dir } = await design.save({ state, preview: previewData, source: sourceData })
-	design.uploadAssets(dir, state)
+	const res = await design.save({ state, preview: previewData, source: sourceData })
+	design.uploadAssets(res.dir, state)
 
 	return {
-		id,
-		dir,
-		preview: `${config.public.urlStorage}images/printcase/orders/preview_${id}.jpg`,
-		source: `${config.public.urlStorage}images/printcase/orders/source_${id}.jpg`,
+		id: res.id,
+		dir: res.dir,
+		preview: config.public.urlStorage + res.preview,
+		source: config.public.urlStorage + res.source,
 	}
 }
 
@@ -1394,7 +1428,7 @@ async function saveDesignEdit() {
 		await ensureFonts()
 
 		const state = currentState()
-		await design.save({
+		const res = await design.save({
 			state,
 			preview: await renderCanvas(400, true),
 			source: await renderCanvas(800, false),
@@ -1402,12 +1436,14 @@ async function saveDesignEdit() {
 		})
 		await design.uploadAssets(designDir.value, state)
 
-		// Прев'ю в кошику лежить за тим самим шляхом і вже перезаписане — показуємо кошик,
-		// щоб людина одразу побачила оновлений чохол і пішла оформлювати
 		if (cartItem.value) {
-			// Прев'ю лежить за тим самим шляхом і вже перезаписане — просимо браузер оновити
-			// свою копію, інакше в кошику могла б лишитись стара картинка з кешу
-			fetch(cartItem.value.product.image || '', { cache: 'reload', mode: 'no-cors' }).catch(() => {})
+			// Шлях міг змінитись разом із фоном (прозорий зберігається як png), тож у кошику
+			// оновлюємо обидва посилання. А прев'ю під тим самим імʼям просимо браузер
+			// перечитати — інакше там лишилась би стара картинка з кешу.
+			cartItem.value.product.image = config.public.urlStorage + res.preview
+			cartItem.value.printcase = config.public.urlStorage + res.source
+			fetch(cartItem.value.product.image, { cache: 'reload', mode: 'no-cors' }).catch(() => {})
+
 			notify('success', t('printcase.designSavedCart'))
 			openCart(false)
 		} else {
@@ -1880,6 +1916,53 @@ if (!isModelPage.value) {
 	pointer-events: none;
 }
 
+/* Прозорість показуємо тим самим шаховим візерунком, що й у графічних редакторах —
+   пояснювати словами не доводиться */
+.ctrl-bg__swatch.is-transparent,
+.ctrl-transparent__box {
+	background-color: #fff;
+	background-image:
+		linear-gradient(45deg, #c8c8c8 25%, transparent 25%),
+		linear-gradient(-45deg, #c8c8c8 25%, transparent 25%),
+		linear-gradient(45deg, transparent 75%, #c8c8c8 75%),
+		linear-gradient(-45deg, transparent 75%, #c8c8c8 75%);
+	background-size: 8px 8px;
+	background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+}
+
+.ctrl-transparent {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 3px;
+	width: 42px;
+	padding: 6px 0 4px;
+	border-radius: var(--radius-sm);
+	background: var(--bg-elevated);
+	border: 1px solid var(--border-light);
+	transition: border-color 0.15s;
+}
+
+.ctrl-transparent:hover {
+	border-color: var(--accent);
+}
+
+.ctrl-transparent.is-active {
+	border-color: var(--accent);
+	background: var(--accent-soft);
+}
+
+.ctrl-transparent__box {
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	border: 1px solid var(--border-light);
+}
+
+.ctrl-transparent.is-active .ctrl-bg__label {
+	color: var(--accent);
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.ctrl-bg.is-hint .ctrl-bg__ring {
 		animation: none;
@@ -2323,7 +2406,8 @@ if (!isModelPage.value) {
 		height: 38px;
 	}
 
-	.ctrl-bg {
+	.ctrl-bg,
+	.ctrl-transparent {
 		width: 38px;
 	}
 }

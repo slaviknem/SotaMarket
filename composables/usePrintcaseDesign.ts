@@ -291,8 +291,10 @@ export function usePrintcaseDesign() {
 	// колізії, коли два замовлення падали в одну секунду й перезаписували друк одне одному),
 	// кладе прев'ю та джерело в orders/ і пише маніфест у designs/{id}_{token}/.
 	// dir передаємо лише при правці вже збереженого макета — тоді все переписується на місці.
+	// Імена файлів повертає сервер: розширення залежить від фону (прозорий → png), тож
+	// збирати їх ще й тут означало б два місця, які мусять думати однаково
 	function save(payload: { state: PcState; preview: string; source: string; dir?: string }) {
-		return $fetch<{ id: number; dir: string }>(config.public.urlApi + 'printcase/save_design', {
+		return $fetch<{ id: number; dir: string; preview: string; source: string }>(config.public.urlApi + 'printcase/save_design', {
 			method: 'POST',
 			body: payload,
 			// Без стелі зависла мобільна мережа лишала б кнопку кошика в «зачекайте» назавжди —

@@ -15,7 +15,13 @@
 				:style="{ transform: `scale(${displayScale})` }"
 			>
 				<!-- Фон -->
-				<div class="stage__bg" :style="{ backgroundColor }" />
+				<!-- Прозорий фон малюємо шахівницею, як у графічних редакторах: інакше його не
+			     відрізнити від білого, і людина не розуміла б, що саме піде в друк -->
+			<div
+				class="stage__bg"
+				:class="{ 'stage__bg--transparent': backgroundColor === 'transparent' }"
+				:style="{ backgroundColor }"
+			/>
 
 				<!-- Елементи -->
 				<PrintcaseStageElement
@@ -185,6 +191,17 @@ defineExpose({ displayScale })
 	position: absolute;
 	inset: 0;
 	z-index: 0;
+}
+
+.stage__bg--transparent {
+	background-color: #fff;
+	background-image:
+		linear-gradient(45deg, #dcdcdc 25%, transparent 25%),
+		linear-gradient(-45deg, #dcdcdc 25%, transparent 25%),
+		linear-gradient(45deg, transparent 75%, #dcdcdc 75%),
+		linear-gradient(-45deg, transparent 75%, #dcdcdc 75%);
+	background-size: 22px 22px;
+	background-position: 0 0, 0 11px, 11px -11px, -11px 0;
 }
 
 .stage__mask {
