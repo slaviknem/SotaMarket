@@ -79,7 +79,7 @@
 						     з варіантів. Після вибору сума точна — саме її виставить адмінка. -->
 						<div class="cart-summary__row">
 							<span>{{ t('cart.shipping') }}</span>
-							<b v-if="cart.freeDelivery.value">{{ t('cart.freeDelivery') }}</b>
+							<b v-if="freeShipping">{{ t('cart.freeDelivery') }}</b>
 							<b v-else>
 								<template v-if="!order.delivery">{{ t('cart.from') }} </template>{{ formatPrice(shipping.delivery) }}
 							</b>
@@ -162,7 +162,9 @@
 							</div>
 						</div>
 
-						<!-- Нова Пошта: місто з довідника → відділення цього міста -->
+						<!-- Нова Пошта: місто → куди саме. Відділення, поштомати й пункти видачі НП
+						     віддає одним списком, тож це одне поле, а не окремі способи доставки.
+						     Кур'єр — не «третій варіант», а опція поверх адреси, звідси галочка. -->
 						<template v-if="isNovaPochta">
 							<AutocompleteField
 								id="co-city"
@@ -179,21 +181,79 @@
 								@select="selectCity"
 							/>
 
-							<!-- Відділення має сенс лише в контексті міста — до вибору міста поля немає -->
-							<AutocompleteField
-								v-if="selectedCity"
-								id="co-warehouse"
-								v-model="warehouseQuery"
-								class="checkout-reveal"
-								:options="warehouseOptions"
-								:label="t('cart.warehouseNovaPochta')"
-								:placeholder="t('cart.warehousePlaceholder')"
-								:loading="isLoadingWarehouses"
-								:show-empty="!!warehouseQuery"
-								:selected="!!selectedWarehouse"
-								@search="onWarehouseSearch"
-								@select="selectWarehouse"
-							/>
+							<!-- Галочка стоїть одразу під містом і НЕ чекає його вибору: інакше клієнт,
+							     який шукає адресну доставку, просто не бачить, що вона є. -->
+							<label class="checkbox checkout-reveal courier-toggle">
+								<input v-model="courierDelivery" type="checkbox" />
+								<span class="checkbox__box"><AppIcon name="check" :size="10" /></span>
+								{{ t('cart.courierCheckbox') }}
+								<b v-if="courierExtra" class="courier-toggle__price">+{{ formatPrice(courierExtra) }}</b>
+							</label>
+							<p v-if="isCourier" class="field-hint courier-toggle__note">{{ t('cart.courierNote') }}</p>
+
+							<!-- Точка призначення має сенс лише в контексті міста — до його вибору полів немає -->
+							<template v-if="selectedCity">
+								<AutocompleteField
+									v-if="!isCourier"
+									id="co-warehouse"
+									v-model="warehouseQuery"
+									class="checkout-reveal"
+									:options="warehouseOptions"
+									:label="t('cart.warehouseNovaPochta')"
+									:placeholder="t('cart.warehousePlaceholder')"
+									:loading="isLoadingWarehouses"
+									:show-empty="!!warehouseQuery"
+									:selected="!!selectedWarehouse"
+									@search="onWarehouseSearch"
+									@select="selectWarehouse"
+								/>
+
+								<template v-else>
+									<!-- Вулиці з довідника НП. Якщо потрібної немає — введений текст
+									     теж приймаємо: адресу підтвердить менеджер (див. hint). -->
+									<AutocompleteField
+										id="co-street"
+										v-model="streetQuery"
+										class="checkout-reveal"
+										:options="streetOptions"
+										:label="t('cart.street')"
+										:placeholder="t('cart.streetPlaceholder')"
+										:hint="streetHint"
+										:loading="isSearchingStreets"
+										:show-empty="streetSearched"
+										:selected="!!selectedStreet"
+										@search="searchStreets"
+										@select="selectStreet"
+									/>
+
+									<!-- Будинок і квартира — це одна адреса, а не два кроки: тримаємо в рядок -->
+									<div class="form-group checkout-reveal house-row">
+										<div>
+											<label for="co-house">{{ t('cart.house') }}</label>
+											<input
+												id="co-house"
+												v-model="house"
+												class="form-control"
+												:class="{ 'is-ok': !!house.trim() }"
+												type="text"
+												name="address-line1"
+												:placeholder="t('cart.housePlaceholder')"
+											/>
+										</div>
+										<div>
+											<label for="co-flat">{{ t('cart.flat') }}</label>
+											<input
+												id="co-flat"
+												v-model="flat"
+												class="form-control"
+												type="text"
+												name="address-line2"
+												:placeholder="t('cart.flatPlaceholder')"
+											/>
+										</div>
+									</div>
+								</template>
+							</template>
 						</template>
 
 						<!-- Укрпошта: індекс — єдине, що вводить користувач. Місто й адресу відділення
@@ -374,12 +434,25 @@ const sending = ref(false)
 
 const isNovaPochta = computed(() => order.delivery === 'n_pochta')
 
-// Підсумок залежить і від перевізника (у Нової Пошти й Укрпошти різні тарифи), і від
-// способу оплати: комісія накладеного платежу є лише при оплаті при отриманні.
+// Кур'єр — не окремий перевізник і не третій тип точки, а опція поверх Нової Пошти
+const courierDelivery = ref(false)
+const isCourier = computed(() => isNovaPochta.value && courierDelivery.value)
+
+// Підсумок залежить від перевізника (точка НП, кур'єр НП і Укрпошта мають різні тарифи)
+// і від способу оплати: комісія накладеного платежу є лише при оплаті при отриманні.
 // Поки перевізник не обраний — показуємо найдешевший варіант із приміткою «від».
-const shipping = computed(() => cart.shippingFor(order.delivery))
-const codFee = computed(() => cart.codFee(order.payment, order.delivery))
-const grandTotal = computed(() => cart.grandTotalFor(order.payment, order.delivery))
+const tariffKey = computed(() => deliveryTariffKey(order.delivery, courierDelivery.value))
+// «Безкоштовно» в підсумку — лише коли доставка справді безкоштовна: кур'єра поріг не покриває
+const freeShipping = computed(() => cart.isFreeFor(tariffKey.value))
+const shipping = computed(() => cart.shippingFor(tariffKey.value))
+const codFee = computed(() => cart.codFee(order.payment, tariffKey.value))
+const grandTotal = computed(() => cart.grandTotalFor(order.payment, tariffKey.value))
+
+// Доплата за адресну доставку — показуємо прямо в галочці, щоб вона не спливала
+// несподівано в підсумку. Понад поріг безкоштовної доставки різниці немає — тоді 0.
+const courierExtra = computed(
+	() => cart.shippingFor('n_pochta_kur').delivery - cart.shippingFor('n_pochta').delivery
+)
 
 // ---------- Нова Пошта ----------
 const cityQuery = ref('')
@@ -397,7 +470,7 @@ let cityTimer: ReturnType<typeof setTimeout> | null = null
 
 function searchCities(query: string) {
 	selectedCity.value = null
-	resetWarehouse()
+	resetDestination()
 	if (cityTimer) clearTimeout(cityTimer)
 
 	if (query.trim().length < 2) {
@@ -418,7 +491,10 @@ function searchCities(query: string) {
 async function selectCity(opt: NPOption) {
 	selectedCity.value = opt
 	citySearched.value = false
-	resetWarehouse()
+	resetDestination()
+
+	// Для кур'єра список відділень не потрібен — вулиці шукаються за запитом користувача
+	if (isCourier.value) return
 
 	isLoadingWarehouses.value = true
 	warehouses.value = await novaPochta.getWarehouses(opt.code)
@@ -429,6 +505,12 @@ function resetWarehouse() {
 	selectedWarehouse.value = null
 	warehouseQuery.value = ''
 	warehouses.value = []
+}
+
+// Місто змінилося — і відділення, і вулиця більше не дійсні (вони прив'язані до міста)
+function resetDestination() {
+	resetWarehouse()
+	resetStreet()
 }
 
 // Відділень у великому місті сотні — показуємо перші 60, решту користувач звужує пошуком
@@ -448,6 +530,67 @@ function selectWarehouse(opt: NPOption) {
 	selectedWarehouse.value = opt
 }
 
+// ---------- Нова Пошта: адресна доставка ----------
+const streetQuery = ref('')
+const streetOptions = ref<NPOption[]>([])
+const selectedStreet = ref<NPOption | null>(null)
+const isSearchingStreets = ref(false)
+const streetSearched = ref(false)
+const house = ref('')
+const flat = ref('')
+
+let streetTimer: ReturnType<typeof setTimeout> | null = null
+
+// Вулиць у місті тисячі, тож фільтруємо не список, а сам запит до НП — від 2 літер, як і з містами
+function searchStreets(query: string) {
+	selectedStreet.value = null
+	if (streetTimer) clearTimeout(streetTimer)
+
+	const cityRef = selectedCity.value?.code
+	if (!cityRef || query.trim().length < 2) {
+		streetOptions.value = []
+		streetSearched.value = false
+		isSearchingStreets.value = false
+		return
+	}
+
+	isSearchingStreets.value = true
+	streetTimer = setTimeout(async () => {
+		streetOptions.value = await novaPochta.getStreets(cityRef, query.trim())
+		isSearchingStreets.value = false
+		streetSearched.value = true
+	}, 350)
+}
+
+function selectStreet(opt: NPOption) {
+	selectedStreet.value = opt
+	streetSearched.value = false
+}
+
+function resetStreet() {
+	selectedStreet.value = null
+	streetQuery.value = ''
+	streetOptions.value = []
+	streetSearched.value = false
+}
+
+// Вулиці немає в довіднику — це не тупик: беремо введений текст, адресу підтвердить менеджер
+const streetHint = computed(() =>
+	streetSearched.value && !streetOptions.value.length && !selectedStreet.value ? t('cart.streetNotFound') : ''
+)
+
+// Адреса одним рядком — такою її побачить менеджер і кур'єр НП, тому підписи
+// українською незалежно від мови інтерфейсу (документи НП теж українською)
+const courierAddress = computed(() =>
+	[
+		selectedStreet.value?.label || streetQuery.value.trim(),
+		house.value.trim() && `буд. ${house.value.trim()}`,
+		flat.value.trim() && `кв. ${flat.value.trim()}`,
+	]
+		.filter(Boolean)
+		.join(', ')
+)
+
 // Довідник НП діє лише для Нової Пошти. Якщо перемкнулися на Укрпошту, місто далі
 // редагується вручну — інакше в замовлення потрапило б старе обране місто, а не введене.
 watch(isNovaPochta, (viaNovaPochta: boolean) => {
@@ -455,7 +598,19 @@ watch(isNovaPochta, (viaNovaPochta: boolean) => {
 	selectedCity.value = null
 	cityOptions.value = []
 	citySearched.value = false
-	resetWarehouse()
+	resetDestination()
+})
+
+// Вмикання/вимикання кур'єра: місто спільне й лишається, скидається лише точка
+// призначення — інакше в замовлення поїхали б і відділення, і адреса одночасно.
+watch(courierDelivery, async () => {
+	resetDestination()
+
+	if (isCourier.value || !selectedCity.value) return
+
+	isLoadingWarehouses.value = true
+	warehouses.value = await novaPochta.getWarehouses(selectedCity.value.code)
+	isLoadingWarehouses.value = false
 })
 
 // ---------- Укрпошта: адреса за поштовим індексом ----------
@@ -536,9 +691,12 @@ function onOfficeChange(e: Event) {
 // ---------- Момент появи блоку оплати ----------
 // Чекаємо не «заповнену доставку» (це розмите поняття), а конкретну точку призначення:
 // відділення НП, розпізнане відділення Укрпошти або введену вручну адресу.
-const hasDestination = computed(() =>
-	isNovaPochta.value ? !!selectedWarehouse.value : !!selectedOffice.value || !!order.address.trim()
-)
+const hasDestination = computed(() => {
+	// Кур'єру потрібні і вулиця, і будинок: сама лише вулиця — ще не адреса
+	if (isCourier.value) return !!(streetQuery.value.trim() && house.value.trim())
+
+	return isNovaPochta.value ? !!selectedWarehouse.value : !!selectedOffice.value || !!order.address.trim()
+})
 
 // Показавши блок один раз, більше не ховаємо: інакше правка міста прибирала б
 // з екрана вже зроблений вибір оплати.
@@ -610,6 +768,16 @@ onMounted(() => {
 			zipcode: saved.zipcode || '',
 		})
 		cityQuery.value = saved.city || ''
+		courierDelivery.value = !!saved.courier
+		house.value = saved.house || ''
+		flat.value = saved.flat || ''
+
+		// Вулицю беремо зі збереженого без запиту: довідник вулиць шукається за текстом,
+		// перезавантажувати його (як список відділень) немає сенсу
+		if (saved.street) {
+			streetQuery.value = saved.street
+			if (saved.streetRef) selectedStreet.value = { code: saved.streetRef, label: saved.street }
+		}
 
 		if (saved.cityRef && isNovaPochta.value) {
 			restoreCity({ code: saved.cityRef, label: saved.city }, saved.warehouseRef)
@@ -628,6 +796,10 @@ onMounted(() => {
 // так список актуальний, а не збережений копією зі старої сесії.
 async function restoreCity(city: NPOption, warehouseRef?: string) {
 	selectedCity.value = city
+
+	// Кур'єру список відділень не потрібен — адреса вже відновлена вище
+	if (isCourier.value) return
+
 	isLoadingWarehouses.value = true
 	warehouses.value = await novaPochta.getWarehouses(city.code)
 	isLoadingWarehouses.value = false
@@ -640,7 +812,7 @@ async function restoreCity(city: NPOption, warehouseRef?: string) {
 }
 
 watch(
-	[order, cityQuery, selectedCity, selectedWarehouse],
+	[order, cityQuery, selectedCity, selectedWarehouse, courierDelivery, streetQuery, selectedStreet, house, flat],
 	() => {
 		if (!import.meta.client) return
 		const data = {
@@ -653,6 +825,11 @@ watch(
 			city: cityQuery.value,
 			cityRef: selectedCity.value?.code || '',
 			warehouseRef: selectedWarehouse.value?.code || '',
+			courier: courierDelivery.value,
+			street: selectedStreet.value?.label || streetQuery.value,
+			streetRef: selectedStreet.value?.code || '',
+			house: house.value,
+			flat: flat.value,
 		}
 		try {
 			localStorage.setItem(CHECKOUT_KEY, JSON.stringify(data))
@@ -697,6 +874,19 @@ async function sendOrder() {
 			image_file: url.orderImage(item.product.image),
 			category_id: item.category_id,
 		})),
+	}
+
+	// Спосіб отримання НП і, для кур'єра, адреса окремими полями — з них адмінка робить ТТН
+	if (isNovaPochta.value) orderData.delivery_type = isCourier.value ? 'courier' : 'warehouse'
+
+	if (isCourier.value) {
+		Object.assign(orderData, {
+			street: selectedStreet.value?.label || streetQuery.value.trim(),
+			street_ref: selectedStreet.value?.code || '',
+			house: house.value.trim(),
+			flat: flat.value.trim(),
+			address: courierAddress.value,
+		})
 	}
 
 	if (orderData.discount) orderData.type = 'discount'
@@ -951,6 +1141,35 @@ async function sendOrder() {
 	.checkout-reveal {
 		animation: none;
 	}
+}
+
+/* Галочка кур'єра стоїть між містом і точкою видачі, тож їй потрібен той самий
+   вертикальний ритм, що й у полів форми (.form-group має margin-bottom) */
+.courier-toggle {
+	margin-bottom: 14px;
+}
+
+.courier-toggle__price {
+	margin-left: auto;
+	padding: 2px 8px;
+	background: var(--accent-soft);
+	border-radius: var(--radius-pill);
+	font-size: 12.5px;
+	font-weight: 700;
+	color: var(--accent);
+}
+
+/* Примітка йде під галочкою, а не під полем — вирівнюємо з її текстом */
+.courier-toggle__note {
+	margin: -8px 0 14px 28px;
+}
+
+/* Будинок і квартира — одна адреса, а не два кроки: тримаємо в рядок.
+   Будинку даємо більше місця — там бувають «12А/3», у квартирі майже завжди число. */
+.house-row {
+	display: grid;
+	grid-template-columns: 2fr 1fr;
+	gap: 12px;
 }
 
 /* Незмінний код країни перед полем — користувач одразу бачить очікуваний формат */

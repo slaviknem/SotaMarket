@@ -38,6 +38,12 @@ export const DELIVERY_METHODS = [
 	{ key: 'ukrpochta', title: 'titleUkrPochta' },
 ]
 
+// Ключ тарифу: адресна доставка НП дорожча за точку видачі, тож має власний тариф
+// (n_pochta_kur). У DELIVERY_METHODS його немає навмисно — інакше він потрапив би
+// в розрахунок «від», де показуємо найдешевшого перевізника.
+export const deliveryTariffKey = (method?: string, courier?: boolean) =>
+	method === 'n_pochta' && courier ? 'n_pochta_kur' : method
+
 export function useCartState() {
 	return useState<CartState>('cart', () => ({
 		lastItemId: 0,
@@ -72,11 +78,15 @@ export function useCart() {
 		return available.reduce((min, t) => (t.delivery < min.delivery ? t : min), available[0])
 	}
 
+	// Адресна доставка коштує майже вдвічі більше за відділення, тож поріг безкоштовної
+	// на неї не поширюється — кур'єр завжди платний (так само рахує адмінка).
+	const isFreeFor = (method?: string) => freeDelivery.value && method !== 'n_pochta_kur'
+
 	// Понад поріг адмінка обнуляє всю доставку разом із комісією за накладений платіж —
 	// повторюємо це, а не тільки саму доставку.
 	const shippingFor = (method?: string) => {
 		const tariff = tariffFor(method)
-		return freeDelivery.value
+		return isFreeFor(method)
 			? { delivery: 0, nalogka: 0 }
 			: { delivery: tariff.delivery, nalogka: tariff.nal_plateg }
 	}
@@ -158,7 +168,7 @@ export function useCart() {
 		state.value.discount = discount
 	}
 
-	return { state, quantity, subtotal, total, grandTotal, grandTotalFor, codFee, shipping, shippingFor, freeDelivery, add, remove, removeAll, updateQuantity, setDiscount }
+	return { state, quantity, subtotal, total, grandTotal, grandTotalFor, codFee, shipping, shippingFor, freeDelivery, isFreeFor, add, remove, removeAll, updateQuantity, setDiscount }
 }
 
 // Слайдер-кошик (mini-cart): глобальний стан відкриття.

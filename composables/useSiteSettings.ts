@@ -27,6 +27,7 @@ export interface SiteSettings {
 	}
 	delivery: {
 		n_pochta: DeliveryTariff
+		n_pochta_kur: DeliveryTariff // адресна (кур'єрська) доставка НП — дорожча за відділення
 		ukrpochta: DeliveryTariff
 		samovuvoz: DeliveryTariff
 		free_delivery_from: number
@@ -57,6 +58,9 @@ const DEFAULTS: SiteSettings = {
 	},
 	delivery: {
 		n_pochta: { delivery: 60, nal_plateg: 20 },
+		// 140 грн — реальна ціна НП за адресну доставку (Полтава → Київ, «Документи»),
+		// поки вузол n_pochta_kur не заведено в налаштуваннях адмінки
+		n_pochta_kur: { delivery: 140, nal_plateg: 20 },
 		ukrpochta: { delivery: 60, nal_plateg: 15 },
 		samovuvoz: { delivery: 0, nal_plateg: 0 },
 		free_delivery_from: 1000,
