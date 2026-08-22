@@ -138,6 +138,24 @@
 								</label>
 							</div>
 
+							<!-- Точний код кольору: коли фон треба підігнати під фірмовий,
+							     а не підбирати «на око» повзунками -->
+							<div class="bg-hex">
+								<span class="bg-hex__hash" aria-hidden="true">#</span>
+								<input
+									v-model="bgHex"
+									class="bg-hex__input"
+									type="text"
+									maxlength="6"
+									spellcheck="false"
+									autocomplete="off"
+									placeholder="FFFFFF"
+									:aria-label="t('printcase.control.bgCustom')"
+									@input="applyBgHex"
+									@blur="resetBgHex"
+								/>
+							</div>
+
 							<!-- Пояснюємо наслідок вибору, а не назву кольору: «прозорий» без цього
 							     рядка читається як службовий термін із графічних редакторів -->
 							<p class="bg-pop__note">
@@ -1116,6 +1134,34 @@ function setBg(value: string) {
 function setBgFromInput(e: Event) {
 	setBg((e.target as HTMLInputElement).value)
 }
+
+// ---------- Фон кодом ----------
+// Поле під палітрою: у замовленнях часто є точний фірмовий колір, і його простіше
+// вписати, ніж ловити повзунками. Символ «#» намальований окремо — у полі лише код.
+const bgHex = ref(backgroundColor.value.replace('#', '').toUpperCase())
+
+// Приймаємо і повний код, і скорочений (#abc). Чистимо ввід одразу, щоб у полі
+// не лишалось нічого, що не є кодом (наприклад, «#» зі вставленого буфера).
+function applyBgHex() {
+	const raw = bgHex.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6).toUpperCase()
+	bgHex.value = raw
+	const full = raw.length === 3 ? raw.replace(/./g, (c) => c + c) : raw
+	if (full.length === 6) setBg(`#${full}`)
+}
+
+// Незавершений код (1–2 символи) на виході з поля повертаємо до чинного фону
+function resetBgHex() {
+	bgHex.value = backgroundColor.value.replace('#', '').toUpperCase()
+}
+
+// Фон могли змінити пресетом чи піпеткою — підтягуємо код, але не переписуємо
+// скорочений запис, який щойно ввели самі (#abc уже дорівнює поточному кольору)
+watch(backgroundColor, (v) => {
+	const cur = bgHex.value
+	const full = cur.length === 3 ? cur.replace(/./g, (c) => c + c) : cur
+	if (full.toLowerCase() === v.replace('#', '').toLowerCase()) return
+	bgHex.value = v.replace('#', '').toUpperCase()
+})
 
 function zoomIn() { scaleActive(1.1) }
 function zoomOut() { scaleActive(0.9) }
@@ -2112,6 +2158,44 @@ if (!isModelPage.value) {
 	pointer-events: none;
 }
 
+/* Поле коду кольору — та сама «коробка», що й решта полів вводу, лише компактніша */
+.bg-hex {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	height: 34px;
+	margin-top: 11px;
+	padding: 0 10px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-sm);
+	background: var(--bg-soft);
+	transition: border-color 0.13s;
+}
+
+.bg-hex:focus-within {
+	border-color: var(--accent);
+}
+
+.bg-hex__hash {
+	font-size: 12.5px;
+	color: var(--text-muted);
+}
+
+.bg-hex__input {
+	width: 100%;
+	min-width: 0;
+	border: none;
+	background: none;
+	font-size: 12.5px;
+	letter-spacing: 0.08em;
+	color: var(--text);
+	text-transform: uppercase;
+}
+
+.bg-hex__input:focus {
+	outline: none;
+}
+
 .bg-pop__note {
 	margin: 11px 0 0;
 	font-size: 11.5px;
@@ -2598,6 +2682,16 @@ if (!isModelPage.value) {
 
 	.bg-pop__grid {
 		gap: 10px;
+	}
+
+	/* 16px — інакше iOS зумить сторінку на фокусі поля */
+	.bg-hex {
+		height: 42px;
+	}
+
+	.bg-hex__hash,
+	.bg-hex__input {
+		font-size: 16px;
 	}
 
 	.bg-pop__note {
