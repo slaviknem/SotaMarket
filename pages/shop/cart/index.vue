@@ -181,8 +181,25 @@
 								@select="selectCity"
 							/>
 
-							<!-- Галочка стоїть одразу під містом і НЕ чекає його вибору: інакше клієнт,
-							     який шукає адресну доставку, просто не бачить, що вона є. -->
+							<!-- Точка призначення має сенс лише в контексті міста — до його вибору полів немає -->
+							<AutocompleteField
+								v-if="selectedCity && !isCourier"
+								id="co-warehouse"
+								v-model="warehouseQuery"
+								class="checkout-reveal"
+								:options="warehouseOptions"
+								:label="t('cart.warehouseNovaPochta')"
+								:placeholder="t('cart.warehousePlaceholder')"
+								:loading="isLoadingWarehouses"
+								:show-empty="!!warehouseQuery"
+								:selected="!!selectedWarehouse"
+								@search="onWarehouseSearch"
+								@select="selectWarehouse"
+							/>
+
+							<!-- Кур'єр — рідкісний сценарій, тож галочка стоїть після відділення (основний
+							     шлях) і перед коментарем. Вибору міста НЕ чекає: інакше клієнт, який шукає
+							     адресну доставку, просто не побачить, що вона є. -->
 							<label class="checkbox checkout-reveal courier-toggle">
 								<input v-model="courierDelivery" type="checkbox" />
 								<span class="checkbox__box"><AppIcon name="check" :size="10" /></span>
@@ -195,68 +212,50 @@
 							</label>
 							<p v-if="isCourier" class="field-hint courier-toggle__note">{{ t('cart.courierNote') }}</p>
 
-							<!-- Точка призначення має сенс лише в контексті міста — до його вибору полів немає -->
-							<template v-if="selectedCity">
+							<template v-if="selectedCity && isCourier">
+								<!-- Вулиці з довідника НП. Якщо потрібної немає — введений текст
+								     теж приймаємо: адресу підтвердить менеджер (див. hint). -->
 								<AutocompleteField
-									v-if="!isCourier"
-									id="co-warehouse"
-									v-model="warehouseQuery"
+									id="co-street"
+									v-model="streetQuery"
 									class="checkout-reveal"
-									:options="warehouseOptions"
-									:label="t('cart.warehouseNovaPochta')"
-									:placeholder="t('cart.warehousePlaceholder')"
-									:loading="isLoadingWarehouses"
-									:show-empty="!!warehouseQuery"
-									:selected="!!selectedWarehouse"
-									@search="onWarehouseSearch"
-									@select="selectWarehouse"
+									:options="streetOptions"
+									:label="t('cart.street')"
+									:placeholder="t('cart.streetPlaceholder')"
+									:hint="streetHint"
+									:loading="isSearchingStreets"
+									:show-empty="streetSearched"
+									:selected="!!selectedStreet"
+									@search="searchStreets"
+									@select="selectStreet"
 								/>
 
-								<template v-else>
-									<!-- Вулиці з довідника НП. Якщо потрібної немає — введений текст
-									     теж приймаємо: адресу підтвердить менеджер (див. hint). -->
-									<AutocompleteField
-										id="co-street"
-										v-model="streetQuery"
-										class="checkout-reveal"
-										:options="streetOptions"
-										:label="t('cart.street')"
-										:placeholder="t('cart.streetPlaceholder')"
-										:hint="streetHint"
-										:loading="isSearchingStreets"
-										:show-empty="streetSearched"
-										:selected="!!selectedStreet"
-										@search="searchStreets"
-										@select="selectStreet"
-									/>
-
-									<!-- Будинок і квартира — це одна адреса, а не два кроки: тримаємо в рядок -->
-									<div class="form-group checkout-reveal house-row">
-										<div>
-											<label for="co-house">{{ t('cart.house') }}</label>
-											<input
-												id="co-house"
-												v-model="house"
-												class="form-control"
-												:class="{ 'is-ok': !!house.trim() }"
-												type="text"
-												name="address-line1"
-												:placeholder="t('cart.housePlaceholder')"
-											/>
-										</div>
-										<div>
-											<label for="co-flat">{{ t('cart.flat') }}</label>
-											<input
-												id="co-flat"
-												v-model="flat"
-												class="form-control"
-												type="text"
-												name="address-line2"
-												:placeholder="t('cart.flatPlaceholder')"
-											/>
-										</div>
+								<!-- Будинок і квартира — це одна адреса, а не два кроки: тримаємо в рядок -->
+								<div class="form-group checkout-reveal house-row">
+									<div>
+										<label for="co-house">{{ t('cart.house') }}</label>
+										<input
+											id="co-house"
+											v-model="house"
+											class="form-control"
+											:class="{ 'is-ok': !!house.trim() }"
+											type="text"
+											name="address-line1"
+											:placeholder="t('cart.housePlaceholder')"
+										/>
 									</div>
-								</template>
+									<div>
+										<label for="co-flat">{{ t('cart.flat') }}</label>
+										<input
+											id="co-flat"
+											v-model="flat"
+											class="form-control"
+											type="text"
+											name="address-line2"
+											:placeholder="t('cart.flatPlaceholder')"
+										/>
+									</div>
+								</div>
 							</template>
 						</template>
 
@@ -1147,7 +1146,7 @@ async function sendOrder() {
 	}
 }
 
-/* Галочка кур'єра стоїть між містом і точкою видачі, тож їй потрібен той самий
+/* Галочка кур'єра стоїть між точкою видачі й коментарем, тож їй потрібен той самий
    вертикальний ритм, що й у полів форми (.form-group має margin-bottom) */
 .courier-toggle {
 	margin-bottom: 14px;
