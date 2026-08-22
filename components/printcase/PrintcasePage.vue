@@ -79,33 +79,72 @@
 						</button>
 					</div>
 
-					<!-- Колір фону: спектральний обідець + підпис, інакше читається як «ще одна кнопка».
-					     Обертання вмикаємо лише на старті (модель є, макет порожній) — разом з «+» на
-					     сцені це показує обидва перші кроки; щойно з'явився перший шар, панель затихає. -->
-					<label class="ctrl-bg" :class="{ 'is-hint': model && !elements.length }" :title="t('printcase.control.colorBG')">
-						<input v-model="backgroundColor" type="color" :disabled="transparentBg" />
-						<span class="ctrl-bg__ring">
-							<span
-								class="ctrl-bg__swatch"
-								:class="{ 'is-transparent': transparentBg }"
-								:style="transparentBg ? undefined : { background: backgroundColor }"
-							/>
-						</span>
-						<span class="ctrl-bg__label">{{ t('printcase.control.bgShort') }}</span>
-					</label>
+					<!-- Фон макета. Один контрол на всі варіанти: прозорий тут — просто перший свотч
+					     у палітрі, а не окремий перемикач поруч (у даних це і є одне значення).
+					     Обертання обідця вмикаємо лише на старті (модель є, макет порожній) — разом
+					     з «+» на сцені це показує обидва перші кроки; з першим шаром панель затихає. -->
+					<div class="ctrl-bg-wrap" @pointerdown.stop>
+						<button
+							class="ctrl-bg"
+							:class="{ 'is-hint': model && !elements.length && !bgPickerOpen, 'is-open': bgPickerOpen }"
+							:title="t('printcase.control.colorBG')"
+							:aria-expanded="bgPickerOpen"
+							@click="bgPickerOpen = !bgPickerOpen"
+						>
+							<span class="ctrl-bg__ring">
+								<span
+									class="ctrl-bg__swatch"
+									:class="{ 'is-transparent': transparentBg }"
+									:style="transparentBg ? undefined : { background: backgroundColor }"
+								/>
+							</span>
+							<span class="ctrl-bg__label">{{ t('printcase.control.bgShort') }}</span>
+						</button>
 
-					<!-- Прозорий фон: там, де немає малюнка, чохол лишається прозорим, і в друк
-					     іде png зі збереженою прозорістю (jpeg її просто не має) -->
-					<button
-						class="ctrl-transparent"
-						:class="{ 'is-active': transparentBg }"
-						:title="t('printcase.control.transparentHint')"
-						:aria-pressed="transparentBg"
-						@click="transparentBg = !transparentBg"
-					>
-						<span class="ctrl-transparent__box" />
-						<span class="ctrl-bg__label">{{ t('printcase.control.transparentShort') }}</span>
-					</button>
+						<!-- Палітра: на десктопі — поповер біля кнопки, на телефоні — нижня шторка.
+						     Затемнення під шторкою телепортуємо, щоб воно накрило всю сторінку. -->
+						<Teleport to="body">
+							<div v-if="bgPickerOpen" class="bg-scrim" />
+						</Teleport>
+
+						<div v-if="bgPickerOpen" class="bg-pop" role="dialog" :aria-label="t('printcase.control.bgTitle')">
+							<div class="bg-pop__head">
+								<span class="bg-pop__title">{{ t('printcase.control.bgTitle') }}</span>
+								<button class="bg-pop__close" :aria-label="t('other.close')" @click="bgPickerOpen = false">
+									<AppIcon name="close" :size="15" />
+								</button>
+							</div>
+
+							<div class="bg-pop__grid">
+								<!-- Прозорий — рівноправний варіант фону, тому стоїть першим у сітці -->
+								<button
+									class="bg-sw bg-sw--transparent"
+									:class="{ 'is-active': transparentBg }"
+									:title="t('printcase.control.transparentShort')"
+									@click="setBg('transparent')"
+								/>
+								<button
+									v-for="c in BG_PRESETS"
+									:key="c"
+									class="bg-sw"
+									:class="{ 'is-active': !transparentBg && isSameColor(c, backgroundColor) }"
+									:style="{ background: c }"
+									@click="setBg(c)"
+								/>
+								<!-- Свій колір: нативний вибір ховаємо за свотчем зі спектром -->
+								<label class="bg-sw bg-sw--custom" :class="{ 'is-active': isCustomBg }" :title="t('printcase.control.bgCustom')">
+									<input :value="backgroundColor" type="color" @input="setBgFromInput" />
+									<span class="bg-sw__dot" :style="isCustomBg ? { background: backgroundColor } : undefined" />
+								</label>
+							</div>
+
+							<!-- Пояснюємо наслідок вибору, а не назву кольору: «прозорий» без цього
+							     рядка читається як службовий термін із графічних редакторів -->
+							<p class="bg-pop__note">
+								{{ transparentBg ? t('printcase.control.transparentHint') : t('printcase.control.bgColorHint') }}
+							</p>
+						</div>
+					</div>
 				</div>
 
 				<!-- Ціль перетягування: підсвічуємо весь блок макета, поки файл над сторінкою -->
@@ -403,7 +442,7 @@
 			:fonts="fonts"
 			:is-edit="textEditMode"
 			:initial="textForm"
-			:bg="backgroundColor"
+			:bg="transparentBg ? '#FFFFFF' : backgroundColor"
 			@save="saveText"
 		/>
 	</div>
@@ -1040,11 +1079,43 @@ function saveText(form: TextForm) {
 const backgroundColor = ref('#FFFFFF')
 
 // Прозорий фон: чохол лишається прозорим там, де немає малюнка. У друк тоді йде png —
-// jpeg прозорості не має в принципі, тож формат обирає саме цей перемикач.
+// jpeg прозорості не має в принципі, тож формат обирає саме цей вибір.
 const transparentBg = ref(false)
 
 // Те, чим реально малюємо: і на сцені, і на полотні друку, і в маніфесті
 const bgValue = computed(() => (transparentBg.value ? 'transparent' : backgroundColor.value))
+
+// Готові фони. Це дані макета (йдуть у друк), а не оформлення інтерфейсу, тож живуть тут,
+// а не серед токенів теми. Набір закриває майже всі замовлення в один тап: нейтральні,
+// потім теплі й холодні — решту дає «свій колір».
+const BG_PRESETS = [
+	'#FFFFFF', '#F3E9DC', '#D9D9DE', '#8E8E93', '#111111',
+	'#FFD166', '#FF7A00', '#E11D2E', '#EF476F', '#B197FC',
+	'#4E6BFF', '#18C5C0', '#2FBF71',
+] as const
+
+const bgPickerOpen = ref(false)
+
+// Нативний вибір кольору віддає #rrggbb у нижньому регістрі — порівнюємо без нього
+const isSameColor = (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
+
+// «Свій колір» підсвічується тільки тоді, коли поточний фон не збігається з жодним пресетом
+const isCustomBg = computed(
+	() => !transparentBg.value && !BG_PRESETS.some((c) => isSameColor(c, backgroundColor.value))
+)
+
+// Один вхід для всіх варіантів фону: 'transparent' або #rrggbb.
+// Палітру після вибору не закриваємо — кольори зазвичай перебирають кілька разів,
+// дивлячись на макет; закриє клік поза нею, ✕ або Esc.
+function setBg(value: string) {
+	transparentBg.value = value === 'transparent'
+	if (value !== 'transparent') backgroundColor.value = value
+}
+
+// Нативний вибір кольору: фон міняється на кожен рух повзунка, ще до закриття діалога
+function setBgFromInput(e: Event) {
+	setBg((e.target as HTMLInputElement).value)
+}
 
 function zoomIn() { scaleActive(1.1) }
 function zoomOut() { scaleActive(0.9) }
@@ -1094,6 +1165,11 @@ function moveLayerDown(i: number) {
 
 // Клавіатура: стрілки + Delete (ігноруємо, коли друкуємо в полі або відкрита модалка)
 function onKeydown(e: KeyboardEvent) {
+	// Esc закриває палітру фону раніше за все інше — вона поверх макета
+	if (e.key === 'Escape' && bgPickerOpen.value) {
+		bgPickerOpen.value = false
+		return
+	}
 	if (activeIndex.value === null) return
 	if (textModalOpen.value || modelModalOpen.value || libraryOpen.value) return
 	const tgt = e.target as HTMLElement | null
@@ -1116,6 +1192,8 @@ function onKeydown(e: KeyboardEvent) {
 // Зняти виділення при кліку будь-де поза конструктором (поза білим блоком + інструментами).
 // Контроли, що працюють з виділенням (редагування тексту, список шарів), глушать pointerdown.
 function onDocPointerDown(e: PointerEvent) {
+	// Палітра фону глушить pointerdown у себе, тож усе, що сюди дійшло, — клік поза нею
+	bgPickerOpen.value = false
 	if (activeIndex.value === null) return
 	if (textModalOpen.value || modelModalOpen.value || libraryOpen.value) return
 	if (editorRef.value && !editorRef.value.contains(e.target as Node)) setActive(null)
@@ -1848,16 +1926,19 @@ if (!isModelPage.value) {
 	box-shadow: none;
 }
 
-/* Колір фону — внизу панелі */
-.ctrl-bg {
+/* Фон — внизу панелі. Обгортка тримає поповер прив'язаним до кнопки */
+.ctrl-bg-wrap {
 	position: relative;
+	margin-top: auto;
+}
+
+.ctrl-bg {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	gap: 3px;
 	width: 42px;
 	padding: 6px 0 4px;
-	margin-top: auto;
 	border-radius: var(--radius-sm);
 	background: var(--bg-elevated);
 	border: 1px solid var(--border-light);
@@ -1865,15 +1946,13 @@ if (!isModelPage.value) {
 	transition: border-color 0.15s;
 }
 
-.ctrl-bg:hover {
+.ctrl-bg:hover,
+.ctrl-bg.is-open {
 	border-color: var(--accent);
 }
 
-.ctrl-bg input {
-	position: absolute;
-	inset: 0;
-	opacity: 0;
-	cursor: pointer;
+.ctrl-bg.is-open {
+	background: var(--accent-soft);
 }
 
 /* Спектральний обідець навколо поточного кольору — однозначний сигнал «тут вибирають колір» */
@@ -1916,10 +1995,14 @@ if (!isModelPage.value) {
 	pointer-events: none;
 }
 
+.ctrl-bg.is-open .ctrl-bg__label {
+	color: var(--accent);
+}
+
 /* Прозорість показуємо тим самим шаховим візерунком, що й у графічних редакторах —
    пояснювати словами не доводиться */
 .ctrl-bg__swatch.is-transparent,
-.ctrl-transparent__box {
+.bg-sw--transparent {
 	background-color: #fff;
 	background-image:
 		linear-gradient(45deg, #c8c8c8 25%, transparent 25%),
@@ -1930,41 +2013,118 @@ if (!isModelPage.value) {
 	background-position: 0 0, 0 4px, 4px -4px, -4px 0;
 }
 
-.ctrl-transparent {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 3px;
-	width: 42px;
-	padding: 6px 0 4px;
-	border-radius: var(--radius-sm);
-	background: var(--bg-elevated);
+/* ----- Палітра фону ----- */
+/* Затемнення потрібне лише нижній шторці на телефоні — на десктопі це звичайний поповер */
+.bg-scrim {
+	display: none;
+}
+
+.bg-pop {
+	position: absolute;
+	right: calc(100% + 10px);
+	bottom: 0;
+	z-index: 14;
+	width: 246px;
+	padding: 12px;
+	background: var(--bg-card);
 	border: 1px solid var(--border-light);
-	transition: border-color 0.15s;
+	border-radius: var(--radius);
+	box-shadow: var(--shadow-pop);
+	animation: bg-pop-in 0.14s ease-out;
 }
 
-.ctrl-transparent:hover {
-	border-color: var(--accent);
+@keyframes bg-pop-in {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
 }
 
-.ctrl-transparent.is-active {
-	border-color: var(--accent);
-	background: var(--accent-soft);
+.bg-pop__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	margin-bottom: 11px;
 }
 
-.ctrl-transparent__box {
-	width: 22px;
-	height: 22px;
+.bg-pop__title {
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--text);
+}
+
+.bg-pop__close {
+	display: flex;
+	color: var(--text-muted);
+	transition: color 0.13s;
+}
+
+.bg-pop__close:hover {
+	color: var(--accent);
+}
+
+.bg-pop__grid {
+	display: grid;
+	grid-template-columns: repeat(5, 1fr);
+	gap: 8px;
+}
+
+.bg-sw {
+	position: relative;
+	aspect-ratio: 1;
 	border-radius: 50%;
 	border: 1px solid var(--border-light);
+	cursor: pointer;
+	transition: transform 0.13s;
 }
 
-.ctrl-transparent.is-active .ctrl-bg__label {
-	color: var(--accent);
+.bg-sw:hover {
+	transform: scale(1.12);
+}
+
+/* Вибраний фон — подвійне кільце: просвіт кольором панелі, зовні акцент. На відміну від
+   галочки, читається однаково на білому, чорному й на шахівниці */
+.bg-sw.is-active {
+	box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px var(--accent);
+}
+
+/* Свій колір: спектр по колу, всередині — сам відтінок, коли він не з пресетів */
+.bg-sw--custom {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--color-wheel);
+}
+
+.bg-sw--custom input {
+	position: absolute;
+	inset: 0;
+	opacity: 0;
+	cursor: pointer;
+}
+
+.bg-sw__dot {
+	width: 46%;
+	height: 46%;
+	border-radius: 50%;
+	background: var(--bg-card);
+	pointer-events: none;
+}
+
+.bg-pop__note {
+	margin: 11px 0 0;
+	font-size: 11.5px;
+	line-height: 1.45;
+	color: var(--text-muted);
 }
 
 @media (prefers-reduced-motion: reduce) {
 	.ctrl-bg.is-hint .ctrl-bg__ring {
+		animation: none;
+	}
+
+	.bg-pop {
 		animation: none;
 	}
 }
@@ -2406,9 +2566,42 @@ if (!isModelPage.value) {
 		height: 38px;
 	}
 
-	.ctrl-bg,
-	.ctrl-transparent {
+	.ctrl-bg {
 		width: 38px;
+	}
+
+	/* Палітра стає нижньою шторкою: поповер шириною 246px тут просто не має де стати,
+	   а свотчі на всю ширину екрана нарешті потрапляють під палець */
+	.bg-scrim {
+		display: block;
+		position: fixed;
+		inset: 0;
+		z-index: 40;
+		background: var(--overlay);
+	}
+
+	.bg-pop {
+		position: fixed;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 41;
+		width: auto;
+		padding: 14px 16px calc(16px + env(safe-area-inset-bottom));
+		border-width: 1px 0 0;
+		border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+	}
+
+	.bg-pop__title {
+		font-size: 15px;
+	}
+
+	.bg-pop__grid {
+		gap: 10px;
+	}
+
+	.bg-pop__note {
+		font-size: 12.5px;
 	}
 }
 </style>
