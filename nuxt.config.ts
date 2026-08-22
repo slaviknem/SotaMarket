@@ -165,4 +165,27 @@ export default defineNuxtConfig({
 			neoprint: { driver: 'fs', base: './.cache/neoprint' },
 		},
 	},
+
+	vite: {
+		plugins: [
+			// Vite 7 не зважає на /* @vite-ignore */ у динамічному import('#app-manifest')
+			// всередині nuxt/dist/app/composables/manifest.js і в dev сипле «Failed to resolve
+			// import #app-manifest». Аліас існує лише для серверної (Nitro) збірки; на клієнті
+			// та сама функція бере маніфест через $fetch('/_nuxt/builds/meta/<buildId>.json').
+			// Тож для клієнтського dev-графа віддаємо пустий стаб, а серверну гілку (opts.ssr)
+			// не чіпаємо — вона резолвиться як і раніше. Тільки dev (apply: 'serve'),
+			// прод-збірка лишається незмінною.
+			{
+				name: 'floy:silence-app-manifest',
+				enforce: 'pre',
+				apply: 'serve',
+				resolveId(id: string, _importer: string | undefined, opts?: { ssr?: boolean }) {
+					if (id === '#app-manifest' && !opts?.ssr) return '\0floy-app-manifest-stub'
+				},
+				load(id: string) {
+					if (id === '\0floy-app-manifest-stub') return 'export default {}'
+				},
+			},
+		],
+	},
 })

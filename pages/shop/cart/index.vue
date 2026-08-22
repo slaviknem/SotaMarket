@@ -187,7 +187,11 @@
 								<input v-model="courierDelivery" type="checkbox" />
 								<span class="checkbox__box"><AppIcon name="check" :size="10" /></span>
 								{{ t('cart.courierCheckbox') }}
-								<b v-if="courierExtra" class="courier-toggle__price">+{{ formatPrice(courierExtra) }}</b>
+								<b
+									v-if="courierExtra"
+									class="courier-toggle__price"
+									:class="{ 'courier-toggle__price--active': courierDelivery }"
+								>+{{ formatPrice(courierExtra) }}</b>
 							</label>
 							<p v-if="isCourier" class="field-hint courier-toggle__note">{{ t('cart.courierNote') }}</p>
 
@@ -1149,11 +1153,20 @@ async function sendOrder() {
 	margin-bottom: 14px;
 }
 
+/* До вибору доплата за кур'єра — тиха підказка, а не цінник з акцентом.
+   Після галочки клієнт свідомо обрав опцію, тож підсвічуємо суму плашкою. */
 .courier-toggle__price {
 	margin-left: auto;
 	padding: 2px 8px;
-	background: var(--accent-soft);
 	border-radius: var(--radius-pill);
+	font-size: 11.5px;
+	font-weight: 500;
+	color: var(--text-muted);
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.courier-toggle__price--active {
+	background: var(--accent-soft);
 	font-size: 12.5px;
 	font-weight: 700;
 	color: var(--accent);
