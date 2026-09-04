@@ -847,6 +847,14 @@ watch(
 async function sendOrder() {
 	// Enter у полі теж сабмітить форму — захищаємось від повторного відправлення
 	if (sending.value) return
+
+	// Порожній кошик не оформлюємо: саме так у адмінку прилітали замовлення без товару
+	// (кошик уже очищено попередньою відправкою, а форма ще на екрані)
+	if (!cart.state.value.items.length) {
+		notify('error', t('cart.cartEmpty'))
+		return
+	}
+
 	submitted.value = true
 
 	const invalid = fields.value.find((f) => !f.valid)
@@ -896,14 +904,32 @@ async function sendOrder() {
 	if (!isComment.value) delete orderData.comments
 
 	sending.value = true
+
+	let newOrder: any = null
 	try {
-		const newOrder = await shopApi.sendOrder(orderData)
-		cart.removeAll()
-		router.push({ path: localePath('/shop/cart/success'), query: newOrder || {} })
+		newOrder = await shopApi.sendOrder(orderData)
 	} catch {
-		notify('error', 'Error')
+		// Не відправилось — кнопку розблоковуємо, кошик лишається цілим
+		notify('error', t('message.orderFailed'))
+		sending.value = false
+		return
 	}
-	sending.value = false
+
+	// Замовлення прийняте: sending лишаємо true до кінця життя сторінки, щоб зайвий клік
+	// (поки браузер переходить на «дякуємо») не створив дубль
+	cart.removeAll()
+
+	// Сторінці подяки потрібні лише номер, дата й сума. Тягти в URL усе замовлення разом
+	// із позиціями — це довжелезний рядок, на якому перехід може зірватись
+	const query = { id: newOrder?.id, date: newOrder?.date, suma_order: newOrder?.suma_order }
+
+	try {
+		await router.push({ path: localePath('/shop/cart/success'), query })
+	} catch {
+		// Перехід зірвався — але замовлення вже прийняте, тож кажемо про це на місці,
+		// а не показуємо помилку, після якої клієнт тисне «Оформити» ще раз
+		notify('success', t('success.youOrderReceived'))
+	}
 }
 </script>
 

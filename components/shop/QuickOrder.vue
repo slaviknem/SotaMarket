@@ -65,6 +65,9 @@ function onPhoneInput() {
 }
 
 async function send() {
+	// Подвійний клік по кнопці не має створювати два замовлення
+	if (sending.value) return
+
 	if (!isValidPhone(phone.value)) {
 		notify('error', t('cart.phoneNoCorrect'))
 		return
@@ -97,10 +100,14 @@ async function send() {
 		notify('success', t('quick.quickOrderSendMsg'))
 
 		if (newOrder?.id) {
-			router.push({ path: localePath('/shop/cart/success'), query: newOrder })
+			// Сторінці подяки потрібні лише номер, дата й сума (див. кошик)
+			router.push({
+				path: localePath('/shop/cart/success'),
+				query: { id: newOrder.id, date: newOrder.date, suma_order: newOrder.suma_order },
+			})
 		}
 	} catch {
-		notify('error', 'Error')
+		notify('error', t('message.orderFailed'))
 	}
 	sending.value = false
 }

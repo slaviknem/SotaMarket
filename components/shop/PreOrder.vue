@@ -69,6 +69,9 @@ function onPhoneInput() {
 }
 
 async function send() {
+	// Подвійний клік по кнопці не має створювати два передзамовлення
+	if (sending.value) return
+
 	if (!isValidPhone(phone.value)) {
 		notify('error', t('cart.phoneNoCorrect'))
 		return
