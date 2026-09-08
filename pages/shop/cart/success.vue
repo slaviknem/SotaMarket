@@ -15,7 +15,7 @@
 				<button v-if="payable" class="btn btn-primary btn-lg" :disabled="payLoading || checking" @click="payOnline">
 					{{ t('success.payOnline') }}
 				</button>
-				<p v-else class="success__nopay text-muted">{{ t('success.payUnavailable') }}</p>
+				<p v-else-if="isOnlinePayment" class="success__nopay text-muted">{{ t('success.payUnavailable') }}</p>
 			</template>
 
 			<div v-if="orderId" class="success__meta">
@@ -53,6 +53,9 @@ const isOrderPaid = computed(() => 'orderpaid' in route.query)
 const orderId = computed(() => route.query.id || route.query.order_id || '')
 const orderDate = computed(() => route.query.date || '')
 const orderSum = computed(() => route.query.suma_order || '')
+
+// Клієнт обрав саме онлайн-оплату (ключ той самий, що в кошику)
+const isOnlinePayment = computed(() => route.query.payment === 'online_payment')
 
 const payLoading = ref(false)
 
@@ -120,6 +123,7 @@ async function payOnline() {
 .success__nopay {
 	max-width: 460px;
 	margin-top: 10px;
+	font-size: 13px;
 }
 
 .success__meta {

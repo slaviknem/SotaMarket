@@ -921,7 +921,9 @@ async function sendOrder() {
 
 	// Сторінці подяки потрібні лише номер, дата й сума. Тягти в URL усе замовлення разом
 	// із позиціями — це довжелезний рядок, на якому перехід може зірватись
-	const query = { id: newOrder?.id, date: newOrder?.date, suma_order: newOrder?.suma_order }
+	// payment потрібен, щоб на «дякуємо» показати повідомлення про недоступну онлайн-оплату
+	// лише тому, хто її й обрав
+	const query = { id: newOrder?.id, date: newOrder?.date, suma_order: newOrder?.suma_order, payment: order.payment }
 
 	try {
 		await router.push({ path: localePath('/shop/cart/success'), query })
