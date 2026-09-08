@@ -241,6 +241,13 @@ export function useShopApi() {
 				order_id: orderId,
 			}),
 
+		// Чи можна платити онлайн: у замовленні є друк, а заготовок під нього в постачальників немає.
+		// status: ok | split | none | unknown | null (друку в замовленні немає)
+		printCheck: (orderId: string | number) =>
+			api<{ payable: boolean; status: string | null }>('orders/print_check', {
+				order_id: orderId,
+			}),
+
 		// Останні опубліковані відгуки (головна, сторінка відгуків).
 		// minRating > 0 — лише відгуки з оцінкою не нижче вказаної (напр. 4 = тільки 4-5 зірок)
 		getLatestReviews: async (limit = 8, minRating = 0) => {

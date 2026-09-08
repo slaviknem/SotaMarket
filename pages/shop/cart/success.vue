@@ -11,9 +11,12 @@
 				{{ isOrderPaid ? t('success.orderPaidMessage') : t('success.youOrderReceived') }}
 			</p>
 
-			<button v-if="!isOrderPaid && orderId" class="btn btn-primary btn-lg" :disabled="payLoading" @click="payOnline">
-				{{ t('success.payOnline') }}
-			</button>
+			<template v-if="!isOrderPaid && orderId">
+				<button v-if="payable" class="btn btn-primary btn-lg" :disabled="payLoading || checking" @click="payOnline">
+					{{ t('success.payOnline') }}
+				</button>
+				<p v-else class="success__nopay text-muted">{{ t('success.payUnavailable') }}</p>
+			</template>
 
 			<div v-if="orderId" class="success__meta">
 				<div class="success__meta-item">
@@ -53,6 +56,25 @@ const orderSum = computed(() => route.query.suma_order || '')
 
 const payLoading = ref(false)
 
+// Онлайн-оплата доступна не завжди: якщо в замовленні є друк (індивідуальний, неопринт,
+// альфапринт), а порожніх чохлів під нього в постачальників немає, платити наперед не можна -
+// гроші довелося б повертати. Ховаємо кнопку лише за ЯВНОЇ відмови бекенда: збій перевірки
+// не привід не брати оплату
+const payable = ref(true)
+const checking = ref(true)
+
+onMounted(async () => {
+	if (isOrderPaid.value || !orderId.value) {
+		checking.value = false
+		return
+	}
+	try {
+		const res = await shopApi.printCheck(String(orderId.value))
+		if (res?.payable === false) payable.value = false
+	} catch { /* не знаємо - лишаємо кнопку */ }
+	checking.value = false
+})
+
 async function payOnline() {
 	if (!orderId.value) return
 	payLoading.value = true
@@ -63,8 +85,11 @@ async function payOnline() {
 		} else {
 			notify('error', (data as any)?.message || 'Error')
 		}
-	} catch {
-		notify('error', 'Error')
+	} catch (e: any) {
+		// Бекенд відмовляє з поясненням (напр. на модель немає заготовок під друк, а вкладка
+		// зі старою перевіркою лишилась відкритою) - показуємо саме його, а не «Error»
+		notify('error', e?.data?.message || 'Error')
+		if (e?.status === 409) payable.value = false
 	}
 	payLoading.value = false
 }
@@ -89,6 +114,11 @@ async function payOnline() {
 }
 
 .success .btn-primary {
+	margin-top: 10px;
+}
+
+.success__nopay {
+	max-width: 460px;
 	margin-top: 10px;
 }
 
