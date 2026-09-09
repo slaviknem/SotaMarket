@@ -242,10 +242,12 @@ export function useShopApi() {
 			}),
 
 		// Чи можна платити онлайн: у замовленні є друк, а заготовок під нього в постачальників немає.
-		// status: ok | split | none | unknown | null (друку в замовленні немає)
-		printCheck: (orderId: string | number) =>
-			api<{ payable: boolean; status: string | null }>('orders/print_check', {
-				order_id: orderId,
+		// status: ok | split | none | unknown | null (друку в замовленні немає).
+		// Перевірка ходить до постачальників, тому приймає власний ліміт часу
+		printCheck: (orderId: string | number, timeoutMs = 15000) =>
+			$fetch<{ payable: boolean; status: string | null }>(config.public.urlApi + 'orders/print_check', {
+				params: { ...baseParams(), order_id: orderId },
+				signal: AbortSignal.timeout(timeoutMs),
 			}),
 
 		// Останні опубліковані відгуки (головна, сторінка відгуків).

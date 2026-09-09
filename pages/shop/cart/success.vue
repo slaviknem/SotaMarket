@@ -12,7 +12,7 @@
 			</p>
 
 			<template v-if="!isOrderPaid && orderId">
-				<button v-if="payable" class="btn btn-primary btn-lg" :disabled="payLoading || checking" @click="payOnline">
+				<button v-if="payable" class="btn btn-primary btn-lg" :disabled="payLoading" @click="payOnline">
 					{{ t('success.payOnline') }}
 				</button>
 				<p v-else-if="isOnlinePayment" class="success__nopay text-muted">{{ t('success.payUnavailable') }}</p>
@@ -61,21 +61,22 @@ const payLoading = ref(false)
 
 // Онлайн-оплата доступна не завжди: якщо в замовленні є друк (індивідуальний, неопринт,
 // альфапринт), а порожніх чохлів під нього в постачальників немає, платити наперед не можна -
-// гроші довелося б повертати. Ховаємо кнопку лише за ЯВНОЇ відмови бекенда: збій перевірки
-// не привід не брати оплату
+// гроші довелося б повертати.
+//
+// Кнопку показуємо ОДРАЗУ і НЕ блокуємо на час перевірки: та ходить до постачальників і на
+// холодному кеші триває секунди, а раніше весь цей час кнопка стояла сірою - саме на це
+// («не натискається», «спочатку не працює, потім працює») і скаржились клієнти.
+// Ховаємо її лише за ЯВНОЇ відмови; якщо клієнт устиг натиснути раніше - його зупинить
+// перевірка на боці gen_monopay_link, тож заплатити за ненадрукований чохол він не зможе
 const payable = ref(true)
-const checking = ref(true)
 
 onMounted(async () => {
-	if (isOrderPaid.value || !orderId.value) {
-		checking.value = false
-		return
-	}
+	if (isOrderPaid.value || !orderId.value) return
 	try {
-		const res = await shopApi.printCheck(String(orderId.value))
+		// Ліміт часу свій: без нього зависла відповідь тримала б стан «перевіряємо» до таймауту nginx
+		const res = await shopApi.printCheck(String(orderId.value), 15000)
 		if (res?.payable === false) payable.value = false
 	} catch { /* не знаємо - лишаємо кнопку */ }
-	checking.value = false
 })
 
 async function payOnline() {
@@ -84,10 +85,14 @@ async function payOnline() {
 	try {
 		const data = await shopApi.genMonopayLink(String(orderId.value))
 		if (data?.payment_link) {
-			window.open(data.payment_link, '_blank')
-		} else {
-			notify('error', (data as any)?.message || 'Error')
+			// Переходимо в ЦІЙ самій вкладці. window.open тут викликався вже після await,
+			// тобто поза жестом користувача - Safari і Chrome глушили таке вікно мовчки,
+			// і для клієнта кнопка просто «не працювала». Та й повертає нас MonoPay
+			// на цю ж сторінку (?orderpaid), тож окрема вкладка лишалась би зайвою
+			window.location.href = data.payment_link
+			return
 		}
+		notify('error', (data as any)?.message || 'Error')
 	} catch (e: any) {
 		// Бекенд відмовляє з поясненням (напр. на модель немає заготовок під друк, а вкладка
 		// зі старою перевіркою лишилась відкритою) - показуємо саме його, а не «Error»
