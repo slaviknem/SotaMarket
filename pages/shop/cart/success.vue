@@ -29,14 +29,14 @@
 							<button class="btn btn-primary btn-lg btn-block" :disabled="payLoading" @click="payOnline(false)">
 								{{ payMode === 'prepay' ? t('success.payProcessing') : t('success.payPrepay', { sum: prepay }) }}
 							</button>
-							<span class="success__pay-hint">{{ t('success.payPrepayHint') }}</span>
+							<span class="success__pay-hint">{{ payPrepayHint }}</span>
 						</div>
 
 						<div class="success__pay-option">
 							<button class="btn btn-outline btn-lg btn-block" :disabled="payLoading" @click="payOnline(true)">
 								{{ payMode === 'full' ? t('success.payProcessing') : t('success.payFull', { sum: total }) }}
 							</button>
-							<span class="success__pay-hint">{{ payFullHint }}</span>
+							<span class="success__pay-hint" :class="{ 'success__pay-hint--gain': codFee }">{{ payFullHint }}</span>
 						</div>
 					</div>
 				</template>
@@ -72,7 +72,7 @@
 			</div>
 
 			<NuxtLink :to="localePath('/')" class="btn btn-secondary success__home">
-				{{ t('error404.home') }}
+				{{ t('cart.continueShopping') }}
 			</NuxtLink>
 		</div>
 	</div>
@@ -125,6 +125,12 @@ const codFee = computed<number | null>(() => {
 	if (!tariff.value) return null
 	return total.value >= freeDeliveryFrom.value ? 0 : Number(tariff.value.nal_plateg) || 0
 })
+
+// Понад поріг безкоштовної доставки на пошті платити нічого — обіцяти там «доставку
+// й комісію» було б неправдою
+const payPrepayHint = computed(() =>
+	t(codFee.value === 0 ? 'success.payPrepayHintFree' : 'success.payPrepayHint')
+)
 
 const payFullHint = computed(() => {
 	if (codFee.value === null) return t('success.payFullHint')
@@ -272,6 +278,12 @@ async function payOnline(full = false) {
 	font-size: 12.5px;
 	line-height: 1.4;
 	color: var(--text-muted);
+}
+
+/* Економія на комісії — єдина реальна різниця між варіантами, тож вона має читатись
+   з першого погляду, а не губитись у сірій примітці */
+.success__pay-hint--gain {
+	color: var(--success);
 }
 
 @media (max-width: 560px) {

@@ -92,16 +92,18 @@
 							<span>{{ t('cart.total') }}</span>
 							<b>≈ {{ formatPrice(grandTotal) }}</b>
 						</div>
-						<!-- Аванс за індивідуальний друк: клієнт має побачити його ДО кнопки
-						     «Оформити», а не вперше на сторінці подяки -->
-						<template v-if="prepay">
+						<!-- Розбиття підсумку на «наперед» і «при отриманні». Аванс за друк клієнт має
+						     побачити ДО кнопки «Оформити», а не вперше на сторінці подяки; при перед-
+						     і онлайн-оплаті так само видно, що доставка лишається на пошту -->
+						<template v-if="payNow">
 							<div class="cart-summary__row cart-summary__row--prepay">
-								<span>{{ t('cart.prepayLabel') }}</span>
-								<b>{{ formatPrice(prepay) }}</b>
+								<span>{{ prepay ? t('cart.prepayLabel') : t('cart.payNowFull') }}</span>
+								<b>{{ formatPrice(payNow) }}</b>
 							</div>
 							<div class="cart-summary__row">
 								<span>{{ t('cart.dueOnDelivery') }}</span>
-								<b>≈ {{ formatPrice(dueOnDelivery) }}</b>
+								<b v-if="dueOnDelivery">≈ {{ formatPrice(dueOnDelivery) }}</b>
+								<b v-else>{{ t('cart.dueNothing') }}</b>
 							</div>
 						</template>
 						<p class="cart-summary__note">{{ t('cart.deliveryNote') }}</p>
@@ -387,11 +389,15 @@
 							/>
 						</div>
 
-						<!-- 5. Підтвердження: сума поруч із кнопкою, а не лише вгорі сторінки -->
+						<!-- 5. Підтвердження: сума поруч із кнопкою, а не лише вгорі сторінки.
+						     Головне число — те, що клієнт заплатить найближчим платежем (аванс,
+						     онлайн-оплата чи вся сума на пошті), решта розкладки — приміткою -->
 						<div class="checkout-total">
-							<span>{{ t('cart.toPay') }}</span>
-							<b>≈ {{ formatPrice(grandTotal) }}</b>
+							<span>{{ payNow ? t('cart.toPayNow') : t('cart.toPayOnDelivery') }}</span>
+							<b v-if="payNow">{{ formatPrice(payNow) }}</b>
+							<b v-else>≈ {{ formatPrice(grandTotal) }}</b>
 						</div>
+						<p v-if="payNow" class="checkout-total__hint">{{ totalHint }}</p>
 
 						<button type="submit" class="btn btn-primary btn-lg btn-block" :disabled="sending">
 							<span v-if="sending" class="spinner" />
@@ -485,6 +491,15 @@ const prepayNote = computed(() =>
 	})
 )
 const dueOnDelivery = computed(() => cart.dueOnDeliveryFor(order.payment, tariffKey.value))
+
+// Сума найближчого платежу + примітка з рештою розкладки під кнопкою
+const payNow = computed(() => cart.payNowFor(order.payment))
+const totalHint = computed(() =>
+	t(dueOnDelivery.value ? 'cart.toPayHint' : 'cart.toPayHintNothing', {
+		total: formatPrice(grandTotal.value),
+		due: formatPrice(dueOnDelivery.value),
+	})
+)
 
 // Доплата за адресну доставку — показуємо прямо в галочці, щоб вона не спливала
 // несподівано в підсумку. Понад поріг безкоштовної доставки різниці немає — тоді 0.
@@ -1309,6 +1324,14 @@ async function sendOrder() {
 	font-weight: 800;
 	color: var(--accent);
 	white-space: nowrap;
+}
+
+/* Розкладка решти сум — тихою приміткою: головне число вже стоїть вище */
+.checkout-total__hint {
+	margin: -6px 0 12px;
+	font-size: 12.5px;
+	line-height: 1.4;
+	color: var(--text-muted);
 }
 
 /* Радіо */

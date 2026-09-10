@@ -128,9 +128,16 @@ export function useCart() {
 		return sum > 0 && sum < total.value ? sum : 0
 	}
 
-	// Скільки клієнт доплатить при отриманні: підсумок мінус уже внесений аванс
+	// Скільки клієнт вносить наперед. При накладеному це аванс за друк (0, якщо друку немає),
+	// при перед-/онлайн-оплаті — вся вартість товарів: доставку він у будь-якому разі віддає
+	// перевізникові на місці. Потрібне, щоб біля кнопки стояла сума найближчого платежу,
+	// а не орієнтовний підсумок — інакше «≈399 грн» читається як «знімуть зараз».
+	const payNowFor = (payment = 'nal_plateg') =>
+		payment === 'nal_plateg' ? prepayFor(payment) : total.value
+
+	// Скільки клієнт доплатить при отриманні: підсумок мінус те, що вже внесено наперед
 	const dueOnDeliveryFor = (payment = 'nal_plateg', method?: string) =>
-		grandTotalFor(payment, method) - prepayFor(payment)
+		grandTotalFor(payment, method) - payNowFor(payment)
 
 	function add(payload: {
 		product: any
@@ -198,7 +205,7 @@ export function useCart() {
 		state.value.discount = discount
 	}
 
-	return { state, quantity, subtotal, total, grandTotal, grandTotalFor, codFee, shipping, shippingFor, freeDelivery, isFreeFor, printcaseQty, prepayFor, dueOnDeliveryFor, add, remove, removeAll, updateQuantity, setDiscount }
+	return { state, quantity, subtotal, total, grandTotal, grandTotalFor, codFee, shipping, shippingFor, freeDelivery, isFreeFor, printcaseQty, prepayFor, payNowFor, dueOnDeliveryFor, add, remove, removeAll, updateQuantity, setDiscount }
 }
 
 // Слайдер-кошик (mini-cart): глобальний стан відкриття.
