@@ -269,6 +269,14 @@ export function useShopApi() {
 			return res?.data ?? []
 		},
 
+		// Відгуки про конструктор чохлів. Без alias — усі (хаб /printcase збирає відгуки
+		// всіх моделей), з alias — лише відгуки цієї моделі. Мова не фільтрується:
+		// укр- і рос-версії сторінки показують один спільний список.
+		getPrintcaseReviews: async (categoryAlias?: string) => {
+			const res = await api<{ data: any[] }>(`reviews/printcase${categoryAlias ? '/' + categoryAlias : ''}`)
+			return res?.data ?? []
+		},
+
 		// Відгук
 		sendReview: (review: Record<string, any>) =>
 			$fetch(config.public.urlApi + 'reviews/send', {

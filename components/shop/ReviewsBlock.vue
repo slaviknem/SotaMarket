@@ -33,6 +33,14 @@
 								</span>
 							</div>
 							<p class="review__text">{{ review.text }}</p>
+
+							<!-- Про яку модель відгук. Є лише у зведеному списку конструктора на
+							     /printcase: там зібрані відгуки всіх моделей, і без підпису незрозуміло,
+							     про що саме відгук (плюс посилання на конструктор тієї моделі). -->
+							<NuxtLink v-if="review.model" :to="url.printcase(review.model.alias)" class="review__model">
+								<AppIcon name="printer" :size="13" />
+								{{ review.model.title }}
+							</NuxtLink>
 						</div>
 					</article>
 				</div>
@@ -105,16 +113,23 @@
 <script setup lang="ts">
 const props = defineProps<{
 	reviews: any[]
-	// Прив'язка відгука: товар / категорія (модель, фільтр) / стаття (інфо-сторінки, конструктор)
-	type: 'product' | 'category' | 'article'
+	// Прив'язка відгука: товар / категорія (модель, фільтр) / стаття (інфо-сторінки, блог) /
+	// printcase (конструктор чохлів — окремий тип, прив'язка до моделі через category_id)
+	type: 'product' | 'category' | 'article' | 'printcase'
+	// id об'єкта; для конструктора на хабі /printcase моделі немає — тоді 0
 	targetId: number
 	// Заголовок секції (h2); без нього — лише список + форма (напр. у табі товару)
 	title?: string
+	// Шлях сторінки для запису у відгук. Потрібен там, де адресу переписує history.replaceState
+	// (конструктор при виборі моделі) — route.path там лишається старим. Інакше — поточний роут.
+	pageUrl?: string
 }>()
 
 const { t } = useI18n()
 const config = useRuntimeConfig()
+const route = useRoute()
 const shopApi = useShopApi()
+const url = useUrl()
 const { notify } = useNotify()
 
 const author = ref('')
@@ -136,6 +151,16 @@ const PER_PAGE = 6
 const page = ref(1)
 const totalPages = computed(() => Math.ceil(allReviews.value.length / PER_PAGE))
 const listCol = ref<HTMLElement | null>(null)
+
+// Зміна об'єкта (вибір іншої моделі в конструкторі — без навігації, компонент лишається
+// той самий) скидає і локальні відгуки, і сторінку: чужий відгук у новому списку не місце
+watch(
+	() => `${props.type}-${props.targetId}`,
+	() => {
+		localReviews.value = []
+		page.value = 1
+	}
+)
 
 function goToPage(p: number) {
 	page.value = p
@@ -163,12 +188,15 @@ async function submit() {
 			rating: rating.value,
 			type: props.type,
 			product_id: props.type === 'product' ? props.targetId : 0,
-			category_id: props.type === 'category' ? props.targetId : 0,
+			// printcase прив'язується до моделі тією ж колонкою, що й категорія
+			category_id: props.type === 'category' || props.type === 'printcase' ? props.targetId : 0,
 			article_id: props.type === 'article' ? props.targetId : 0,
 			email: email.value.trim(),
 			provider: 'site',
 			avatar: '',
-			url: '',
+			// Реальна адреса сторінки (з мовним префіксом, фільтром, моделлю конструктора) —
+			// в адмінці це клікабельне посилання, і зібрати її з типу+id бекенд не може
+			url: url.absolute(props.pageUrl || route.path),
 			site: config.public.site,
 		})
 
@@ -355,6 +383,21 @@ async function submit() {
 	color: var(--text-soft);
 	white-space: pre-line;
 	overflow-wrap: anywhere;
+}
+
+/* Підпис моделі під відгуком (зведений список конструктора на хабі) */
+.review__model {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	margin-top: 8px;
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--text-muted);
+}
+
+.review__model:hover {
+	color: var(--accent);
 }
 
 /* Форма: картка, липне під шапкою поки скролиться список */

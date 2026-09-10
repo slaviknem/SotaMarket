@@ -441,14 +441,20 @@
 			</NuxtLink>
 		</nav>
 
-		<!-- Відгуки про сам конструктор — лише на хабі: на сторінках моделей це був би
-		     один і той самий блок на тисячі URL -->
+		<!-- Відгуки про конструктор. На сторінці моделі — відгуки саме цієї моделі (свій
+		     контент на кожній адресі, не дубль), на хабі — усі відгуки конструктора, включно
+		     з відгуками всіх моделей. Мова не розділяє список: відгук про послугу один для
+		     укр- і рос-версій. page-url — бо на цій сторінці адресу переписує replaceState. -->
 		<ShopReviewsBlock
-			v-if="articleId"
-			:reviews="hubReviews"
-			type="article"
-			:target-id="articleId"
-			:title="t('reviews.title')"
+			:reviews="reviews"
+			type="printcase"
+			:target-id="model?.id || 0"
+			:page-url="url.printcase(model?.alias)"
+			:title="
+				isModelPage
+					? t('printcase.seo.reviewsTitle', { model: names.full })
+					: t('printcase.seo.reviewsTitleHub')
+			"
 			class="pc-block"
 		/>
 
@@ -520,7 +526,7 @@ interface PcModel {
 // Стаття своя (printcase-{модель}) має пріоритет над шаблоном (printcase-template),
 // у якому підставляються плейсхолдери моделі — та сама механіка, що на сторінках фільтрів.
 async function fetchModelBundle(alias: string) {
-	const [category, own, tpl, designs, filters] = await Promise.all([
+	const [category, own, tpl, designs, filters, reviews] = await Promise.all([
 		shopApi.getCategoryByAlias(alias),
 		shopApi.getArticleByAlias(`printcase-${alias}`),
 		shopApi.getArticleByAlias('printcase-template'),
@@ -528,6 +534,8 @@ async function fetchModelBundle(alias: string) {
 		// Дерево тем для меню над дизайнами. У ту саму хвилю — latency не росте, а payload
 		// тримаємо коротким: лише alias/title/id тем і підтем (лічильники тут не потрібні).
 		shopApi.getFilters(alias).catch(() => []),
+		// Відгуки про друк саме на цю модель (type=printcase, category_id=модель)
+		shopApi.getPrintcaseReviews(alias).catch(() => []),
 	])
 
 	if (!category?.id || category.type !== 'model') return null
@@ -570,8 +578,7 @@ async function fetchModelBundle(alias: string) {
 		metaDescription: ownArticle?.meta_description || fromTpl('meta_description'),
 		designs: category.printcase ? designs : [],
 		themeTree: category.printcase ? buildThemeTree(filters) : [],
-		articleId: 0,
-		hubReviews: [] as any[],
+		reviews: (reviews || []) as any[],
 		popularModels: [] as { alias: string; title: string }[],
 	}
 }
@@ -580,9 +587,11 @@ async function fetchModelBundle(alias: string) {
 // Повний обхід усіх /printcase/{модель} краулер робить не звідси, а зі сторінок моделей —
 // там картка конструктора стоїть першою в сітці товарів.
 async function fetchHubBundle() {
-	const [article, popular] = await Promise.all([
+	const [article, popular, reviews] = await Promise.all([
 		shopApi.getArticleByAlias('printcase'),
 		shopApi.getPopularCategory({ type: 'model', limit: 8 }),
+		// Хаб збирає відгуки про конструктор з усіх моделей — тут вони всі разом
+		shopApi.getPrintcaseReviews().catch(() => []),
 	])
 
 	return {
@@ -595,8 +604,7 @@ async function fetchHubBundle() {
 		metaDescription: article?.meta_description || '',
 		designs: [] as any[],
 		themeTree: [] as IThemeNode[],
-		articleId: article?.id || 0,
-		hubReviews: (article?.reviews || []) as any[],
+		reviews: (reviews || []) as any[],
 		popularModels: (popular || []).map((m: any) => ({ alias: m.alias, title: m.title_full || m.title })),
 	}
 }
@@ -612,8 +620,7 @@ if (props.modelAlias && !data.value) {
 
 const category = computed(() => data.value?.category || null)
 const articleHtml = computed(() => data.value?.articleHtml || '')
-const articleId = computed(() => data.value?.articleId || 0)
-const hubReviews = computed(() => data.value?.hubReviews || [])
+const reviews = computed(() => data.value?.reviews || [])
 const popularModels = computed(() => data.value?.popularModels || [])
 
 const names = computed(() => catNames(category.value))
@@ -1776,10 +1783,9 @@ useJsonLd(() => ({
 	url: url.absolute(url.printcase(model.value?.alias)),
 	...(category.value ? { sku: `PC-${category.value.id}` } : {}),
 	brand: { '@type': 'Brand', name: config.public.siteName },
-	// Відгуки про конструктор + зведений рейтинг — лише на хабі: саме там вони зібрані
-	// й показані. Переносити їх на сторінки моделей не можна — оцінка має стосуватися
-	// того, що на сторінці, і той самий блок на тисячах URL Google рахує накруткою.
-	...(isModelPage.value ? {} : reviewsJsonLd(data.value?.hubReviews)),
+	// Відгуки та зведений рейтинг рівно ті, що показані на цій сторінці: у моделі — її
+	// власні (у кожної адреси свої, не дубль), на хабі — усі відгуки конструктора.
+	...reviewsJsonLd(reviews.value),
 	offers: {
 		'@type': 'Offer',
 		url: url.absolute(url.printcase(model.value?.alias)),
