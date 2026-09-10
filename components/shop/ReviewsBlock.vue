@@ -36,12 +36,13 @@
 							</div>
 							<p class="review__text">{{ review.text }}</p>
 
-							<!-- Про яку модель відгук. Є лише у зведеному списку конструктора на
-							     /printcase: там зібрані відгуки всіх моделей, і без підпису незрозуміло,
-							     про що саме відгук (плюс посилання на конструктор тієї моделі). -->
+							<!-- Позначка відгука про індивідуальний друк + вхід у конструктор тієї моделі.
+							     У зведеному списку на /printcase це назва моделі (там зібрані відгуки всіх
+							     моделей, і без підпису незрозуміло, про що відгук), а серед відгуків самої
+							     моделі назва зайва — там важливо лише, що відгук про друк. -->
 							<NuxtLink v-if="review.model" :to="url.printcase(review.model.alias)" class="review__model">
 								<AppIcon name="printer" :size="13" />
-								{{ review.model.title }}
+								{{ type === 'printcase' ? review.model.title : t('reviews.printcaseTag') }}
 							</NuxtLink>
 						</div>
 					</article>
