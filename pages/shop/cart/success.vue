@@ -18,7 +18,34 @@
 			<!-- prepayPaid перевіряємо окремо від isOrderPaid: клієнт міг заплатити й повернутись
 			     на сторінку без ?orderpaid — пропонувати оплату вдруге не можна -->
 			<template v-if="!isOrderPaid && !prepayPaid && orderId">
-				<button v-if="payable" class="btn btn-primary btn-lg" :disabled="payLoading" @click="payOnline">
+				<!-- Аванс: клієнт може внести тільки його або одразу закрити все замовлення.
+				     Обидві кнопки видно завжди — вибір «доплачу на пошті / не хочу возитись
+				     з готівкою» клієнт має зробити тут, а не писати про це менеджеру -->
+				<template v-if="payable && prepay && total > prepay">
+					<p class="success__pay-title">{{ t('success.payChoiceTitle') }}</p>
+
+					<div class="success__pay">
+						<div class="success__pay-option">
+							<button class="btn btn-primary btn-lg btn-block" :disabled="payLoading" @click="payOnline(false)">
+								{{ payMode === 'prepay' ? t('success.payProcessing') : t('success.payPrepay', { sum: prepay }) }}
+							</button>
+							<span class="success__pay-hint">
+								{{ leftToPay ? t('success.payPrepayHintSum', { sum: leftToPay }) : t('success.payPrepayHint') }}
+							</span>
+						</div>
+
+						<div class="success__pay-option">
+							<button class="btn btn-outline btn-lg btn-block" :disabled="payLoading" @click="payOnline(true)">
+								{{ payMode === 'full' ? t('success.payProcessing') : t('success.payFull', { sum: total }) }}
+							</button>
+							<span class="success__pay-hint">{{ t('success.payFullHint') }}</span>
+						</div>
+					</div>
+				</template>
+
+				<!-- Звичайна онлайн-оплата, або аванс без відомої повної суми (порожній
+				     suma_order в URL) — тоді вибору не даємо, беремо як і раніше аванс -->
+				<button v-else-if="payable" class="btn btn-primary btn-lg" :disabled="payLoading" @click="payOnline(false)">
 					{{ prepay ? t('success.payPrepay', { sum: prepay }) : t('success.payOnline') }}
 				</button>
 				<!-- Заготовок під друк немає — оплату не беремо. Раніше пояснення бачив лише той,
@@ -79,6 +106,10 @@ const prepay = ref(prepayFromUrl)
 const prepayPaid = ref(isOrderPaid.value && prepayFromUrl > 0)
 const leftToPay = ref(0)
 
+// Повна сума замовлення — її бере кнопка «сплатити всю суму». З URL вона є одразу,
+// printCheck нижче лише підтверджує те саме значення, тож напис на кнопці не стрибає
+const total = ref(Number(route.query.suma_order || 0) || 0)
+
 const headline = computed(() => {
 	if (prepayPaid.value) return t('success.prepayReceived')
 	return isOrderPaid.value ? t('success.orderPaid') : t('success.thankYou')
@@ -90,6 +121,10 @@ const headlineNote = computed(() => {
 })
 
 const payLoading = ref(false)
+
+// Яку саме кнопку натиснули: поки йде запит, обидві заблоковані, але «Зачекайте…»
+// показуємо лише на натиснутій - інакше не видно, який варіант обрано
+const payMode = ref<'prepay' | 'full' | null>(null)
 
 // Онлайн-оплата доступна не завжди: якщо в замовленні є друк (індивідуальний, неопринт,
 // альфапринт), а порожніх чохлів під нього в постачальників немає, платити наперед не можна -
@@ -110,10 +145,13 @@ onMounted(async () => {
 
 		// Стан авансу беремо з бекенда - він знає його точно, на відміну від URL
 		if (res?.prepay) prepay.value = res.prepay
-		if (res?.prepay_paid) {
-			prepayPaid.value = true
-			leftToPay.value = res.left_to_pay || 0
-		}
+		if (res?.total) total.value = res.total
+
+		// left_to_pay потрібен не лише ПІСЛЯ оплати авансу: під кнопкою «сплатити передоплату»
+		// він показує, скільки лишиться доплатити на пошті (з доставкою). Поки не приїхав -
+		// підпис іде без суми, щоб не показати число, яке потім зміниться
+		if (res?.left_to_pay) leftToPay.value = res.left_to_pay
+		if (res?.prepay_paid) prepayPaid.value = true
 
 		// Заготовок під друк немає - кнопку ховаємо (для вже оплаченого замовлення
 		// бекенд теж віддає payable=false, але там блок і так не показується)
@@ -121,11 +159,14 @@ onMounted(async () => {
 	} catch { /* не знаємо - лишаємо кнопку */ }
 })
 
-async function payOnline() {
+// full - клієнт обрав закрити всю суму замість авансу. Скільки це в грошах, вирішує
+// бекенд за самим замовленням: суму з браузера він не приймає
+async function payOnline(full = false) {
 	if (!orderId.value) return
 	payLoading.value = true
+	payMode.value = full ? 'full' : 'prepay'
 	try {
-		const data = await shopApi.genMonopayLink(String(orderId.value))
+		const data = await shopApi.genMonopayLink(String(orderId.value), full)
 		if (data?.payment_link) {
 			// Переходимо в ЦІЙ самій вкладці. window.open тут викликався вже після await,
 			// тобто поза жестом користувача - Safari і Chrome глушили таке вікно мовчки,
@@ -142,6 +183,7 @@ async function payOnline() {
 		if (e?.status === 409) payable.value = false
 	}
 	payLoading.value = false
+	payMode.value = null
 }
 </script>
 
@@ -171,6 +213,52 @@ async function payOnline() {
 	max-width: 460px;
 	margin-top: 10px;
 	font-size: 13px;
+}
+
+/* ---------- Вибір суми оплати (аванс / усе одразу) ---------- */
+.success__pay-title {
+	margin-top: 18px;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+/* Дві колонки на десктопі, одна на телефоні. Кнопки однакової ширини — щоб «сплатити
+   всю суму» не читалась як другорядне посилання, це рівноцінний варіант, а не запасний */
+.success__pay {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 260px));
+	gap: 14px;
+	margin-top: 12px;
+	width: 100%;
+	max-width: 540px;
+	justify-content: center;
+}
+
+.success__pay-option {
+	display: flex;
+	flex-direction: column;
+	gap: 7px;
+}
+
+/* Знімаємо відступ одиночної кнопки (.success .btn-primary) — у парі він зсував
+   акцентну кнопку вниз відносно сусідньої */
+.success__pay .btn {
+	margin-top: 0;
+}
+
+/* Підпис під кнопкою — головне в цьому блоці: він каже, ЩО буде далі,
+   інакше клієнт обирає між двома сумами навмання */
+.success__pay-hint {
+	font-size: 12.5px;
+	line-height: 1.4;
+	color: var(--text-muted);
+}
+
+@media (max-width: 560px) {
+	.success__pay {
+		grid-template-columns: minmax(0, 1fr);
+		max-width: 340px;
+	}
 }
 
 /* Скільки лишилось доплатити — після «передоплату отримано» це головне,

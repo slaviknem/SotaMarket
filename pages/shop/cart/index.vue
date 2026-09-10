@@ -360,7 +360,7 @@
 										<!-- Аванс стосується лише накладеного: при перед-/онлайн-оплаті
 										     клієнт і так платить усе наперед -->
 										<span v-if="payment.key === 'nal_plateg' && prepayIfCod" class="radio__note">
-											{{ t('cart.prepayNote', { sum: formatPrice(prepayIfCod), one: prepayPerCase }) }}
+											{{ prepayNote }}
 										</span>
 									</label>
 								</div>
@@ -475,6 +475,15 @@ const grandTotal = computed(() => cart.grandTotalFor(order.payment, tariffKey.va
 const prepay = computed(() => cart.prepayFor(order.payment))
 const prepayIfCod = computed(() => cart.prepayFor('nal_plateg'))
 const prepayPerCase = computed(() => sitePrices.value.prepay_printcase)
+
+// На один чохол сума «за кожен» і загальна збігаються, і «50 грн за кожен — разом 50 грн»
+// читається як помилка. Тому для одного — коротке формулювання без «разом»
+const prepayNote = computed(() =>
+	t(cart.printcaseQty.value > 1 ? 'cart.prepayNoteMany' : 'cart.prepayNote', {
+		sum: formatPrice(prepayIfCod.value),
+		one: formatPrice(prepayPerCase.value),
+	})
+)
 const dueOnDelivery = computed(() => cart.dueOnDeliveryFor(order.payment, tariffKey.value))
 
 // Доплата за адресну доставку — показуємо прямо в галочці, щоб вона не спливала

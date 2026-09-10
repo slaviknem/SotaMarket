@@ -235,10 +235,13 @@ export function useShopApi() {
 		// Відстеження замовлення (номер замовлення / телефон / ТТН)
 		trackOrder: (q: string) => api<ITrackOrder>('orders/track', { q }),
 
-		// Посилання на оплату MonoPay
-		genMonopayLink: (orderId: string | number) =>
+		// Посилання на оплату MonoPay.
+		// full=1 — «сплатити всю суму» замість авансу. Суму не передаємо НІКОЛИ: це лише
+		// перемикач, скільки саме брати — вирішує бекенд за самим замовленням
+		genMonopayLink: (orderId: string | number, full = false) =>
 			api<{ success: boolean; payment_link?: string }>('orders/gen_monopay_link', {
 				order_id: orderId,
+				...(full ? { full: 1 } : {}),
 			}),
 
 		// Чи можна платити онлайн: у замовленні є друк, а заготовок під нього в постачальників немає.
@@ -253,6 +256,7 @@ export function useShopApi() {
 				prepay?: number
 				prepay_paid?: boolean
 				left_to_pay?: number
+				total?: number // повна сума замовлення — її бере кнопка «сплатити всю суму»
 			}>(config.public.urlApi + 'orders/print_check', {
 				params: { ...baseParams(), order_id: orderId },
 				signal: AbortSignal.timeout(timeoutMs),
