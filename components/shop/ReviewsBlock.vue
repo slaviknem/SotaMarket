@@ -1,5 +1,7 @@
 <template>
-	<section class="reviews">
+	<!-- id="reviews" — якір для посилань «до відгуків» (з рейтингу біля H1, з меню,
+	     ззовні). Один блок відгуків на сторінку, тож id лишається унікальним. -->
+	<section id="reviews" class="reviews">
 		<!-- Заголовок секції (опційно) + зведений рейтинг -->
 		<header v-if="title || stats.ratedCount" class="reviews__head">
 			<h2 v-if="title" class="reviews__title">{{ title }} <span v-if="stats.count" class="reviews__count">({{ stats.count }})</span></h2>
@@ -223,6 +225,11 @@ async function submit() {
 </script>
 
 <style scoped>
+/* Якір #reviews: не ховаємо заголовок під прибитою шапкою при переході за посиланням */
+.reviews {
+	scroll-margin-top: calc(var(--header-stuck-h) + 10px);
+}
+
 .reviews__head {
 	display: flex;
 	align-items: center;

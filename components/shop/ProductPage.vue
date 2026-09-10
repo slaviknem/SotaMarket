@@ -20,7 +20,7 @@
 					<!-- Зведений рейтинг біля H1. Google показує зірочки лише тоді, коли оцінка
 					     з мікророзмітки видима на сторінці — таб «Відгуки» нижче для цього
 					     недостатньо очевидний. Клік веде саме туди. -->
-					<button v-if="stats.ratedCount" class="product__rating" @click="activeTab = 'reviews'">
+					<button v-if="stats.ratedCount" class="product__rating" @click="openReviews()">
 						<RatingStars :value="stats.avg" :size="15" />
 						<span class="product__rating-val">{{ stats.avg }}</span>
 						<span class="text-muted">({{ stats.ratedCount }})</span>
@@ -456,6 +456,21 @@ const tabs = computed(() => [
 
 const activeTab = ref('description')
 
+// Якір #reviews. Блок відгуків тут усередині таба, тобто display:none — браузер до
+// прихованого якоря не доскролить, тож таб спершу відкриваємо самі.
+const route = useRoute()
+
+async function openReviews() {
+	activeTab.value = 'reviews'
+	await nextTick()
+	document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+// Зовнішнє посилання з #reviews: і при заході на сторінку, і при зміні хеша вже на ній
+watch(() => route.hash, (hash) => {
+	if (hash === '#reviews') openReviews()
+})
+
 // ---------- SEO ----------
 // canonical/og ідуть за URL: на сторінці варіанта (або після вибору принта) це /attr/{alias}
 const canonicalPath = computed(() =>
@@ -489,6 +504,9 @@ useProductJsonLd({
 // Облік візитів
 onMounted(() => {
 	shopApi.addVisit(modelCategory.value?.id || 0, product.value?.id || 0, selectedAttributeId.value)
+
+	// Зайшли одразу за посиланням на відгуки — розкриваємо потрібний таб
+	if (route.hash === '#reviews') openReviews()
 })
 </script>
 
