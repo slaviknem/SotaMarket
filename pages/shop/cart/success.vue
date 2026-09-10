@@ -29,16 +29,14 @@
 							<button class="btn btn-primary btn-lg btn-block" :disabled="payLoading" @click="payOnline(false)">
 								{{ payMode === 'prepay' ? t('success.payProcessing') : t('success.payPrepay', { sum: prepay }) }}
 							</button>
-							<span class="success__pay-hint">
-								{{ leftToPay ? t('success.payPrepayHintSum', { sum: leftToPay }) : t('success.payPrepayHint') }}
-							</span>
+							<span class="success__pay-hint">{{ t('success.payPrepayHint') }}</span>
 						</div>
 
 						<div class="success__pay-option">
 							<button class="btn btn-outline btn-lg btn-block" :disabled="payLoading" @click="payOnline(true)">
 								{{ payMode === 'full' ? t('success.payProcessing') : t('success.payFull', { sum: total }) }}
 							</button>
-							<span class="success__pay-hint">{{ t('success.payFullHint') }}</span>
+							<span class="success__pay-hint">{{ payFullHint }}</span>
 						</div>
 					</div>
 				</template>
@@ -110,6 +108,30 @@ const leftToPay = ref(0)
 // printCheck нижче лише підтверджує те саме значення, тож напис на кнопці не стрибає
 const total = ref(Number(route.query.suma_order || 0) || 0)
 
+// ---------- Що клієнт заплатить на пошті, якщо закриє все зараз ----------
+// Обираючи повну оплату, він економить саме комісію за накладений платіж. Вона в кожного
+// перевізника своя (НП 20, Укрпошта 15), тому беремо її з тарифів за delivery із URL.
+// Понад поріг безкоштовної доставки її немає взагалі — тоді на пошті платити нічого.
+const { delivery: siteDelivery, freeDeliveryFrom } = useSiteSettings()
+
+const tariff = computed(() => {
+	const node = (siteDelivery.value as Record<string, any>)[String(route.query.delivery || '')]
+	// у вузлі delivery поруч із тарифами лежить і free_delivery_from (число) — беремо лише тариф
+	return node && typeof node === 'object' ? node : null
+})
+
+// null — перевізник невідомий (стара вкладка, посилання без delivery): числа не називаємо
+const codFee = computed<number | null>(() => {
+	if (!tariff.value) return null
+	return total.value >= freeDeliveryFrom.value ? 0 : Number(tariff.value.nal_plateg) || 0
+})
+
+const payFullHint = computed(() => {
+	if (codFee.value === null) return t('success.payFullHint')
+	if (codFee.value === 0) return t('success.payFullHintNothing')
+	return t('success.payFullHintFee', { fee: codFee.value })
+})
+
 const headline = computed(() => {
 	if (prepayPaid.value) return t('success.prepayReceived')
 	return isOrderPaid.value ? t('success.orderPaid') : t('success.thankYou')
@@ -146,12 +168,10 @@ onMounted(async () => {
 		// Стан авансу беремо з бекенда - він знає його точно, на відміну від URL
 		if (res?.prepay) prepay.value = res.prepay
 		if (res?.total) total.value = res.total
-
-		// left_to_pay потрібен не лише ПІСЛЯ оплати авансу: під кнопкою «сплатити передоплату»
-		// він показує, скільки лишиться доплатити на пошті (з доставкою). Поки не приїхав -
-		// підпис іде без суми, щоб не показати число, яке потім зміниться
-		if (res?.left_to_pay) leftToPay.value = res.left_to_pay
-		if (res?.prepay_paid) prepayPaid.value = true
+		if (res?.prepay_paid) {
+			prepayPaid.value = true
+			leftToPay.value = res.left_to_pay || 0
+		}
 
 		// Заготовок під друк немає - кнопку ховаємо (для вже оплаченого замовлення
 		// бекенд теж віддає payable=false, але там блок і так не показується)

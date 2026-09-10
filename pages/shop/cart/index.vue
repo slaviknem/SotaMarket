@@ -960,11 +960,15 @@ async function sendOrder() {
 	// лише тому, хто її й обрав.
 	// prepay беремо з ВІДПОВІДІ бекенда, а не зі свого розрахунку: суму авансу визначає він,
 	// і показати клієнту треба саме те, що реально записано в замовленні
+	// delivery потрібен сторінці подяки, щоб назвати комісію за накладений платіж:
+	// вона в кожного перевізника своя (НП 20, Укрпошта 15), а саме на неї клієнт
+	// економить, якщо обере там «сплатити всю суму»
 	const query: Record<string, any> = {
 		id: newOrder?.id,
 		date: newOrder?.date,
 		suma_order: newOrder?.suma_order,
 		payment: order.payment,
+		delivery: order.delivery,
 	}
 
 	if (newOrder?.suma_predoplata) query.prepay = newOrder.suma_predoplata
