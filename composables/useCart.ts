@@ -102,6 +102,36 @@ export function useCart() {
 		total.value + shippingFor(method).delivery + codFee(payment, method)
 	const grandTotal = computed(() => grandTotalFor())
 
+	// ---------- Аванс за індивідуальний друк ----------
+	// Чохол з малюнком клієнта друкується персонально і не може бути проданий нікому іншому,
+	// тому при накладеному платежі частину суми беремо наперед.
+	//
+	// Ознака саме ІНДИВІДУАЛЬНОГО друку — заповнений printcase при порожньому attribute:
+	//   конструктор → printcase = макет, attribute = 0
+	//   NeoPrint    → printcase = шаблон, attribute = id дизайну (аванс не беремо)
+	//   альфапринт  → printcase порожній (звичайний товар)
+	// Та сама умова продубльована на бекенді (Actions/PrintCase/Prepay.php) — і саме він
+	// рахує суму насправді; тут вона лише щоб показати її клієнту заздалегідь.
+	const { prices } = useSiteSettings()
+
+	const printcaseQty = computed(() =>
+		state.value.items.reduce((n, i) => n + (i.printcase && !i.attribute ? i.quantity : 0), 0)
+	)
+
+	const prepayFor = (payment = 'nal_plateg') => {
+		if (payment !== 'nal_plateg') return 0
+
+		const sum = printcaseQty.value * (prices.value.prepay_printcase || 0)
+
+		// Аванс мусить лишатись ЧАСТКОВОЮ оплатою — інакше накладеного платежу не лишається
+		// (та сама умова в Prepay::sumFor, щоб сайт і бекенд не розійшлись)
+		return sum > 0 && sum < total.value ? sum : 0
+	}
+
+	// Скільки клієнт доплатить при отриманні: підсумок мінус уже внесений аванс
+	const dueOnDeliveryFor = (payment = 'nal_plateg', method?: string) =>
+		grandTotalFor(payment, method) - prepayFor(payment)
+
 	function add(payload: {
 		product: any
 		attribute?: number
@@ -168,7 +198,7 @@ export function useCart() {
 		state.value.discount = discount
 	}
 
-	return { state, quantity, subtotal, total, grandTotal, grandTotalFor, codFee, shipping, shippingFor, freeDelivery, isFreeFor, add, remove, removeAll, updateQuantity, setDiscount }
+	return { state, quantity, subtotal, total, grandTotal, grandTotalFor, codFee, shipping, shippingFor, freeDelivery, isFreeFor, printcaseQty, prepayFor, dueOnDeliveryFor, add, remove, removeAll, updateQuantity, setDiscount }
 }
 
 // Слайдер-кошик (mini-cart): глобальний стан відкриття.

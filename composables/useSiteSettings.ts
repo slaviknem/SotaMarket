@@ -24,6 +24,8 @@ export interface SiteSettings {
 		printcase_old: number
 		neoprint: number
 		neoprint_old: number
+		// Аванс за ОДИН чохол індивідуального друку при накладеному платежі (0 = не беремо)
+		prepay_printcase: number
 	}
 	delivery: {
 		n_pochta: DeliveryTariff
@@ -55,6 +57,7 @@ const DEFAULTS: SiteSettings = {
 		printcase_old: 299,
 		neoprint: 259,
 		neoprint_old: 299,
+		prepay_printcase: 50,
 	},
 	delivery: {
 		n_pochta: { delivery: 60, nal_plateg: 20 },

@@ -92,6 +92,18 @@
 							<span>{{ t('cart.total') }}</span>
 							<b>≈ {{ formatPrice(grandTotal) }}</b>
 						</div>
+						<!-- Аванс за індивідуальний друк: клієнт має побачити його ДО кнопки
+						     «Оформити», а не вперше на сторінці подяки -->
+						<template v-if="prepay">
+							<div class="cart-summary__row cart-summary__row--prepay">
+								<span>{{ t('cart.prepayLabel') }}</span>
+								<b>{{ formatPrice(prepay) }}</b>
+							</div>
+							<div class="cart-summary__row">
+								<span>{{ t('cart.dueOnDelivery') }}</span>
+								<b>≈ {{ formatPrice(dueOnDelivery) }}</b>
+							</div>
+						</template>
 						<p class="cart-summary__note">{{ t('cart.deliveryNote') }}</p>
 					</div>
 				</div>
@@ -345,6 +357,11 @@
 											{{ t('cart.' + payment.title) }}
 										</span>
 										<span class="radio__desc">{{ t('cart.' + payment.description) }}</span>
+										<!-- Аванс стосується лише накладеного: при перед-/онлайн-оплаті
+										     клієнт і так платить усе наперед -->
+										<span v-if="payment.key === 'nal_plateg' && prepayIfCod" class="radio__note">
+											{{ t('cart.prepayNote', { sum: formatPrice(prepayIfCod), one: prepayPerCase }) }}
+										</span>
 									</label>
 								</div>
 							</div>
@@ -404,6 +421,7 @@ const localePath = useLocalePath()
 const url = useUrl()
 const router = useRouter()
 const cart = useCart()
+const { prices: sitePrices } = useSiteSettings()
 const shopApi = useShopApi()
 const novaPochta = useNovaPochta()
 const ukrPoshta = useUkrPoshta()
@@ -450,6 +468,14 @@ const freeShipping = computed(() => cart.isFreeFor(tariffKey.value))
 const shipping = computed(() => cart.shippingFor(tariffKey.value))
 const codFee = computed(() => cart.codFee(order.payment, tariffKey.value))
 const grandTotal = computed(() => cart.grandTotalFor(order.payment, tariffKey.value))
+
+// Аванс за індивідуальний друк. prepay — за обраним способом оплати (0, якщо не накладений),
+// prepayIfCod — скільки це було б при накладеному: потрібен для примітки в самому радіо,
+// яка має бути видимою ще ДО того, як клієнт цей варіант обере.
+const prepay = computed(() => cart.prepayFor(order.payment))
+const prepayIfCod = computed(() => cart.prepayFor('nal_plateg'))
+const prepayPerCase = computed(() => sitePrices.value.prepay_printcase)
+const dueOnDelivery = computed(() => cart.dueOnDeliveryFor(order.payment, tariffKey.value))
 
 // Доплата за адресну доставку — показуємо прямо в галочці, щоб вона не спливала
 // несподівано в підсумку. Понад поріг безкоштовної доставки різниці немає — тоді 0.
@@ -922,8 +948,17 @@ async function sendOrder() {
 	// Сторінці подяки потрібні лише номер, дата й сума. Тягти в URL усе замовлення разом
 	// із позиціями — це довжелезний рядок, на якому перехід може зірватись
 	// payment потрібен, щоб на «дякуємо» показати повідомлення про недоступну онлайн-оплату
-	// лише тому, хто її й обрав
-	const query = { id: newOrder?.id, date: newOrder?.date, suma_order: newOrder?.suma_order, payment: order.payment }
+	// лише тому, хто її й обрав.
+	// prepay беремо з ВІДПОВІДІ бекенда, а не зі свого розрахунку: суму авансу визначає він,
+	// і показати клієнту треба саме те, що реально записано в замовленні
+	const query: Record<string, any> = {
+		id: newOrder?.id,
+		date: newOrder?.date,
+		suma_order: newOrder?.suma_order,
+		payment: order.payment,
+	}
+
+	if (newOrder?.suma_predoplata) query.prepay = newOrder.suma_predoplata
 
 	try {
 		await router.push({ path: localePath('/shop/cart/success'), query })
@@ -1117,6 +1152,18 @@ async function sendOrder() {
 .cart-summary__row--total b {
 	color: var(--accent);
 	font-size: 20px;
+}
+
+/* Аванс іде ПІСЛЯ підсумку: це не доданок до нього, а розбиття вже порахованої
+   суми на «зараз» і «при отриманні» */
+.cart-summary__row--prepay {
+	margin-top: 6px;
+	padding-top: 10px;
+	border-top: 1px dashed var(--border);
+}
+
+.cart-summary__row--prepay b {
+	color: var(--accent);
 }
 
 .cart-summary__note {
@@ -1327,6 +1374,15 @@ async function sendOrder() {
 	font-size: 12.5px;
 	color: var(--text-muted);
 	padding-left: 28px;
+}
+
+/* Умова, про яку клієнт має дізнатись до вибору, а не після оформлення */
+.radio__note {
+	margin-top: 6px;
+	padding-left: 28px;
+	font-size: 12.5px;
+	line-height: 1.45;
+	color: var(--accent);
 }
 
 /* Чекбокс */

@@ -243,9 +243,17 @@ export function useShopApi() {
 
 		// Чи можна платити онлайн: у замовленні є друк, а заготовок під нього в постачальників немає.
 		// status: ok | split | none | unknown | null (друку в замовленні немає).
+		// Заразом віддає стан авансу за індивідуальний друк (prepay / prepay_paid / left_to_pay) —
+		// після повернення з MonoPay суми в URL уже немає, а показати її треба.
 		// Перевірка ходить до постачальників, тому приймає власний ліміт часу
 		printCheck: (orderId: string | number, timeoutMs = 15000) =>
-			$fetch<{ payable: boolean; status: string | null }>(config.public.urlApi + 'orders/print_check', {
+			$fetch<{
+				payable: boolean
+				status: string | null
+				prepay?: number
+				prepay_paid?: boolean
+				left_to_pay?: number
+			}>(config.public.urlApi + 'orders/print_check', {
 				params: { ...baseParams(), order_id: orderId },
 				signal: AbortSignal.timeout(timeoutMs),
 			}),

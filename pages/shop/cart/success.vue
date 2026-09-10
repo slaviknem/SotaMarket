@@ -6,16 +6,29 @@
 				<svg v-else width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
 			</div>
 
-			<h1>{{ isOrderPaid ? t('success.orderPaid') : t('success.thankYou') }}</h1>
-			<p class="text-muted">
-				{{ isOrderPaid ? t('success.orderPaidMessage') : t('success.youOrderReceived') }}
+			<h1>{{ headline }}</h1>
+			<p class="text-muted">{{ headlineNote }}</p>
+
+			<!-- Аванс отримано: головне тут — сказати, що на пошті ще доведеться доплатити,
+			     інакше клієнт вирішить, що замовлення оплачене повністю -->
+			<p v-if="prepayPaid && leftToPay" class="success__left">
+				{{ t('success.prepayLeft', { sum: leftToPay }) }}
 			</p>
 
-			<template v-if="!isOrderPaid && orderId">
+			<!-- prepayPaid перевіряємо окремо від isOrderPaid: клієнт міг заплатити й повернутись
+			     на сторінку без ?orderpaid — пропонувати оплату вдруге не можна -->
+			<template v-if="!isOrderPaid && !prepayPaid && orderId">
 				<button v-if="payable" class="btn btn-primary btn-lg" :disabled="payLoading" @click="payOnline">
-					{{ t('success.payOnline') }}
+					{{ prepay ? t('success.payPrepay', { sum: prepay }) : t('success.payOnline') }}
 				</button>
-				<p v-else-if="isOnlinePayment" class="success__nopay text-muted">{{ t('success.payUnavailable') }}</p>
+				<!-- Заготовок під друк немає — оплату не беремо. Раніше пояснення бачив лише той,
+				     хто обрав онлайн-оплату; тепер і той, з кого чекали аванс -->
+				<p v-else-if="isOnlinePayment || prepay" class="success__nopay text-muted">
+					{{ t('success.payUnavailable') }}
+				</p>
+				<p v-if="payable && prepay" class="success__nopay text-muted">
+					{{ t('success.prepayByRequisites') }}
+				</p>
 			</template>
 
 			<div v-if="orderId" class="success__meta">
@@ -57,6 +70,25 @@ const orderSum = computed(() => route.query.suma_order || '')
 // Клієнт обрав саме онлайн-оплату (ключ той самий, що в кошику)
 const isOnlinePayment = computed(() => route.query.payment === 'online_payment')
 
+// ---------- Аванс за індивідуальний друк ----------
+// Суму знаємо одразу з URL: кошик кладе її з відповіді бекенда, а MonoPay повертає клієнта
+// на посилання, у яке бекенд її вже дописав. Тому напис не «блимає», поки йде printCheck.
+// Той запит лишається джерелом правди й уточнює стан (напр. після перезавантаження сторінки).
+const prepayFromUrl = Number(route.query.prepay || 0) || 0
+const prepay = ref(prepayFromUrl)
+const prepayPaid = ref(isOrderPaid.value && prepayFromUrl > 0)
+const leftToPay = ref(0)
+
+const headline = computed(() => {
+	if (prepayPaid.value) return t('success.prepayReceived')
+	return isOrderPaid.value ? t('success.orderPaid') : t('success.thankYou')
+})
+
+const headlineNote = computed(() => {
+	if (prepayPaid.value) return t('success.prepayReceivedMessage')
+	return isOrderPaid.value ? t('success.orderPaidMessage') : t('success.youOrderReceived')
+})
+
 const payLoading = ref(false)
 
 // Онлайн-оплата доступна не завжди: якщо в замовленні є друк (індивідуальний, неопринт,
@@ -71,10 +103,20 @@ const payLoading = ref(false)
 const payable = ref(true)
 
 onMounted(async () => {
-	if (isOrderPaid.value || !orderId.value) return
+	if (!orderId.value) return
 	try {
 		// Ліміт часу свій: без нього зависла відповідь тримала б стан «перевіряємо» до таймауту nginx
 		const res = await shopApi.printCheck(String(orderId.value), 15000)
+
+		// Стан авансу беремо з бекенда - він знає його точно, на відміну від URL
+		if (res?.prepay) prepay.value = res.prepay
+		if (res?.prepay_paid) {
+			prepayPaid.value = true
+			leftToPay.value = res.left_to_pay || 0
+		}
+
+		// Заготовок під друк немає - кнопку ховаємо (для вже оплаченого замовлення
+		// бекенд теж віддає payable=false, але там блок і так не показується)
 		if (res?.payable === false) payable.value = false
 	} catch { /* не знаємо - лишаємо кнопку */ }
 })
@@ -129,6 +171,16 @@ async function payOnline() {
 	max-width: 460px;
 	margin-top: 10px;
 	font-size: 13px;
+}
+
+/* Скільки лишилось доплатити — після «передоплату отримано» це головне,
+   що клієнт має винести зі сторінки, тож помітніше за примітку */
+.success__left {
+	max-width: 460px;
+	margin-top: 4px;
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--accent);
 }
 
 .success__meta {
