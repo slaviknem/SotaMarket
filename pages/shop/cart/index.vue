@@ -389,17 +389,13 @@
 							/>
 						</div>
 
-						<!-- 5. Підтвердження: сума поруч із кнопкою, а не лише вгорі сторінки.
-						     Головне число — те, що клієнт заплатить найближчим платежем (аванс,
-						     онлайн-оплата чи вся сума на пошті), решта розкладки — приміткою -->
-						<div class="checkout-total">
-							<span>{{ payNow ? t('cart.toPayNow') : t('cart.toPayOnDelivery') }}</span>
-							<b v-if="payNow">{{ formatPrice(payNow) }}</b>
-							<b v-else>≈ {{ formatPrice(grandTotal) }}</b>
-						</div>
-						<p v-if="payNow" class="checkout-total__hint">{{ totalHint }}</p>
-
-						<button type="submit" class="btn btn-primary btn-lg btn-block" :disabled="sending">
+						<!-- 5. Підтвердження. Розкладку сум клієнт уже бачив у підсумку кошика,
+						     тому тут лишається тільки дія -->
+						<button
+							type="submit"
+							class="btn btn-primary btn-lg btn-block checkout-submit"
+							:disabled="sending"
+						>
 							<span v-if="sending" class="spinner" />
 							{{ sending ? t('cart.sendingOrder') : t('cart.placeOrder') }}
 						</button>
@@ -492,14 +488,8 @@ const prepayNote = computed(() =>
 )
 const dueOnDelivery = computed(() => cart.dueOnDeliveryFor(order.payment, tariffKey.value))
 
-// Сума найближчого платежу + примітка з рештою розкладки під кнопкою
+// Сума найближчого платежу — для розбиття підсумку кошика
 const payNow = computed(() => cart.payNowFor(order.payment))
-const totalHint = computed(() =>
-	t(dueOnDelivery.value ? 'cart.toPayHint' : 'cart.toPayHintNothing', {
-		total: formatPrice(grandTotal.value),
-		due: formatPrice(dueOnDelivery.value),
-	})
-)
 
 // Доплата за адресну доставку — показуємо прямо в галочці, щоб вона не спливала
 // несподівано в підсумку. Понад поріг безкоштовної доставки різниці немає — тоді 0.
@@ -1306,32 +1296,9 @@ async function sendOrder() {
 	padding-left: 48px;
 }
 
-/* Підсумок над кнопкою — сума поруч із дією, а не лише вгорі сторінки */
-.checkout-total {
-	display: flex;
-	align-items: baseline;
-	justify-content: space-between;
-	gap: 12px;
-	margin: 20px 0 12px;
-	padding-top: 14px;
-	border-top: 1px solid var(--border);
-	font-size: 15px;
-	color: var(--text-soft);
-}
-
-.checkout-total b {
-	font-size: 22px;
-	font-weight: 800;
-	color: var(--accent);
-	white-space: nowrap;
-}
-
-/* Розкладка решти сум — тихою приміткою: головне число вже стоїть вище */
-.checkout-total__hint {
-	margin: -6px 0 12px;
-	font-size: 12.5px;
-	line-height: 1.4;
-	color: var(--text-muted);
+/* Кнопку відбиваємо від полів форми, щоб дія читалася окремим кроком */
+.checkout-submit {
+	margin-top: 22px;
 }
 
 /* Радіо */
