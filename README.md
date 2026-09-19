@@ -50,21 +50,25 @@ $env:PORT = "3000"
 node .output\server\index.mjs
 ```
 
-Деплой на хостинг: потрібен **Node 18+ (краще 20/22)**. Залити проєкт (без `node_modules`, `.nuxt`, `.output`, `.node`),
-виконати `npm install && npm run build`, запускати `node .output/server/index.mjs` через pm2:
+Потрібен **Node 18+** (на проді v22.23.1): у node 16 немає глобальних `fetch`/`Headers`,
+і Nuxt 3 піднімається мертвим — 200 без товарів і 404 на всіх сторінках моделей.
 
-```js
-// ecosystem.config.js (приклад для pm2)
-module.exports = {
-	apps: [{
-		name: 'floy-new',
-		script: '.output/server/index.mjs',
-		env: { PORT: 3000, NITRO_HOST: '127.0.0.1' },
-	}],
-}
+Запуск на сервері описано у **`ecosystem.config.cjs`** (у корені репозиторію), одна команда:
+
+```bash
+cd /root/nodeapps/FLOY-PROD
+pm2 start ecosystem.config.cjs
+pm2 save
 ```
 
-Nginx проксіює домен на цей порт — так само, як зараз проксіюється старий Nuxt 2.
+Копії (за замовчуванням 4, змінна `FLOY_WORKERS` у тому ж файлі) форкає **`cluster.mjs`**,
+а не PM2: у cluster-режимі PM2 ігнорує `--interpreter` і копії дістаються від його демона
+на node 16. Тому в `pm2 list` завжди один рядок — це норма.
+
+Nginx проксіює домен на порт 3000 — так само, як проксіювався старий Nuxt 2.
+
+**Деталі експлуатації — `DEPLOY.md`, розділ «Як воно працює на сервері»:** дерево процесів,
+зміна кількості копій, перевірки після підйому, логи, кеш nginx, відкат.
 
 ## Налаштування (.env)
 
