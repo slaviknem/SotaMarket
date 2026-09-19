@@ -27,10 +27,13 @@ const { locale } = useI18n()
 const shopApi = useShopApi()
 const { infoMenu } = useSiteMenus()
 
-const { data: article } = await useAsyncData(
+const { data: article, error } = await useAsyncData(
 	`info-${props.alias}-${locale.value}`,
 	async () => (await shopApi.getArticleByAlias(props.alias)) ?? false
 )
+
+// API не відповів — 503, а не 404 (див. throwIfApiDown у useShopApi)
+throwIfApiDown(error.value, 'Article')
 
 if (!article.value) {
 	throw createError({ statusCode: 404, fatal: true })

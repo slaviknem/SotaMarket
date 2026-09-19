@@ -249,7 +249,7 @@ const keySuffix = computed(() => `${props.categoryAlias}-${props.filterAlias || 
 
 // null загортаємо у false, щоб useAsyncData не дублював запити на клієнті.
 // Бренди тягнемо лише в режимі лендінгу, фільтри — лише поза ним (порожні fetcher'и не б'ють API).
-const [{ data: category }, { data: filtersTree }, { data: brandsData }, { data: brandTilesData }] = await Promise.all([
+const [{ data: category, error: categoryError }, { data: filtersTree }, { data: brandsData }, { data: brandTilesData }] = await Promise.all([
 	useAsyncData('cat-' + keySuffix.value, async () => (await shopApi.getCategoryByAlias(props.categoryAlias)) ?? false),
 	useAsyncData('cat-filters-' + keySuffix.value, async () => (props.brandsLanding ? [] : shopApi.getFilters(props.categoryAlias))),
 	// Повний каталог брендів (бренд → серії → моделі) — лише для лендінгу /chekhly
@@ -286,8 +286,9 @@ const NEOPRINT_MAX = 240
 // Разом із фільтром тягнемо готові дизайни (NeoPrint) його теми — віртуальні товари,
 // яких немає в products: принт із бібліотеки, надрукований на чохлі цієї моделі.
 let filterPage = ref<any>(false)
+let filterError = ref<any>(null)
 if (props.filterAlias) {
-	const { data } = await useAsyncData('cat-filter-page-' + keySuffix.value, async () => {
+	const { data, error } = await useAsyncData('cat-filter-page-' + keySuffix.value, async () => {
 		const filter = await shopApi.getFilterByAlias(props.categoryAlias, props.filterAlias!)
 		if (!filter) return false
 
@@ -308,12 +309,21 @@ if (props.filterAlias) {
 		return { ...filter, neoprints }
 	})
 	filterPage = data
+	filterError = error
 }
+
+// API не відповів — 503, а не 404: сторінка жива, недоступні саме дані.
+// 404 тут Google читає як «сторінки більше немає» — див. throwIfApiDown.
+throwIfApiDown(categoryError.value, 'Category')
 
 // Категорію не знайдено — 404
 if (!category.value) {
 	throw createError({ statusCode: 404, statusMessage: 'Category not found', fatal: true })
 }
+
+// Те саме для фільтра, і тут ціна помилки ще вища: нижче стоїть ПОСТІЙНИЙ 301,
+// тобто одна аварія API навчила б Google, що сторінки фільтрів більше не існує.
+throwIfApiDown(filterError.value, 'Filter')
 
 // Сторінка фільтра: фільтр не знайдено — редірект на категорію
 if (props.filterAlias && !filterPage.value) {

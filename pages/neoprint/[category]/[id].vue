@@ -171,7 +171,7 @@ const id = computed(() => String(route.params.id))
 // щойно відомий filter_id. У payload кладемо лише те, що малює сторінка: короткі об'єкти дизайнів
 // (id/alias/назва) + опис лише активного (решту вантажимо на вимогу при перемиканні).
 // false замість null, щоб useAsyncData не повторював запит на клієнті.
-const { data } = await useAsyncData(
+const { data, error } = await useAsyncData(
 	`neoprint-${categoryAlias.value}-${id.value}-${locale.value}`,
 	async () => {
 		const [neoprint, category, filters] = await Promise.all([
@@ -237,6 +237,9 @@ const { data } = await useAsyncData(
 		}
 	}
 )
+
+// API не відповів — 503, а не 404 (див. throwIfApiDown у useShopApi)
+throwIfApiDown(error.value, 'NeoPrint')
 
 if (!data.value) {
 	throw createError({ statusCode: 404, statusMessage: 'Design not found', fatal: true })

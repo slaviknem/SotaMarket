@@ -296,3 +296,32 @@ export function useShopApi() {
 		},
 	}
 }
+
+// «API не відповів» ≠ «сутності немає». Виклик ставиться ПЕРЕД перевіркою на 404
+// у сторінках, які без даних показати нічого не можуть.
+//
+// Навіщо. 19.09.2026 фронт піднявся під node 16 (у ньому немає глобальних
+// fetch/Headers), кожен $fetch падав ще до виходу в мережу — і всі сторінки
+// моделей віддавали 404 «Category not found». Google за годину отримав 28 тис.
+// 404 за живі сторінки: для нього це «сторінки більше немає», тобто виліт із
+// індексу, тоді як 503 означає «зайди пізніше». Плюс 404 не кешується nginx,
+// тож кожен бот бив прямо в Node і аварія сама себе підсилювала.
+// Розбір — NOTES/plans/PLAN-FLOY-CATEGORY-404.md в адмінці.
+//
+// Порожня відповідь від ЖИВОГО API сюди не потрапляє: apisite на неіснуючий alias
+// віддає 200 і null (CategoryController::getCategoryByAlias), тобто помилки немає
+// і 404 на місці виклику лишається чинним.
+export function throwIfApiDown(error: unknown, what: string): void {
+	if (!error) return
+
+	// Якщо колись API почне відповідати 404 замість null — це теж «немає», не аварія
+	const status = (error as { statusCode?: number; status?: number })?.statusCode ?? (error as { status?: number })?.status
+	if (status === 404) return
+
+	throw createError({
+		statusCode: 503,
+		statusMessage: `${what} API unavailable`,
+		fatal: true,
+		cause: error,
+	})
+}

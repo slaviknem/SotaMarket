@@ -609,10 +609,13 @@ async function fetchHubBundle() {
 	}
 }
 
-const { data } = await useAsyncData(
+const { data, error } = await useAsyncData(
 	`printcase-${props.modelAlias || 'hub'}-${locale.value}`,
 	async () => (props.modelAlias ? await fetchModelBundle(props.modelAlias) : await fetchHubBundle())
 )
+
+// API не відповів — 503, а не 404 (див. throwIfApiDown у useShopApi)
+throwIfApiDown(error.value, 'Printcase')
 
 if (props.modelAlias && !data.value) {
 	throw createError({ statusCode: 404, statusMessage: 'Model not found', fatal: true })

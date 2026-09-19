@@ -39,7 +39,7 @@ const { t, locale } = useI18n()
 const shopApi = useShopApi()
 const { infoMenu } = useSiteMenus()
 
-const [{ data: article }, { data: latestReviews }] = await Promise.all([
+const [{ data: article, error }, { data: latestReviews }] = await Promise.all([
 	useAsyncData(
 		'info-otzyvy-' + locale.value,
 		async () => (await shopApi.getArticleByAlias('otzyvy-klientov')) ?? false
@@ -47,6 +47,9 @@ const [{ data: article }, { data: latestReviews }] = await Promise.all([
 	// Останні відгуки з усього сайту — лише з оцінкою 4-5 зірок
 	useAsyncData('otzyvy-latest-' + locale.value, () => shopApi.getLatestReviews(50, 4)),
 ])
+
+// API не відповів — 503, а не 404 (див. throwIfApiDown у useShopApi)
+throwIfApiDown(error.value, 'Article')
 
 if (!article.value) {
 	throw createError({ statusCode: 404, fatal: true })

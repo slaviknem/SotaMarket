@@ -66,22 +66,36 @@ SITE_URL=https://floy.com.ua npx nuxi build                     # НЕ build.cmd
 ## 3. Звільнити порт 3000 і запустити прод
 
 pm2-демон крутиться на node 16, сам додаток — на node 22 через `--interpreter`.
+Усе це описано в `ecosystem.config.cjs`, тому команда одна й без прапорців:
 
 ```bash
 nvm use 16                       # щоб pm2-команди йшли через робочий демон
 pm2 stop floy-test               # звільняємо 3000; саме stop, не delete
 cd /root/nodeapps/FLOY-PROD
-
-PORT=3000 \
-SITE_URL=https://floy.com.ua \
-URL_API=https://admin.floy.com.ua/apisite/ \
-URL_STORAGE=https://admin.floy.com.ua/storage/ \
-pm2 start .output/server/index.mjs \
-  --name floy-prod \
-  --interpreter /root/.nvm/versions/node/v22.23.1/bin/node
-
+pm2 start ecosystem.config.cjs
 pm2 save
 ```
+
+⚠️ **Не запускати руками без `--interpreter` і не додавати `-i N`.** Без прапорця
+PM2 бере node свого демона (16.20.2), а в cluster-режимі він ігнорує прапорець
+узагалі. У node 16 немає глобальних `fetch`/`Headers`, тож Nuxt 3 піднімається
+мертвим: головна без товарів, усі сторінки моделей — 404 «Category not found».
+19.09.2026 це коштувало доби. Кілька копій — через `FLOY_WORKERS` у
+`ecosystem.config.cjs` (форкає `cluster.mjs`, а не PM2).
+
+Перевірка, що піднялось під тим node:
+
+```bash
+readlink -f /proc/$(pgrep -f "FLOY-PROD/(cluster\.mjs|\.output/server/index\.mjs)" | head -1)/exe
+```
+
+Має бути `/root/.nvm/versions/node/v22.23.1/bin/node`. Саме `readlink /proc/<pid>/exe` —
+реальний бінарник процесу; `ps -o args=` тут бреше: PM2 у fork-режимі показує
+команду як `node <скрипт>` навіть із правильним інтерпретатором.
+
+`SITE_URL`, `URL_API`, `URL_STORAGE` в оточенні процесу не потрібні: `nuxt.config`
+читає їх під час **збірки** і зашиває в `.output`. У рантаймі зібране перекривають
+лише змінні виду `NUXT_PUBLIC_URL_API`.
 
 ## 4. Перевірити ДО перемикання домену
 
