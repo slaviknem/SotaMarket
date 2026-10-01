@@ -17,9 +17,7 @@
 			<!-- Опитувальник: «Дякуємо! Замовлення №… прийнято», модель, боки, номер, оплата -->
 			<template v-else-if="data">
 				<h1 class="visually-hidden">{{ t('success.thankYou') }}</h1>
-				<!-- Етап 1: відповіді ще не зберігаються. Прибирається разом із появою збереження -->
-				<p class="success__test">{{ t('confirm.testMode') }}</p>
-				<ShopOrderConfirm :data="data" :just-paid="justPaid" />
+				<ShopOrderConfirm :data="data" :token="token" :just-paid="justPaid" />
 			</template>
 
 			<!-- Опитувальника немає (посилання без токена, бекенд ще старий чи недоступний) —
@@ -72,19 +70,6 @@ const { data, status } = await useAsyncData(
 <style scoped>
 .success {
 	padding: 28px 0 60px;
-}
-
-/* Службова плашка над карткою — помітна, але не сперечається з питаннями */
-.success__test {
-	max-width: 620px;
-	margin: 0 auto 10px;
-	padding: 6px 12px;
-	border: 1px dashed var(--warning);
-	border-radius: var(--radius-sm);
-	background: var(--warning-soft);
-	font-size: 12.5px;
-	text-align: center;
-	color: var(--warning);
 }
 
 /* «Оплачено» після MonoPay — над карткою, щоб клієнт побачив це першим */

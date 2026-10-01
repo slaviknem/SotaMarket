@@ -6,7 +6,7 @@
 				<AppIcon name="check" :size="30" :stroke-width="2.6" />
 			</span>
 			<h2 class="oc__title">{{ t('confirm.doneTitle') }}</h2>
-			<p class="oc__sub">{{ t('confirm.doneSub', { day: order.dispatch, phone: phoneGrouped }) }}</p>
+			<p class="oc__sub">{{ t('confirm.doneSub', { day: order.dispatch }) }}</p>
 
 			<!-- Сумнів у моделі скасовує «не телефонувати»: тут дзвінок таки потрібен -->
 			<p v-if="modelDoubt" class="oc__note oc__note--warn">
@@ -16,10 +16,12 @@
 			<p v-else-if="!noCall" class="oc__note">{{ t('confirm.noCallOff') }}</p>
 			<p v-else class="oc__note oc__note--ok">{{ t('confirm.noCallOn') }}</p>
 			<p v-if="comment.trim()" class="oc__note">{{ t('confirm.doneComment') }}</p>
+			<p v-if="order.delivery_missing && address.trim()" class="oc__note">{{ t('confirm.doneDelivery') }}</p>
 
 			<div class="oc__final-actions">
+				<!-- Змінити відповіді після підтвердження не можна (рішення 2026-10-01): менеджер
+				     працює з тим, що клієнт підтвердив, — бекенд після нього відповіді й не приймає -->
 				<NuxtLink :to="localePath('/')" class="btn btn-secondary">{{ t('confirm.toHome') }}</NuxtLink>
-				<button type="button" class="link-btn" @click="reopen">{{ t('confirm.reopen') }}</button>
 			</div>
 		</div>
 
@@ -238,7 +240,7 @@
 											v-model="otherText[q.key]"
 											class="form-control"
 											:placeholder="t('confirm.otherPlaceholder')"
-											@input="errors[q.key] = ''"
+											@input="errors[q.key] = ''; save.later()"
 											@keydown.enter.prevent="next"
 										/>
 										<p v-if="errors[q.key]" class="field-error">{{ errors[q.key] }}</p>
@@ -289,6 +291,26 @@
 						<!-- Замовлення вже в роботі — лише перегляд: ні термінів (їх рахують від «зараз»,
 						     а відправлене вже поїхало), ні оплати, ні галочок -->
 						<template v-if="editable">
+							<!-- Чого бракує, щоб відправити: кошик доставки не вимагає, швидке замовлення —
+							     лише телефон. Не форма з відділеннями, а одне поле своїми словами — менеджер
+							     оформить сам. Без нього «підтверджую» не пускає: посилку однаково не відправити -->
+							<div v-if="order.delivery_missing" class="oc__deliv">
+								<p class="oc__note oc__note--warn">
+									<b>{{ t('confirm.deliveryTitle') }}</b> {{ order.delivery_missing }}
+								</p>
+								<textarea
+									id="oc-delivery"
+									v-model="address"
+									class="form-control oc__comment-field oc__deliv-field"
+									rows="2"
+									maxlength="300"
+									:aria-label="t('confirm.deliveryTitle')"
+									:placeholder="t('confirm.deliveryPlaceholder')"
+									@input="errors.delivery = ''; save.later()"
+								/>
+								<p v-if="errors.delivery" class="field-error">{{ errors.delivery }}</p>
+							</div>
+
 							<!-- Єдина НОВА для клієнта інформація на цьому екрані — тому вона й виділена -->
 							<div class="oc__next">
 								<AppIcon name="truck" :size="18" class="oc__next-ico" />
@@ -320,7 +342,7 @@
 
 								<div class="oc__pay-grid" :class="{ 'oc__pay-grid--one': payState !== 'prepay' }">
 									<div v-if="payState === 'prepay'" class="oc__pay-opt">
-										<button type="button" class="btn btn-outline btn-block" :disabled="payLoading" @click="payOnline(false)">
+										<button type="button" class="btn btn-outline btn-block" :disabled="payLoading" @click="payGo(false)">
 											{{ payMode === 'prepay' ? t('confirm.payWait') : t('confirm.payPrepay', { sum: pay.prepay }) }}
 										</button>
 										<span class="oc__pay-hint">{{ t('confirm.payPrepayHint') }}</span>
@@ -329,7 +351,7 @@
 									<div class="oc__pay-opt">
 										<!-- «За товар», а не «вся сума»: доставку клієнт однаково платить на пошті
 										     (так само на сторінці «Дякуємо») -->
-										<button type="button" class="btn btn-primary btn-block" :disabled="payLoading" @click="payOnline(true)">
+										<button type="button" class="btn btn-primary btn-block" :disabled="payLoading" @click="payGo(true)">
 											{{ payMode === 'full' ? t('confirm.payWait') : t(payState === 'prepay' ? 'confirm.payGoods' : 'confirm.payOnline', { sum: pay.full }) }}
 										</button>
 										<span v-if="payGain" class="oc__pay-hint oc__pay-hint--gain">{{ payGain }}</span>
@@ -340,7 +362,7 @@
 							<p v-if="tooMany" class="oc__note">{{ t('confirm.tooMany') }}</p>
 
 							<label v-else class="oc__check">
-								<input v-model="noCall" type="checkbox" />
+								<input v-model="noCall" type="checkbox" @change="save.later()" />
 								<span class="oc__check-text">
 									<!-- «Можна», а не «не телефонуйте»: це побажання, а не обіцянка. Якщо
 									     в замовленні знайдеться нюанс, менеджер однаково зв'яжеться — про це
@@ -367,6 +389,7 @@
 									rows="2"
 									maxlength="500"
 									:placeholder="t('confirm.commentPlaceholder')"
+									@input="save.later()"
 								/>
 							</div>
 						</template>
@@ -381,11 +404,13 @@
 					type="button"
 					class="btn btn-primary btn-lg btn-block"
 					:class="{ oc__confirm: showSummary }"
+					:disabled="saving"
 					@click="next"
 				>
 					<AppIcon v-if="showSummary" name="check" :size="18" :stroke-width="3" />
 					{{ ctaLabel }}
 				</button>
+				<p v-if="saveError" class="field-error oc__save-error">{{ t('confirm.saveError') }}</p>
 			</div>
 		</div>
 
@@ -416,13 +441,15 @@
  *
  * Компонент лише малює: які питання, у якому порядку, скільки екранів, суми й стан оплати
  * вирішує бекенд (OrderConfirm::forOrder в адмінці, apisite/orders/confirm).
- * Відповіді поки НЕ зберігаються — «підтверджую» лише показує фінальний екран.
+ * Відповіді зберігаються після кожної зміни (ConfirmAnswers в адмінці, поле orders.confirm_data) —
+ * повернувшись (з MonoPay, після перезавантаження), клієнт продовжує там, де зупинився.
  */
-import { ocPhoneGrouped, ocPhoneSuspicious, type OcBlock, type OcOption } from '~/composables/useOrderConfirm'
-import type { IOrderConfirm, IOrderConfirmItem } from '~/composables/useShopApi'
+import { ocPhoneGrouped, ocPhoneSuspicious, useOcSaver, type OcBlock, type OcOption } from '~/composables/useOrderConfirm'
+import type { IOrderConfirm, IOrderConfirmAnswers, IOrderConfirmItem } from '~/composables/useShopApi'
 
 const props = defineProps<{
 	data: IOrderConfirm
+	token: string // токен опитувальника — з ним бекенд приймає відповіді
 	// Клієнт щойно повернувся з MonoPay: що гроші дійшли, бекенд дізнається з вебхука, а він
 	// буває повільніший за клієнта. Тож оплату вдруге не пропонуємо, а повну оплату вважаємо
 	// закритою й без нього (про саму оплату каже сторінка над карткою)
@@ -431,6 +458,7 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const url = useUrl()
+const shopApi = useShopApi()
 const localePath = useLocalePath()
 const { maskPhone, isValidPhone, phoneDigits } = usePhone()
 
@@ -438,7 +466,9 @@ const { maskPhone, isValidPhone, phoneDigits } = usePhone()
 
 const order = computed(() => props.data.order)
 const items = computed(() => props.data.order.items)
-const blocks = computed(() => props.data.blocks)
+// Блоки боків, уточнені після перевірки постачальників (refreshColors), — поверх тих, що прийшли
+const fresh = ref<Record<string, OcBlock>>({})
+const blocks = computed(() => props.data.blocks.map((b) => fresh.value[b.key] || b))
 const pay = computed(() => props.data.pay)
 // Накладений платіж (за товар ще платять на пошті) — якщо не щойно сплатили все онлайн
 const cod = computed(() => order.value.cod && props.justPaid !== 'full')
@@ -452,9 +482,17 @@ const stepIndex = ref(0)
 const noCall = ref(true)
 const comment = ref('')
 const commentOpen = ref(false)
+const address = ref('') // куди відправити — лише коли бракує даних доставки (order.delivery_missing)
 const otherText = ref<Record<string, string>>({})
 const errors = ref<Record<string, string>>({})
 const helpOpen = ref(false)
+const saving = ref(false)
+const saveError = ref(false)
+
+// Відповіді, які дав сам клієнт: обрав варіант або пройшов крок кнопкою «Далі» (так він
+// підтвердив і підставлене «так, моя»). Підставлене на кроці, якого він ще не пройшов, — не його
+// відповідь, менеджеру її не шлемо. Потрібне лише для збереження, тож не реактивне
+let given = new Set<string>()
 
 // Номер клієнт править прямо тут, пропси не мутуємо
 const phone = ref('')
@@ -521,28 +559,49 @@ const phoneCheck = computed(() =>
 const phoneAlarm = computed(() => editable.value && phoneCheck.value === 'bad')
 const phoneSoft = computed(() => editable.value && phoneCheck.value === 'soft')
 
+// Стан опитувальника — зі збереженого, якщо клієнт уже відповідав (повернувся з MonoPay,
+// перезавантажив сторінку), інакше з нуля
 function reset() {
+	const saved = props.data.saved
 	answers.value = {}
-	comment.value = ''
-	commentOpen.value = false
-	blocks.value.forEach((b) => {
-		if (b.kind === 'question' && b.default) answers.value[b.key] = { v: b.default }
-	})
-	state.value = 'ask'
-	stepIndex.value = 0
-	noCall.value = true
 	otherText.value = {}
+	// Збережену відповідь беремо, лише поки такий варіант ще є (питання могли змінитись)
+	blocks.value.forEach((b) => {
+		if (b.kind !== 'question') return
+		const a = saved?.answers[b.key]
+		if (a && b.options.some((o) => o.v === a.v)) {
+			answers.value[b.key] = { ...a }
+			if (a.text) otherText.value[b.key] = a.text
+		} else if (b.default) answers.value[b.key] = { v: b.default }
+	})
+	given = new Set(Object.keys(saved?.answers || {}))
+	comment.value = saved?.comment || ''
+	commentOpen.value = !!comment.value
+	address.value = saved?.address || ''
+	noCall.value = saved?.no_call ?? true
 	errors.value = {}
-	phone.value = order.value.phone
-	phoneEdited.value = false
+	saveError.value = false
+	phone.value = saved?.phone || order.value.phone
+	phoneEdited.value = !!saved?.phone
 	phoneError.value = ''
 	phoneDraft.value = maskPhone(phone.value)
 	// Підозрілий номер одразу відкриває поле: шукати, де його правити, клієнт не мусить
 	phoneEditing.value = phoneAlarm.value
+
+	// Продовжуємо там, де зупинився: підтверджене — фінальний екран (поки замовлення не в роботі),
+	// інакше перший крок, де бракує збереженої відповіді (усі є — зведення)
+	const got = saved?.answers || {}
+	const open = steps.value.findIndex((s) => shown(s, got).some((q) => !got[q.key]))
+	stepIndex.value = saved && (saved.done || open < 0) ? steps.value.length : Math.max(open, 0)
+	state.value = saved?.done && editable.value ? 'done' : 'ask'
 }
 
-reset()
-watch(() => props.data, reset)
+// Питання кроку, які показуємо: клієнт сказав у плитках «Інша, немає в списку» — питати 4G / 5G
+// про модель, якої в нього немає, безглуздо. Мережевий блок тієї ж групи ховаємо (і не вимагаємо)
+function shown(list: OcBlock[], picked: Record<string, { v: string }>) {
+	const otherPicked = list.some((q) => q.layout === 'tiles' && picked[q.key]?.v === 'other')
+	return otherPicked ? list.filter((q) => !q.key.startsWith('net:')) : list
+}
 
 // ─────────────────────────── Кроки ───────────────────────────
 
@@ -564,6 +623,16 @@ const allSteps = computed(() => {
 const tooMany = computed(() => props.data.too_many)
 const steps = computed(() => (!editable.value || tooMany.value ? [] : allSteps.value))
 
+reset()
+watch(
+	() => props.data,
+	() => {
+		fresh.value = {}
+		reset()
+		refreshColors()
+	}
+)
+
 // Одним екраном — лише коли питань немає зовсім. Навіть одне питання йде окремим кроком
 // перед зведенням: разом із плитками, оплатою і галочкою «не телефонувати» екран виходив
 // задовгим, і питання губилося серед того, що від клієнта нічого не вимагає
@@ -571,13 +640,7 @@ const single = computed(() => steps.value.length === 0)
 
 const showQuestion = computed(() => stepIndex.value < steps.value.length)
 const showSummary = computed(() => !showQuestion.value)
-// Клієнт сказав у плитках «Інша, немає в списку» — питати 4G / 5G про модель, якої в нього
-// немає, безглуздо: мережевий блок тієї ж групи ховаємо (і не вимагаємо на нього відповіді)
-const stepBlocks = computed(() => {
-	const list = steps.value[stepIndex.value] || []
-	const otherPicked = list.some((q) => q.layout === 'tiles' && answers.value[q.key]?.v === 'other')
-	return otherPicked ? list.filter((q) => !q.key.startsWith('net:')) : list
-})
+const stepBlocks = computed(() => shown(steps.value[stepIndex.value] || [], answers.value))
 
 const dots = computed(() => (single.value ? 0 : steps.value.length + 1))
 const canBack = computed(() => stepIndex.value > 0)
@@ -626,6 +689,8 @@ const isPicked = (q: OcBlock, v: string) => answers.value[q.key]?.v === v
 
 function pick(q: OcBlock, o: OcOption) {
 	answers.value[q.key] = { v: o.v }
+	given.add(q.key)
+	save.later()
 	errors.value[q.key] = ''
 	if (o.input) nextTick(() => document.getElementById(`oc-other-${q.key}`)?.focus())
 }
@@ -717,6 +782,12 @@ const summaryItems = computed(() =>
 // вже після показу: на холодному кеші постачальників це секунди
 const { payable, payLoading, payMode, check, pay: payOnline } = useOrderPay(() => order.value.id)
 
+// Перед переходом на MonoPay — відкладене збереження одразу: сторінку зараз покинуть
+function payGo(full: boolean) {
+	save.flush()
+	payOnline(full)
+}
+
 onMounted(() => {
 	if (editable.value && pay.value.online && !props.justPaid) check()
 })
@@ -768,7 +839,7 @@ function savePhone() {
 	if (digits !== phoneDigits(phone.value)) {
 		phone.value = digits
 		phoneEdited.value = true
-		answers.value.phone = { v: 'edit', text: digits }
+		save.later()
 	}
 	phoneError.value = ''
 	phoneEditing.value = false
@@ -799,8 +870,8 @@ function validateStep(): boolean {
 	return true
 }
 
-function next() {
-	if (!validateStep()) return
+async function next() {
+	if (saving.value || !validateStep()) return
 
 	// Незакритий інлайн-редактор номера спершу треба зберегти. Помилка в номері — вгорі
 	// картки, а клієнт унизу біля кнопки: фокус сам докрутить до поля
@@ -813,13 +884,33 @@ function next() {
 	}
 
 	if (showSummary.value) {
-		// Коментар — поруч із відповідями: менеджер бачить його там само, де й решту
-		if (comment.value.trim()) answers.value.comment = { v: 'text', text: comment.value.trim() }
+		// Без даних доставки посилку не відправити — підтвердження без них не приймаємо
+		if (order.value.delivery_missing && !address.value.trim()) {
+			errors.value.delivery = t('confirm.errDelivery')
+			const el = document.getElementById('oc-delivery')
+			el?.scrollIntoView({ block: 'center', behavior: smooth() })
+			el?.focus({ preventScroll: true })
+			return
+		}
 		// Питання пропустили через їхню кількість — галочки не було, звіряє менеджер
 		if (tooMany.value) noCall.value = false
-		// Відповіді поки не зберігаються (етап 1) — лише фінальний екран
+		// «Підтверджено» без збереження було б неправдою: менеджер про нього не дізнається і подзвонить.
+		// Не вийшло — лишаємось на зведенні з проханням спробувати ще раз
+		saving.value = true
+		saveError.value = false
+		try {
+			await save.now(true)
+		} catch {
+			saveError.value = true
+			return
+		} finally {
+			saving.value = false
+		}
 		state.value = 'done'
 	} else {
+		// «Далі» — відповідь на всі питання кроку, зокрема й на підставлене «так, моя»
+		stepBlocks.value.forEach((q) => given.add(q.key))
+		save.now().catch(() => {})
 		stepIndex.value++
 	}
 	toTop()
@@ -828,14 +919,57 @@ function next() {
 function back() {
 	if (stepIndex.value > 0) stepIndex.value--
 	errors.value = {}
+	save.flush()
 	toTop()
 }
 
-function reopen() {
-	state.value = 'ask'
-	stepIndex.value = steps.value.length
-	toTop()
+// ─────────────────────────── Збереження ───────────────────────────
+
+// Весь стан, лише коди — тексти питань і відповідей для менеджера бекенд бере зі своїх блоків.
+// Сховане питання 4G / 5G (у плитках обрано «Інша») бекенд відкидає сам
+function payload(): IOrderConfirmAnswers {
+	const out: IOrderConfirmAnswers['answers'] = {}
+	questions.value.forEach((q) => {
+		const a = answers.value[q.key]
+		if (!a || !given.has(q.key)) return
+		const text = freeInput(q)?.v === a.v ? otherText.value[q.key]?.trim() : ''
+		out[q.key] = text ? { v: a.v, text } : { v: a.v }
+	})
+	return {
+		answers: out,
+		phone: phoneEdited.value ? phoneDigits(phone.value) : null,
+		comment: comment.value.trim(),
+		address: address.value.trim(),
+		no_call: noCall.value,
+	}
 }
+
+// Замовлення вже в роботі або адмінка ще без збереження (у відповіді немає saved) — не шлемо
+const persist = computed(() => editable.value && props.data.saved !== undefined)
+
+const save = useOcSaver((final) =>
+	persist.value ? shopApi.saveOrderConfirm(order.value.id, props.token, payload(), final) : Promise.resolve()
+)
+
+// Наявність кольорів одразу після оформлення ще рахується (блок боків pending) — перепитуємо
+// бекенд із wait=1 у фоні: клієнт тим часом на кроці моделі. Замінюємо лише блоки боків.
+// Обраного кольору може вже не бути — тоді підставляємо те, що є (один колір — він і є відповідь)
+async function refreshColors() {
+	if (!editable.value || !props.data.blocks.some((b) => b.pending)) return
+	const res = await shopApi.getOrderConfirm(order.value.id, props.token, true).catch(() => null)
+
+	res?.blocks.forEach((b) => {
+		if (b.topic !== 'color' || !b.options.length) return
+		fresh.value[b.key] = b
+		const a = answers.value[b.key]
+		if (a && b.options.some((o) => o.v === a.v)) return
+		if (b.default) answers.value[b.key] = { v: b.default }
+		else delete answers.value[b.key]
+		if (given.has(b.key)) save.later()
+	})
+}
+
+onMounted(refreshColors)
 
 function openComment() {
 	commentOpen.value = true
@@ -1089,11 +1223,13 @@ function openComment() {
 }
 
 /* Два портретні знімки на всю ширину картки виросли б під 400px і з'їли б увесь екран.
-   Стеля ширини + центрування: кант однаково добре видно, а питання лишається питанням,
-   а не плакатом. На телефоні треки самі стискаються до половини ширини. */
+   Стеля ширини: кант однаково добре видно, а питання лишається питанням, а не плакатом.
+   На телефоні треки самі стискаються до половини ширини.
+   Вирівнювання — по лівому краю, як і решта опитувальника (питання, плашка, «Інша»,
+   рядки 4G / 5G): плитка під заголовком читається як відповідь на нього. По центру одна
+   плитка в широкій картці відривалась від питання, а моделі й боки стояли по-різному */
 .oc__tiles--photo {
 	grid-template-columns: repeat(2, minmax(0, 236px));
-	justify-content: center;
 }
 
 /* Одна плитка — модель ні з чим не плутають, лише «так, моя». auto-fit розтягнув би її
@@ -1101,6 +1237,12 @@ function openComment() {
    перебити й мобільну сітку 2×2 */
 .oc__tiles.oc__tiles--one {
 	grid-template-columns: minmax(0, 150px);
+}
+
+/* Один знімок канта — у постачальників лише один колір боків: не питаємо, а показуємо.
+   Розмір той самий, що в пари на вибір, — кант має бути так само добре видно */
+.oc__tiles--photo.oc__tiles--one {
+	grid-template-columns: minmax(0, 236px);
 }
 
 .oc__tile {
@@ -1600,6 +1742,10 @@ function openComment() {
 	margin-top: 10px;
 }
 
+.oc__deliv-field {
+	margin-top: 8px;
+}
+
 .oc__comment-open {
 	display: inline-flex;
 	align-items: center;
@@ -1690,6 +1836,11 @@ function openComment() {
 	background: var(--bg-card);
 	border-top: 1px solid var(--border);
 	border-radius: 0 0 var(--radius) var(--radius);
+}
+
+/* «Не вдалося зберегти» — під кнопкою, яку треба натиснути ще раз */
+.oc__save-error {
+	text-align: center;
 }
 
 

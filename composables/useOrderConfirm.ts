@@ -32,8 +32,11 @@ export interface OcBlock {
 	// Форма картинки в плитках: square — прев'ю каталогу 200×200, photo — знімок 600×760
 	media?: 'square' | 'photo'
 	summary?: string // для info-блоків: що показати у зведенні
-	// Підставлена відповідь: у моделі — та, що в замовленні; у боках чохла її немає свідомо
+	// Підставлена відповідь: у моделі — та, що в замовленні; у боках — колір, під який створено
+	// дизайн, або єдиний колір, що є в постачальників (тоді й варіант один — не питання, а показ)
 	default?: string | null
+	// Боки: наявність кольорів у постачальників ще рахується — сайт перепитує бекенд із wait=1
+	pending?: boolean
 	options: OcOption[]
 }
 
@@ -44,6 +47,37 @@ export function ocSuccessQuery(newOrder: { id?: number | string; confirm_token?:
 	const query: Record<string, string> = { id: String(newOrder?.id ?? '') }
 	if (newOrder?.confirm_token) query.t = newOrder.confirm_token
 	return query
+}
+
+// Збереження відповідей опитувальника. send сам бере ПОТОЧНИЙ стан у момент відправки, тож:
+//   later — після кожної зміни, через паузу: друк у полі не шле запит на кожну літеру;
+//   flush — одразу, якщо є відкладене (крок назад, вихід зі сторінки, перехід на оплату);
+//   now   — одразу й завжди («Далі», фінал). Проміс фіналу відхиляється, якщо не вийшло.
+// Запити йдуть по одному: наступний — лише після попереднього, тож старий стан не перезапише новіший
+export function useOcSaver(send: (final: boolean) => Promise<unknown>, delay = 800) {
+	let timer: ReturnType<typeof setTimeout> | null = null
+	let chain: Promise<unknown> = Promise.resolve()
+
+	function now(final = false) {
+		if (timer) clearTimeout(timer)
+		timer = null
+		chain = chain.catch(() => {}).then(() => send(final))
+		return chain
+	}
+
+	function later() {
+		if (timer) clearTimeout(timer)
+		timer = setTimeout(() => now().catch(() => {}), delay)
+	}
+
+	const flush = () => {
+		if (timer) now().catch(() => {})
+	}
+
+	// Пішов зі сторінки раніше за паузу — останнє не губимо
+	onBeforeUnmount(flush)
+
+	return { later, flush, now }
 }
 
 // Номер виглядає підозріло — та сама перевірка, що PhoneCheck::check() на бекенді, крім

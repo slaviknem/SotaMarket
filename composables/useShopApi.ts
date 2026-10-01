@@ -89,6 +89,9 @@ export interface IOrderConfirm {
 		price: number // за товари, вже зі знижкою — те, що йде в ТТН
 		cod: boolean // накладений платіж (і ще не оплачено онлайн повністю)
 		due: number // «при отриманні ≈»: товари мінус аванс плюс доставка, округлено вгору до 5
+		// Чого бракує, щоб відправити (спосіб доставки, відділення, індекс, отримувач) — готовий
+		// текст; null — усе є. Немає ключа — адмінка ще старша за цю перевірку
+		delivery_missing?: string | null
 	}
 	pay: {
 		// Чи пропонувати онлайн-оплату взагалі. Чи є на чому друкувати (а отже, чи брати гроші),
@@ -104,6 +107,25 @@ export interface IOrderConfirm {
 	blocks: OcBlock[]
 	// Екранів більше за ліміт — кроків немає, лише зведення: звіряє менеджер
 	too_many: boolean
+	// Що клієнт уже відповів (null — ще нічого). Ключа немає зовсім — адмінка ще без
+	// збереження відповідей, тоді й сайт нічого не шле
+	saved?: IOrderConfirmSaved | null
+}
+
+// Відповіді опитувальника — те, що сайт шле після кожної зміни (apisite POST orders/confirm,
+// ConfirmAnswers в адмінці). Весь стан щоразу, а не зміну: кожен запит самодостатній.
+// Тексти питань і відповідей для менеджера бекенд бере зі своїх блоків — шлемо лише коди
+export interface IOrderConfirmAnswers {
+	answers: Record<string, { v: string; text?: string }> // ключ блока → варіант (text — «інша модель» своїми словами)
+	phone: string | null // номер, виправлений клієнтом; null — не правив
+	comment: string
+	address: string // куди відправити — своїми словами, коли бракує даних доставки
+	no_call: boolean
+}
+
+// Збережений стан — з нього опитувальник продовжує там, де клієнт зупинився
+export interface IOrderConfirmSaved extends IOrderConfirmAnswers {
+	done: boolean // уже натискав «Все вірно, підтверджую»
 }
 
 // Відстеження замовлення: одне поле — номер замовлення / телефон / ТТН
@@ -305,13 +327,34 @@ export function useShopApi() {
 		// Опитувальник підтвердження за номером і токеном. Чужий токен чи немає замовлення —
 		// бекенд віддає 404, тут це null (сторінка «Дякуємо» покаже просту подяку). Не той
 		// формат (адмінку з цим ендпоінтом ще не розкотили, редирект на HTML) — теж null
-		getOrderConfirm: (orderId: string | number, token: string) =>
-			api<IOrderConfirm>('orders/confirm', { order_id: orderId, t: token })
+		// wait — дочекатися перевірки постачальників (кольори боків чохла): секунди, лише у фоні
+		getOrderConfirm: (orderId: string | number, token: string, wait = false) =>
+			api<IOrderConfirm>('orders/confirm', { order_id: orderId, t: token, ...(wait ? { wait: 1 } : {}) })
 				.then((res) => (res?.found === true && res.order && Array.isArray(res.blocks) ? res : null))
 				.catch((e) => {
 					if ((e?.statusCode ?? e?.status) === 404) return null
 					throw e
 				}),
+
+		// Зберегти відповіді опитувальника. final — натиснуто «Все вірно, підтверджую».
+		// FormData, а не JSON: «простий» CORS-запит без preflight (orders/* у cors.php адмінки немає).
+		// saved: false — бекенд прийняв, але не зберігає (немає колонки або замовлення вже в роботі)
+		saveOrderConfirm: (orderId: string | number, token: string, state: IOrderConfirmAnswers, final = false) => {
+			const fd = new FormData()
+			fd.append('order_id', String(orderId))
+			fd.append('t', token)
+			fd.append('answers', JSON.stringify(state.answers))
+			fd.append('phone', state.phone ?? '')
+			fd.append('comment', state.comment)
+			fd.append('address', state.address)
+			fd.append('no_call', state.no_call ? '1' : '0')
+			if (final) fd.append('final', '1')
+			return $fetch<{ saved: boolean }>(config.public.urlApi + 'orders/confirm', {
+				method: 'POST',
+				params: baseParams(),
+				body: fd,
+			})
+		},
 
 		// Останні опубліковані відгуки (головна, сторінка відгуків).
 		// minRating > 0 — лише відгуки з оцінкою не нижче вказаної (напр. 4 = тільки 4-5 зірок)
