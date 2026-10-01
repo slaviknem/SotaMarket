@@ -466,9 +466,12 @@ const { maskPhone, isValidPhone, phoneDigits } = usePhone()
 
 const order = computed(() => props.data.order)
 const items = computed(() => props.data.order.items)
-// Блоки боків, уточнені після перевірки постачальників (refreshColors), — поверх тих, що прийшли
-const fresh = ref<Record<string, OcBlock>>({})
-const blocks = computed(() => props.data.blocks.map((b) => fresh.value[b.key] || b))
+// Блоки боків, уточнені після перевірки постачальників (refreshColors), — поверх тих, що прийшли.
+// null — кольорів для друку так і не знайшлось, кроку боків більше немає
+const fresh = ref<Record<string, OcBlock | null>>({})
+const blocks = computed(() =>
+	props.data.blocks.flatMap((b) => (fresh.value[b.key] === null ? [] : [fresh.value[b.key] || b]))
+)
 const pay = computed(() => props.data.pay)
 // Накладений платіж (за товар ще платять на пошті) — якщо не щойно сплатили все онлайн
 const cod = computed(() => order.value.cod && props.justPaid !== 'full')
@@ -953,13 +956,30 @@ const save = useOcSaver((final) =>
 
 // Наявність кольорів одразу після оформлення ще рахується (блок боків pending) — перепитуємо
 // бекенд із wait=1 у фоні: клієнт тим часом на кроці моделі. Замінюємо лише блоки боків.
-// Обраного кольору може вже не бути — тоді підставляємо те, що є (один колір — він і є відповідь)
+// Обраного кольору може вже не бути — тоді підставляємо те, що є (один колір — він і є відповідь).
+// Блоку боків у відповіді немає — ні чорних, ні прозорих: крок прибираємо, клієнт лишається
+// на тому ж кроці (зникне саме той, де він стоїть, — побачить наступний)
 async function refreshColors() {
 	if (!editable.value || !props.data.blocks.some((b) => b.pending)) return
 	const res = await shopApi.getOrderConfirm(order.value.id, props.token, true).catch(() => null)
+	if (!res) return
 
-	res?.blocks.forEach((b) => {
-		if (b.topic !== 'color' || !b.options.length) return
+	const group = (q?: OcBlock) => (q ? q.group || q.key : '')
+	const here = group(steps.value[stepIndex.value]?.[0])
+	const live = new Map(res.blocks.map((b) => [b.key, b]))
+	let removed = false
+
+	props.data.blocks.forEach((old) => {
+		if (old.topic !== 'color') return
+		const b = live.get(old.key)
+		if (!b) {
+			fresh.value[old.key] = null
+			delete answers.value[old.key]
+			if (given.delete(old.key)) save.later()
+			removed = true
+			return
+		}
+		if (!b.options.length) return
 		fresh.value[b.key] = b
 		const a = answers.value[b.key]
 		if (a && b.options.some((o) => o.v === a.v)) return
@@ -967,6 +987,11 @@ async function refreshColors() {
 		else delete answers.value[b.key]
 		if (given.has(b.key)) save.later()
 	})
+
+	if (removed) {
+		const i = here ? steps.value.findIndex((s) => group(s[0]) === here) : -1
+		stepIndex.value = i >= 0 ? i : Math.min(stepIndex.value, steps.value.length)
+	}
 }
 
 onMounted(refreshColors)
