@@ -100,11 +100,8 @@ async function send() {
 		notify('success', t('quick.quickOrderSendMsg'))
 
 		if (newOrder?.id) {
-			// Сторінці подяки потрібні лише номер, дата й сума (див. кошик)
-			router.push({
-				path: localePath('/shop/cart/success'),
-				query: { id: newOrder.id, date: newOrder.date, suma_order: newOrder.suma_order },
-			})
+			// Сторінці подяки — номер і токен опитувальника (див. кошик)
+			router.push({ path: localePath('/shop/cart/success'), query: ocSuccessQuery(newOrder) })
 		}
 	} catch {
 		notify('error', t('message.orderFailed'))

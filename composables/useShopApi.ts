@@ -1,6 +1,8 @@
 // Клієнт до бекенда admin.floy.com.ua (apisite)
 // Всі методи дзеркалять старий src/api/shop.ts, але на $fetch (SSR-friendly)
 
+import type { OcBlock } from '~/composables/useOrderConfirm'
+
 export interface IListOptions {
 	page?: number
 	limit?: number
@@ -56,6 +58,52 @@ export interface ISearchModels {
 		image?: string | null
 		products_count: number
 	}[]
+}
+
+// Опитувальник підтвердження замовлення на сторінці «Дякуємо» (apisite/orders/confirm,
+// OrderConfirm::forOrder в адмінці). Питання, кроки, суми й стан оплати рахує бекенд —
+// сайт лише малює. Формат блока — OcBlock
+export interface IOrderConfirmItem {
+	id: number // позиція замовлення (color:{id} у ключі блока боків)
+	title: string
+	image: string | null // повна адреса мініатюри
+	qty: number
+	price: number // сума рядка зі знижкою товару
+	model: string | null // повна назва моделі; null — аксесуар або модель не визначилась
+	model_id: number | null // model:{id} у group блоків моделі
+}
+
+export interface IOrderConfirm {
+	found: true
+	order: {
+		id: number
+		// Статус ще new / not_call / drop_first. Інакше — зведення лише для читання
+		editable: boolean
+		items: IOrderConfirmItem[]
+		dispatch: string // «завтра» / «у понеділок» — з малої, стоїть усередині речення
+		phone: string // 10 цифр
+		// bad — номер майже напевно неправильний (поле правки відкрите одразу),
+		// soft — невідомий префікс оператора (лише ввічливе прохання перевірити)
+		phone_check: 'ok' | 'soft' | 'bad'
+		discount: number // знижка на замовлення, 0 — немає
+		price: number // за товари, вже зі знижкою — те, що йде в ТТН
+		cod: boolean // накладений платіж (і ще не оплачено онлайн повністю)
+		due: number // «при отриманні ≈»: товари мінус аванс плюс доставка, округлено вгору до 5
+	}
+	pay: {
+		// Чи пропонувати онлайн-оплату взагалі. Чи є на чому друкувати (а отже, чи брати гроші),
+		// уточнює orders/print_check уже на клієнті — useOrderPay
+		online: boolean
+		prepay: number // аванс за індивідуальний друк, який чекаємо; 0 — не потрібен
+		prepay_paid: number // аванс, який уже отримано
+		paid: boolean // оплачено онлайн повністю
+		full: number // скільки візьме кнопка «за товар»
+		cod_fee: number // комісія накладеного, яку клієнт економить, сплативши зараз
+		post_free: boolean // доставка безкоштовна — сплативши за товар, на пошті не платять нічого
+	}
+	blocks: OcBlock[]
+	// Екранів більше за ліміт — кроків немає, лише зведення: звіряє менеджер
+	too_many: boolean
 }
 
 // Відстеження замовлення: одне поле — номер замовлення / телефон / ТТН
@@ -246,21 +294,24 @@ export function useShopApi() {
 
 		// Чи можна платити онлайн: у замовленні є друк, а заготовок під нього в постачальників немає.
 		// status: ok | split | none | unknown | null (друку в замовленні немає).
-		// Заразом віддає стан авансу за індивідуальний друк (prepay / prepay_paid / left_to_pay) —
-		// після повернення з MonoPay суми в URL уже немає, а показати її треба.
+		// Суми авансу бекенд теж віддає, але їх сайт бере з опитувальника (getOrderConfirm).
 		// Перевірка ходить до постачальників, тому приймає власний ліміт часу
 		printCheck: (orderId: string | number, timeoutMs = 15000) =>
-			$fetch<{
-				payable: boolean
-				status: string | null
-				prepay?: number
-				prepay_paid?: boolean
-				left_to_pay?: number
-				total?: number // повна сума замовлення — її бере кнопка «сплатити всю суму»
-			}>(config.public.urlApi + 'orders/print_check', {
+			$fetch<{ payable: boolean; status: string | null }>(config.public.urlApi + 'orders/print_check', {
 				params: { ...baseParams(), order_id: orderId },
 				signal: AbortSignal.timeout(timeoutMs),
 			}),
+
+		// Опитувальник підтвердження за номером і токеном. Чужий токен чи немає замовлення —
+		// бекенд віддає 404, тут це null (сторінка «Дякуємо» покаже просту подяку). Не той
+		// формат (адмінку з цим ендпоінтом ще не розкотили, редирект на HTML) — теж null
+		getOrderConfirm: (orderId: string | number, token: string) =>
+			api<IOrderConfirm>('orders/confirm', { order_id: orderId, t: token })
+				.then((res) => (res?.found === true && res.order && Array.isArray(res.blocks) ? res : null))
+				.catch((e) => {
+					if ((e?.statusCode ?? e?.status) === 404) return null
+					throw e
+				}),
 
 		// Останні опубліковані відгуки (головна, сторінка відгуків).
 		// minRating > 0 — лише відгуки з оцінкою не нижче вказаної (напр. 4 = тільки 4-5 зірок)

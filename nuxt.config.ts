@@ -142,6 +142,12 @@ export default defineNuxtConfig({
 		'/search': { headers: { 'x-robots-tag': 'noindex, follow' } },
 		'/uk/search': { headers: { 'x-robots-tag': 'noindex, follow' } },
 
+		// «Дякуємо» з опитувальником підтвердження — особиста сторінка: телефон і склад замовлення.
+		// НЕ в кеш: nginx перед Node кешує сторінки, і чужий стан (або вчорашня оплата) не має
+		// віддаватись із кешу. noindex дає правило /shop/** вище — Nitro зливає обидва
+		'/shop/cart/success': { headers: { 'cache-control': 'no-store, private' } },
+		'/uk/shop/cart/success': { headers: { 'cache-control': 'no-store, private' } },
+
 		'/fonts/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
 		'/images/**': { headers: { 'cache-control': 'public, max-age=2592000' } },
 		'/favicon.svg': { headers: { 'cache-control': 'public, max-age=2592000' } },

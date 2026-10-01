@@ -31,7 +31,7 @@
 						<!-- Список товарів -->
 						<div class="cart-drawer__body">
 							<div v-for="item in items" :key="item.id" class="cart-drawer__item">
-								<NuxtLink :to="url.cartItem(item)" class="cart-drawer__item-img" @click="close">
+								<NuxtLink :to="url.cartItem(item)" class="cart-drawer__item-img thumb-frame" @click="close">
 									<img :src="itemImage(item)" :alt="item.product.title" width="64" height="64"
 										loading="lazy" />
 								</NuxtLink>
@@ -243,19 +243,18 @@ onUnmounted(() => {
 
 .cart-drawer__item {
 	display: grid;
-	grid-template-columns: 64px 1fr auto;
+	grid-template-columns: 60px 1fr auto;
 	gap: 12px;
 	align-items: start;
 	padding: 14px 0;
 	border-bottom: 1px solid var(--border);
 }
 
-.cart-drawer__item-img img {
-	width: 64px;
-	height: 64px;
-	object-fit: contain;
-	background: var(--img-bg);
-	border-radius: var(--radius-sm);
+/* Рамка — .thumb-frame у main.css, тут лише розмір */
+.cart-drawer__item-img {
+	width: 60px;
+	height: 60px;
+	padding: 6px;
 }
 
 .cart-drawer__item-main {

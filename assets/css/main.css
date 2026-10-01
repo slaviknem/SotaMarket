@@ -84,6 +84,8 @@
 	/* Той самий червоний, але притемнений — для суцільних плашок під білим текстом
 	   (#ff4757 з білим дає лише 3.3:1, цей — 4.8:1) */
 	--danger-strong: #d92b45;
+	/* Підкладка під червоним (попередження, яке клієнт НЕ має проґавити) — як --warning-soft */
+	--danger-soft: rgba(255, 71, 87, 0.13);
 	--warning: #ffc048;
 	/* Підкладка під жовтим (кнопки й плашки передзамовлення) — як --accent-soft у акценту */
 	--warning-soft: rgba(255, 192, 72, 0.14);
@@ -412,6 +414,28 @@ textarea.form-control {
 	to {
 		transform: rotate(360deg);
 	}
+}
+
+/* ---------- Мініатюра товару в білій рамці (шторка кошика, кошик, підтвердження) ----------
+   Товарні знімки зняті впритул до краю кадру — без полів навколо чохол упирається
+   в скруглення. Високий макет друку вписується по висоті, а не вилазить за рамку.
+   Розмір і поля задає місце використання, тут — лише сама рамка */
+.thumb-frame {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	background: var(--img-bg);
+	border-radius: var(--radius-sm);
+	overflow: hidden;
+}
+
+.thumb-frame img {
+	max-width: 100%;
+	max-height: 100%;
+	width: auto;
+	height: auto;
+	object-fit: contain;
 }
 
 /* ---------- Qty stepper (mini-cart + сторінка кошика) ---------- */

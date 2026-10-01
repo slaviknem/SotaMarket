@@ -20,7 +20,7 @@
 				<!-- Товари -->
 				<div class="cart-items">
 					<div v-for="item in cart.state.value.items" :key="item.id" class="cart-item">
-						<NuxtLink :to="url.cartItem(item)" class="cart-item__img">
+						<NuxtLink :to="url.cartItem(item)" class="cart-item__img thumb-frame">
 							<img
 								:src="item.printcase ? (item.product.image || '/images/no-photo.svg') : url.productThumb(item.product.image)"
 								:alt="item.product.title"
@@ -959,27 +959,10 @@ async function sendOrder() {
 	// (поки браузер переходить на «дякуємо») не створив дубль
 	cart.removeAll()
 
-	// Сторінці подяки потрібні лише номер, дата й сума. Тягти в URL усе замовлення разом
-	// із позиціями — це довжелезний рядок, на якому перехід може зірватись
-	// payment потрібен, щоб на «дякуємо» показати повідомлення про недоступну онлайн-оплату
-	// лише тому, хто її й обрав.
-	// prepay беремо з ВІДПОВІДІ бекенда, а не зі свого розрахунку: суму авансу визначає він,
-	// і показати клієнту треба саме те, що реально записано в замовленні
-	// delivery потрібен сторінці подяки, щоб назвати комісію за накладений платіж:
-	// вона в кожного перевізника своя (НП 20, Укрпошта 15), а саме на неї клієнт
-	// економить, якщо обере там «сплатити всю суму»
-	const query: Record<string, any> = {
-		id: newOrder?.id,
-		date: newOrder?.date,
-		suma_order: newOrder?.suma_order,
-		payment: order.payment,
-		delivery: order.delivery,
-	}
-
-	if (newOrder?.suma_predoplata) query.prepay = newOrder.suma_predoplata
-
+	// Сторінці подяки потрібні лише номер замовлення й токен опитувальника підтвердження:
+	// суми, аванс і оплату вона бере з бекенда (ocSuccessQuery)
 	try {
-		await router.push({ path: localePath('/shop/cart/success'), query })
+		await router.push({ path: localePath('/shop/cart/success'), query: ocSuccessQuery(newOrder) })
 	} catch {
 		// Перехід зірвався — але замовлення вже прийняте, тож кажемо про це на місці,
 		// а не показуємо помилку, після якої клієнт тисне «Оформити» ще раз
@@ -1041,7 +1024,7 @@ async function sendOrder() {
 
 .cart-item {
 	display: grid;
-	grid-template-columns: 84px minmax(0, 1fr) auto auto auto auto;
+	grid-template-columns: 72px minmax(0, 1fr) auto auto auto auto;
 	align-items: center;
 	gap: 18px;
 	padding: 14px;
@@ -1050,12 +1033,11 @@ async function sendOrder() {
 	border-radius: var(--radius);
 }
 
-.cart-item__img img {
-	width: 84px;
-	height: 84px;
-	object-fit: contain;
-	background: var(--img-bg);
-	border-radius: var(--radius-sm);
+/* Рамка — .thumb-frame у main.css, тут лише розмір */
+.cart-item__img {
+	width: 72px;
+	height: 72px;
+	padding: 8px;
 }
 
 .cart-item__title {
@@ -1447,7 +1429,7 @@ async function sendOrder() {
 
 @media (max-width: 640px) {
 	.cart-item {
-		grid-template-columns: 64px 1fr auto;
+		grid-template-columns: 60px 1fr auto;
 		grid-template-areas:
 			'img info remove'
 			'img qty total';
@@ -1458,9 +1440,10 @@ async function sendOrder() {
 		grid-area: img;
 	}
 
-	.cart-item__img img {
-		width: 64px;
-		height: 64px;
+	.cart-item__img {
+		width: 60px;
+		height: 60px;
+		padding: 6px;
 	}
 
 	.cart-item__info {
