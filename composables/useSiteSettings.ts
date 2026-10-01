@@ -49,6 +49,9 @@ export interface SiteSettings {
 		viber: string
 		whatsapp: string
 	}
+	// Галочка «Відділення НП зі своєї БД» в адмінці: міста й відділення беремо з адмінки,
+	// а не з API Нової Пошти (коли НП лежить). Див. useNovaPochta
+	np_local_db: boolean
 }
 
 const DEFAULTS: SiteSettings = {
@@ -87,6 +90,7 @@ const DEFAULTS: SiteSettings = {
 		viber: 'viber://chat?number=%2B380990721412',
 		whatsapp: 'https://wa.me/380990721412',
 	},
+	np_local_db: false,
 }
 
 // Глибоке злиття «дефолти ← дані з адмінки»: часткова відповідь (наприклад, лише prices)
