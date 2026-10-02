@@ -18,6 +18,19 @@
 			<p v-if="comment.trim()" class="oc__note">{{ t('confirm.doneComment') }}</p>
 			<p v-if="order.delivery_missing && address.trim()" class="oc__note">{{ t('confirm.doneDelivery') }}</p>
 
+			<!-- Ще не сплачено — ті самі кнопки й після підтвердження: хто обрав накладений чи
+			     реквізити, може передумати й сплатити одразу. Повернувся з MonoPay — їх немає (payState) -->
+			<ShopOrderConfirmPay
+				v-if="payKind"
+				class="oc__final-pay"
+				:kind="payKind"
+				:pay="pay"
+				:cod="cod"
+				:loading="payLoading"
+				:mode="payMode"
+				@go="payGo"
+			/>
+
 			<div class="oc__final-actions">
 				<!-- Змінити відповіді після підтвердження не можна (рішення 2026-10-01): менеджер
 				     працює з тим, що клієнт підтвердив, — бекенд після нього відповіді й не приймає -->
@@ -324,11 +337,7 @@
 							     посилання MonoPay у текст для чату — `genMonoPayLink` створює НОВИЙ рахунок
 							     на кожен виклик. Рахунок має народжуватись від кліку клієнта, тобто звідси.
 
-							     Передоплата — лише за ІНДИВІДУАЛЬНИЙ друк (конструктор): такий чохол нікому
-							     іншому не продаси. Неопринт, альфапринт і звичайні товари — без авансу, тоді
-							     лишається одна кнопка (Prepay.php). Оплата за товар — суцільна помаранчева:
-							     вона вигідніша (без комісії накладеного); аванс — лише рамкою.
-
+							     Кнопки — за будь-якого способу оплати, поки не сплачено (OrderConfirm::money).
 							     Заготовок під друк немає (`payable === false`) — оплату не беремо, а оплачене,
 							     вже отриманий аванс чи щойно сплачене (повернення з MonoPay) вдруге не пропонуємо
 							     (useOrderPay, payState) -->
@@ -337,27 +346,15 @@
 								{{ t('confirm.prepayPaid', { sum: pay.prepay_paid }) }}
 							</p>
 							<p v-else-if="payState === 'unavailable'" class="oc__note">{{ t('confirm.payUnavailable') }}</p>
-							<div v-else-if="payState" class="oc__pay">
-								<p class="oc__pay-why">{{ payWhy }}</p>
-
-								<div class="oc__pay-grid" :class="{ 'oc__pay-grid--one': payState !== 'prepay' }">
-									<div v-if="payState === 'prepay'" class="oc__pay-opt">
-										<button type="button" class="btn btn-outline btn-block" :disabled="payLoading" @click="payGo(false)">
-											{{ payMode === 'prepay' ? t('confirm.payWait') : t('confirm.payPrepay', { sum: pay.prepay }) }}
-										</button>
-										<span class="oc__pay-hint">{{ t('confirm.payPrepayHint') }}</span>
-									</div>
-
-									<div class="oc__pay-opt">
-										<!-- «За товар», а не «вся сума»: доставку клієнт однаково платить на пошті
-										     (так само на сторінці «Дякуємо») -->
-										<button type="button" class="btn btn-primary btn-block" :disabled="payLoading" @click="payGo(true)">
-											{{ payMode === 'full' ? t('confirm.payWait') : t(payState === 'prepay' ? 'confirm.payGoods' : 'confirm.payOnline', { sum: pay.full }) }}
-										</button>
-										<span v-if="payGain" class="oc__pay-hint oc__pay-hint--gain">{{ payGain }}</span>
-									</div>
-								</div>
-							</div>
+							<ShopOrderConfirmPay
+								v-else-if="payKind"
+								:kind="payKind"
+								:pay="pay"
+								:cod="cod"
+								:loading="payLoading"
+								:mode="payMode"
+								@go="payGo"
+							/>
 
 							<p v-if="tooMany" class="oc__note">{{ t('confirm.tooMany') }}</p>
 
@@ -796,7 +793,7 @@ onMounted(() => {
 })
 
 // Що показати в блоці оплати. Оплачене й отриманий аванс вдруге не пропонуємо; заготовок
-// під друк немає — пояснюємо лише тому, від кого оплату чекали (аванс або обрана онлайн-оплата),
+// під друк немає — пояснюємо лише тому, від кого оплату чекали (аванс або не накладений),
 // накладеному без авансу блок просто не потрібен
 const payState = computed(() => {
 	const p = pay.value
@@ -809,17 +806,10 @@ const payState = computed(() => {
 	return cod.value ? 'cod' : 'online'
 })
 
-const payWhy = computed(() => {
-	if (payState.value === 'prepay') return t('confirm.payWhyPrepay')
-	return payState.value === 'cod' ? t('confirm.payWhyCod') : t('confirm.payWhyOnline')
-})
-
-// Під «за товар» — що клієнт виграє, сплативши зараз. Лише для накладеного: комісія, а понад
-// поріг безкоштовної доставки — «на пошті нічого». Інакше підпису немає: обіцяти нема чого
-const payGain = computed(() => {
-	if (!cod.value) return ''
-	if (pay.value.cod_fee) return t('confirm.payGain', { fee: pay.value.cod_fee })
-	return pay.value.post_free ? t('confirm.payNothing') : ''
+// Стани з кнопками (OrderConfirmPay) — на зведенні й на екрані «Підтверджено»; решта — рядок
+const payKind = computed(() => {
+	const s = payState.value
+	return s === 'prepay' || s === 'cod' || s === 'online' ? s : null
 })
 
 // ─────────────────────────── Телефон ───────────────────────────
@@ -1701,66 +1691,6 @@ function openComment() {
 	text-underline-offset: 2px;
 }
 
-/* ───────── Оплата ───────── */
-.oc__pay {
-	margin-top: 14px;
-	padding: 13px;
-	border: 1px solid var(--border);
-	border-radius: var(--radius);
-	background: var(--bg-soft);
-}
-
-.oc__pay-why {
-	margin: 4px 0 0;
-	text-align: center;
-	font-size: 12.5px;
-	color: var(--text-muted);
-}
-
-/* Дві колонки на десктопі, одна на телефоні — як на сторінці «Дякуємо» (success.vue):
-   кнопки однакової ваги, бо «сплатити все» це рівноцінний вибір, а не запасний */
-.oc__pay-grid {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 12px;
-	margin-top: 12px;
-}
-
-/* Без авансу — одна кнопка: на всю ширину було б занадто гучно поруч із «підтверджую» */
-.oc__pay-grid--one {
-	grid-template-columns: minmax(0, 1fr);
-	max-width: 320px;
-	margin-left: auto;
-	margin-right: auto;
-}
-
-.oc__pay-opt {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-}
-
-/* Підпис під кнопкою — головне в блоці: він каже, ЩО буде далі, інакше клієнт
-   обирає між двома сумами навмання */
-/* Під кнопкою по центру — підпис читається як частина саме цієї кнопки */
-.oc__pay-hint {
-	font-size: 12px;
-	line-height: 1.4;
-	text-align: center;
-	color: var(--text-muted);
-}
-
-/* Економія на комісії — єдина реальна різниця між варіантами */
-.oc__pay-hint--gain {
-	color: var(--success);
-}
-
-@media (max-width: 480px) {
-	.oc__pay-grid {
-		grid-template-columns: minmax(0, 1fr);
-	}
-}
-
 /* ───────── «Не телефонувати» ───────── */
 /* ───────── Коментар ───────── */
 .oc__comment {
@@ -1893,6 +1823,13 @@ function openComment() {
 	max-width: 440px;
 	margin: 14px auto 0;
 	text-align: left;
+}
+
+/* Кнопки оплати — тієї ж ширини, що й рядки над ними (корінь OrderConfirmPay). Два класи —
+   щоб перебити власний відступ компонента незалежно від порядку стилів */
+.oc__box--final .oc__final-pay {
+	max-width: 440px;
+	margin: 18px auto 0;
 }
 
 .oc__final-icon {
