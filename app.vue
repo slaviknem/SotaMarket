@@ -50,11 +50,25 @@ useHead(() => ({
 }))
 
 // Магазин як сутність — на КОЖНІЙ сторінці (а не лише на головній): за @id на цей вузол
-// посилаються всі Offer (seller), тож пошуковики й AI зшивають товар з продавцем, його
-// контактами, соцпрофілями та політикою повернення. Вузол компактний і статичний.
+// посилаються всі Offer (seller, повернення, доставка), тож пошуковики й AI зшивають товар
+// з продавцем, його контактами, соцпрофілями та умовами покупки.
 const config = useRuntimeConfig()
 const localePath = useLocalePath()
-const { contacts, social, phone } = useSiteSettings()
+const { contacts, social, phone, delivery } = useSiteSettings()
+
+// Умова доставки Новою поштою по Україні для діапазону суми замовлення. Тариф і поріг
+// безкоштовної доставки — з налаштувань адмінки, тих самих, що рахує кошик: Google звіряє
+// розмітку з ціною на оформленні.
+const npConditions = (orderValue: object, rate: number) => ({
+	'@type': 'ShippingConditions',
+	shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'UA' },
+	orderValue: { '@type': 'MonetaryAmount', currency: 'UAH', ...orderValue },
+	shippingRate: { '@type': 'MonetaryAmount', value: rate, currency: 'UAH' },
+	transitTime: {
+		'@type': 'ServicePeriod',
+		duration: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 2, unitCode: 'DAY' },
+	},
+})
 
 useJsonLd(() => [
 	{
@@ -84,9 +98,35 @@ useJsonLd(() => [
 			social.value.telegram,
 			social.value.youtube,
 		].filter(Boolean),
-		// TODO: hasMerchantReturnPolicy (термін повернення, хто платить за пересилку) —
-		// Google показує ці умови покупцям, тож вносити їх можна лише з підтверджених
-		// даних магазину, а не з тексту статті /povernennya «на око».
+		// Повернення (підтверджено магазином): 14 днів поштою, пересилку назад оплачує покупець,
+		// а брак чи наша помилка — за наш рахунок. Індивідуальний друк перекриває це на своєму
+		// Offer (PrintcasePage) — його не повертають.
+		hasMerchantReturnPolicy: {
+			'@type': 'MerchantReturnPolicy',
+			...returnPolicyId(config.public.siteUrl as string),
+			applicableCountry: 'UA',
+			returnPolicyCountry: 'UA',
+			returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+			merchantReturnDays: 14,
+			returnMethod: 'https://schema.org/ReturnByMail',
+			returnFees: 'https://schema.org/ReturnFeesCustomerResponsibility',
+			itemDefectReturnFees: 'https://schema.org/FreeReturn',
+			merchantReturnLink: config.public.siteUrl + localePath('/povernennya'),
+		},
+		// Доставка — лише Новою поштою: у Укрпошти до порогу «за тарифом», точної ціни немає,
+		// а за порогом обидві безкоштовні (Google однаково показує найдешевший і найшвидший варіант)
+		hasShippingService: {
+			'@type': 'ShippingService',
+			...shippingServiceId(config.public.siteUrl as string),
+			name: t('cart.titleNovaPochta'),
+			shippingConditions: [
+				npConditions(
+					{ minValue: 0, maxValue: delivery.value.free_delivery_from - 0.01 },
+					delivery.value.n_pochta.delivery
+				),
+				npConditions({ minValue: delivery.value.free_delivery_from }, 0),
+			],
+		},
 	},
 	{
 		'@context': 'https://schema.org',

@@ -216,9 +216,8 @@ const router = useRouter()
 const url = useUrl()
 const localePath = useLocalePath()
 const shopApi = useShopApi()
-const config = useRuntimeConfig()
 const { buildFilterTree, findGroupAlias, isParentTheme, expandAliasForApi, filterChildIds } = useFilters()
-const { title: neoPrintTitle, price: neoPrintPrice } = useNeoPrint()
+const { title: neoPrintTitle } = useNeoPrint()
 
 const mobileFiltersOpen = ref(false)
 
@@ -730,7 +729,7 @@ const breadcrumbs = computed(() => {
 // Фолбек на брендований og-default робить usePageSeo.
 //
 // productBig віддає готову адресу у сховищі, а neoprintImage — шлях на нашому домені,
-// тож абсолютним його робимо лише в другому випадку (absImg нижче — та сама перевірка).
+// тож абсолютним його робимо лише в другому випадку.
 const shareImage = computed(() => {
 	const first = products.value[0]
 	if (first) return url.productBig(getImageByAttribute(first, 0) ?? first.image_file)
@@ -762,40 +761,24 @@ const listAltName = computed(() =>
 )
 
 // Позиції списку для JSON-LD — дзеркало видимої сітки: на сторінці фільтра це картки-варіанти
-// з URL /attr/, далі — готові дизайни. Стеля 24 = рівно одна сторінка видачі (раніше було до
-// 96 голих {name,url} — важче і без користі).
+// з URL /attr/, далі — готові дизайни. Стеля 24 = рівно одна сторінка видачі.
+//
+// Лише назва + URL, без Product: товарні сніпети Google дає тільки сторінкам ОДНОГО товару
+// (ціна, наявність, рейтинг — у розмітці самих карток), а повні Product у списках плодили
+// в Search Console тисячі «товарів» без опису й бренду.
 //
 // URL будуємо через url.product/url.neoprint: вони проходять через localePath, тож на /uk
-// список веде на укр-версії. Ручна склейка siteUrl + '/alias_cat/alias' цього не вміла і
-// віддавала ru-адреси, суперечачи canonical і hreflang тієї ж сторінки.
+// список веде на укр-версії, у згоді з canonical і hreflang тієї ж сторінки.
 const LIST_MAX = 24
 
-interface IListedItem {
-	name: string
-	link: string
-	image: string
-	price: number
-	stock: StockState
-	rating: object
-}
-
-// У schema.org зображення має бути абсолютним; плейсхолдер «немає фото» лежить у public/
-const absImg = (src: string) => (src.startsWith('http') ? src : url.absolute(src))
-
-const listedItems = computed<IListedItem[]>(() => {
+const listedItems = computed<{ name: string; url: string }[]>(() => {
 	const cards: { product: any; attribute: any | null }[] = splitByAttributes.value
 		? expandProductsByAttributes(products.value)
 		: products.value.map((p: any) => ({ product: p, attribute: null }))
 
 	const fromProducts = cards.slice(0, LIST_MAX).map(({ product: p, attribute: a }) => ({
 		name: a ? `${p.title} (${a.title})` : p.title,
-		link: url.absolute(url.product(p, a?.alias)),
-		image: absImg(url.productThumb(getImageByAttribute(p, a?.id) ?? p.image_file)),
-		price: p.price,
-		stock: productStockState(p, a),
-		// Рейтинг рахує API підзапитом (rating + reviews_count у списку) — без нього
-		// зірочок у товарних сніпетах не буде; за відсутності даних поле просто зникає
-		rating: ratingJsonLd(p.rating, p.reviews_count),
+		url: url.absolute(url.product(p, a?.alias)),
 	}))
 
 	// Скільки дизайнів ще влізе у стелю списку — решту навіть не обходимо
@@ -804,21 +787,13 @@ const listedItems = computed<IListedItem[]>(() => {
 	const fromNeoprints = showNeoPrints.value
 		? neoprints.value.slice(0, neoprintsRoom).map((np: INeoPrint) => ({
 				name: neoPrintTitle(np, category.value),
-				link: url.absolute(url.neoprint(props.categoryAlias, np.id)),
-				image: url.absolute(url.neoprintImage(props.categoryAlias, np.alias)),
-				price: neoPrintPrice.value,
-				// Дизайн друкують під модель — його наявність і є статусом друку моделі
-				stock: printStockState(category.value),
-				rating: {},
+				url: url.absolute(url.neoprint(props.categoryAlias, np.id)),
 			}))
 		: []
 
-	return [...fromProducts, ...fromNeoprints].slice(0, LIST_MAX)
+	return [...fromProducts, ...fromNeoprints]
 })
 
-// JSON-LD: список товарів. Кожна позиція — повноцінний Product з ціною, наявністю і
-// рейтингом: саме це дає ціну й зірочки в товарних сніпетах, тоді як голий {name,url}
-// не дає нічого.
 useJsonLd(() => ({
 	'@context': 'https://schema.org',
 	'@type': 'ItemList',
@@ -828,23 +803,7 @@ useJsonLd(() => ({
 	itemListElement: listedItems.value.map((it, i: number) => ({
 		'@type': 'ListItem',
 		position: (currentPage.value - 1) * options.value.limit + i + 1,
-		item: {
-			'@type': 'Product',
-			name: it.name,
-			url: it.link,
-			image: it.image,
-			...it.rating,
-			offers: {
-				'@type': 'Offer',
-				url: it.link,
-				priceCurrency: 'UAH',
-				price: it.price,
-				priceValidUntil: priceValidUntil(),
-				itemCondition: 'https://schema.org/NewCondition',
-				availability: stockAvailability(it.stock),
-				seller: orgId(config.public.siteUrl as string),
-			},
-		},
+		...it,
 	})),
 }))
 

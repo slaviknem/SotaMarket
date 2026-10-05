@@ -453,10 +453,9 @@ useJsonLd(() => ({
 		url: url.absolute(url.neoprint(category.value.alias, activeDesign.value.id)),
 		priceCurrency: 'UAH',
 		price: price.value,
-		priceValidUntil: priceValidUntil(),
 		itemCondition: 'https://schema.org/NewCondition',
 		availability: stockAvailability(stock.value),
-		seller: orgId(config.public.siteUrl as string),
+		...offerShop(config.public.siteUrl as string),
 	},
 }))
 

@@ -1794,10 +1794,16 @@ useJsonLd(() => ({
 		url: url.absolute(url.printcase(model.value?.alias)),
 		priceCurrency: 'UAH',
 		price,
-		priceValidUntil: priceValidUntil(),
 		itemCondition: 'https://schema.org/NewCondition',
 		availability: 'https://schema.org/InStock',
-		seller: orgId(config.public.siteUrl as string),
+		...offerShop(config.public.siteUrl as string),
+		// Індивідуальний друк поверненню не підлягає (брак — передрук або гроші назад):
+		// перекриваємо загальну 14-денну політику магазину
+		hasMerchantReturnPolicy: {
+			'@type': 'MerchantReturnPolicy',
+			applicableCountry: 'UA',
+			returnPolicyCategory: 'https://schema.org/MerchantReturnNotPermitted',
+		},
 	},
 }))
 

@@ -113,11 +113,19 @@ export function orgId(siteUrl: string) {
 	return { '@id': siteUrl + '/#organization' }
 }
 
-// priceValidUntil для Offer: без дати в майбутньому Google вважає пропозицію
-// протермінованою і ховає ціну зі сніпета. Рік уперед у мілісекундах — так дата
-// завжди валідна (на відміну від «+1 до року», що дає 29 лютого в невисокосному).
-const YEAR_MS = 365 * 24 * 60 * 60 * 1000
+// Глобальні політики магазину — повернення й доставка. Самі вузли оголошені в app.vue
+// на OnlineStore (на кожній сторінці), а Offer посилається на них лише через @id —
+// так радить Google, і умови не дублюються в кожному варіанті товару.
+export const returnPolicyId = (siteUrl: string) => ({ '@id': siteUrl + '/#return-policy' })
+export const shippingServiceId = (siteUrl: string) => ({ '@id': siteUrl + '/#shipping' })
 
-export function priceValidUntil() {
-	return new Date(Date.now() + YEAR_MS).toISOString().slice(0, 10)
+// Продавець і його умови для кожного Offer.
+// priceValidUntil/validFrom навмисно не ставимо: Google читає їх як терміни акції,
+// а в нас звичайна ціна без дати закінчення.
+export function offerShop(siteUrl: string) {
+	return {
+		seller: orgId(siteUrl),
+		hasMerchantReturnPolicy: returnPolicyId(siteUrl),
+		shippingDetails: { '@type': 'OfferShippingDetails', hasShippingService: shippingServiceId(siteUrl) },
+	}
 }

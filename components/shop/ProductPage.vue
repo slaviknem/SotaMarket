@@ -477,13 +477,17 @@ const canonicalPath = computed(() =>
 	product.value ? url.product(product.value, isVariant.value ? selectedAttribute.value.alias : undefined) : ''
 )
 
+// description_short спільний для всіх варіантів — на сторінці принта беремо шаблон
+// із його власною назвою, інакше десятки сніпетів були б однакові
+const seoDescription = computed(
+	() =>
+		(!isVariant.value && product.value?.description_short) ||
+		t('metaDescription.product', { title: seoTitle.value, price: formatPrice(product.value?.price) })
+)
+
 usePageSeo({
 	title: () => `${seoTitle.value} — ${formatPrice(product.value?.price)}`,
-	// description_short спільний для всіх варіантів — на сторінці принта беремо шаблон
-	// із його власною назвою, інакше десятки сніпетів були б однакові
-	description: () =>
-		(!isVariant.value && product.value?.description_short) ||
-		t('metaDescription.product', { title: seoTitle.value, price: formatPrice(product.value?.price) }),
+	description: () => seoDescription.value,
 	image: () => (currentImageFile.value ? url.productBig(currentImageFile.value) : undefined),
 	path: () => canonicalPath.value,
 	ogType: 'product',
@@ -496,6 +500,7 @@ useProductJsonLd({
 	selectedAttribute,
 	isVariantPage: isVariant,
 	pageTitle,
+	description: seoDescription,
 	images: seoImages,
 	variantImages,
 	breadcrumbs,

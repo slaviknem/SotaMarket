@@ -14,6 +14,9 @@ export function useProductJsonLd(opts: {
 	// URL показує конкретний варіант: сторінка /attr/… або вибір принта на сторінці товару
 	isVariantPage: ComputedRef<boolean>
 	pageTitle: ComputedRef<string>
+	// Той самий опис, що в meta description: у частини товарів немає description_short,
+	// а ProductGroup без опису Google позначає як неповний
+	description: ComputedRef<string>
 	images: ComputedRef<string[]>
 	variantImages: ComputedRef<string[]>
 	breadcrumbs: ComputedRef<{ title: string; url?: string }[]>
@@ -25,23 +28,28 @@ export function useProductJsonLd(opts: {
 	// Абсолютний URL товару (з мовним префіксом), опційно — конкретного варіанта
 	const linkTo = (attr?: any) => url.absolute(url.product(opts.product.value, attr?.alias))
 
-	// priceValidUntil і seller — вимоги товарних сніпетів: без дати Google вважає ціну
-	// протермінованою і ховає її, а seller через @id зшиває пропозицію з магазином
-	// (його контакти й політика повернення оголошені один раз у app.vue).
+	// Продавець, повернення й доставка — посилання через @id на вузли магазину в app.vue
 	const offerFor = (attr: any | null, offerUrl: string) => ({
 		'@type': 'Offer',
 		url: offerUrl,
 		priceCurrency: 'UAH',
 		price: opts.product.value?.price,
-		priceValidUntil: priceValidUntil(),
 		itemCondition: 'https://schema.org/NewCondition',
 		availability: stockAvailability(productStockState(opts.product.value, attr)),
-		seller: orgId(config.public.siteUrl as string),
+		...offerShop(config.public.siteUrl as string),
 	})
 
-	// Ознака, якою відрізняються варіанти: принт (pattern) чи колір (color)
-	const variesByProp = (attr: any) =>
-		isPrintAttribute(attr) ? { pattern: attr.title } : { color: attr.title }
+	// Вісь, якою відрізняються варіанти. Google вимагає КОЖНУ властивість із variesBy у КОЖНОГО
+	// варіанта (інакше критична помилка «Отсутствует поле pattern/color» і товар випадає з
+	// видачі), тож вісь у групи одна: є хоч один принт → pattern, інакше color.
+	const groupAxis = computed(() => (opts.attributes.value.some(isPrintAttribute) ? 'pattern' : 'color'))
+
+	// Однотонний варіант у групі принтів — теж «візерунок» (його колір), а color лишаємо
+	// додатковою властивістю. Без назви — alias: порожнє значення Google теж рахує відсутнім.
+	const variesByProp = (attr: any) => {
+		const name = attr.title || attr.alias
+		return { [groupAxis.value]: name, ...(isPrintAttribute(attr) ? {} : { color: name }) }
+	}
 
 	useJsonLd(() => {
 		const product = opts.product.value
@@ -56,7 +64,7 @@ export function useProductJsonLd(opts: {
 
 		const base = {
 			'@context': 'https://schema.org',
-			description: product.description_short || '',
+			description: opts.description.value,
 			brand: {
 				'@type': 'Brand',
 				name: product.categories?.[0]?.brend_name || config.public.siteName,
@@ -92,10 +100,7 @@ export function useProductJsonLd(opts: {
 				url: linkTo(),
 				image: opts.images.value,
 				productGroupID: groupId,
-				variesBy: [
-					...(attrs.some(isPrintAttribute) ? ['https://schema.org/pattern'] : []),
-					...(attrs.some((a: any) => !isPrintAttribute(a)) ? ['https://schema.org/color'] : []),
-				],
+				variesBy: [`https://schema.org/${groupAxis.value}`],
 				hasVariant: attrs.map((a: any) => ({
 					'@type': 'Product',
 					name: variantTitle(a),
