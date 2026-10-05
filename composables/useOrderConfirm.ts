@@ -18,9 +18,12 @@ export interface OcOption {
 }
 
 export interface OcBlock {
-	key: string // model:{id} | net:{id} | color:{item_id}
+	// model:{id} | net:{id} | color:{model_id}:{дизайн}[:{n}] — у боків ключ від моделі й дизайну, а не
+	// від позиції: адмінка перестворює позиції з новими id при кожному збереженні форми
+	key: string
 	// Блоки з однаковим group — один екран (плитки моделі і 4G / 5G тієї ж моделі)
 	group?: string
+	item_id?: number // боки: про яку позицію питання
 	kind: 'question' | 'info'
 	topic: 'model' | 'color'
 	title: string

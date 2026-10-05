@@ -735,9 +735,10 @@ const doubtModels = computed(() =>
 		.join('; ')
 )
 
-// Колір боків позиції: у питанні — обраний варіант, в info-блоці — констатація
+// Колір боків позиції: у питанні — обраний варіант, в info-блоці — констатація.
+// Позицію шукаємо за item_id: ключ питання — від моделі й дизайну, id позиції в ньому немає
 function colorValue(itemId: number) {
-	const b = blocks.value.find((x) => x.key === `color:${itemId}`)
+	const b = blocks.value.find((x) => x.topic === 'color' && x.item_id === itemId)
 	if (!b) return ''
 	if (b.kind === 'info') return b.summary || ''
 	return b.options.find((x) => x.v === answers.value[b.key]?.v)?.summary || ''
@@ -749,7 +750,7 @@ const stepItems = computed(() => {
 	if (items.value.length < 2 || !showQuestion.value) return []
 	const q = stepBlocks.value[0]
 	if (!q) return []
-	if (q.topic === 'color') return items.value.filter((i) => q.key === `color:${i.id}`)
+	if (q.topic === 'color') return items.value.filter((i) => i.id === q.item_id)
 	return items.value.filter((i) => i.model_id && q.group === `model:${i.model_id}`)
 })
 
