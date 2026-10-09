@@ -6,7 +6,7 @@
 				<AppIcon name="check" :size="30" :stroke-width="2.6" />
 			</span>
 			<h2 class="oc__title">{{ t('confirm.doneTitle') }}</h2>
-			<p class="oc__sub">{{ t('confirm.doneSub', { day: order.dispatch }) }}</p>
+			<p class="oc__sub">{{ t('confirm.doneSub', { day: dispatch }) }}</p>
 
 			<!-- Сумнів у моделі скасовує «не телефонувати»: тут дзвінок таки потрібен -->
 			<p v-if="modelDoubt" class="oc__note oc__note--warn">
@@ -328,7 +328,7 @@
 							<div class="oc__next">
 								<AppIcon name="truck" :size="18" class="oc__next-ico" />
 								<span class="oc__next-text">
-									<b>{{ t('confirm.dispatch', { day: order.dispatch }) }}</b>
+									<b>{{ t('confirm.dispatch', { day: dispatch }) }}</b>
 									<i v-if="cod">{{ t('confirm.due', { sum: order.due }) }}</i>
 								</span>
 							</div>
@@ -469,6 +469,10 @@ const fresh = ref<Record<string, OcBlock | null>>({})
 const blocks = computed(() =>
 	props.data.blocks.flatMap((b) => (fresh.value[b.key] === null ? [] : [fresh.value[b.key] || b]))
 )
+// Коли відправимо — бекенд вгадує постачальника (CS чи VDMT) з тієї ж наявності, тож після
+// refreshColors день теж уточнюється
+const freshDispatch = ref('')
+const dispatch = computed(() => freshDispatch.value || order.value.dispatch)
 const pay = computed(() => props.data.pay)
 // Накладений платіж (за товар ще платять на пошті) — якщо не щойно сплатили все онлайн
 const cod = computed(() => order.value.cod && props.justPaid !== 'full')
@@ -935,6 +939,7 @@ function payload(): IOrderConfirmAnswers {
 		comment: comment.value.trim(),
 		address: address.value.trim(),
 		no_call: noCall.value,
+		dispatch: dispatch.value,
 	}
 }
 
@@ -954,6 +959,7 @@ async function refreshColors() {
 	if (!editable.value || !props.data.blocks.some((b) => b.pending)) return
 	const res = await shopApi.getOrderConfirm(order.value.id, props.token, true).catch(() => null)
 	if (!res) return
+	freshDispatch.value = res.order?.dispatch || ''
 
 	const group = (q?: OcBlock) => (q ? q.group || q.key : '')
 	const here = group(steps.value[stepIndex.value]?.[0])

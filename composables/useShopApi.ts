@@ -80,7 +80,7 @@ export interface IOrderConfirm {
 		// Статус ще new / not_call / drop_first. Інакше — зведення лише для читання
 		editable: boolean
 		items: IOrderConfirmItem[]
-		dispatch: string // «завтра» / «у понеділок» — з малої, стоїть усередині речення
+		dispatch: string // «Завтра» / «Сьогодні або Завтра» / «в Понеділок - Вівторок» — з великої, усередині речення (DispatchTerm)
 		phone: string // 10 цифр
 		// bad — номер майже напевно неправильний (поле правки відкрите одразу),
 		// soft — невідомий префікс оператора (лише ввічливе прохання перевірити)
@@ -123,6 +123,7 @@ export interface IOrderConfirmAnswers {
 	comment: string
 	address: string // куди відправити — своїми словами, коли бракує даних доставки
 	no_call: boolean
+	dispatch?: string // коли відправимо — рівно той текст, що бачить клієнт (адмінка показує його менеджеру)
 }
 
 // Збережений стан — з нього опитувальник продовжує там, де клієнт зупинився
@@ -350,6 +351,7 @@ export function useShopApi() {
 			fd.append('comment', state.comment)
 			fd.append('address', state.address)
 			fd.append('no_call', state.no_call ? '1' : '0')
+			if (state.dispatch) fd.append('dispatch', state.dispatch)
 			if (final) fd.append('final', '1')
 			return $fetch<{ saved: boolean }>(config.public.urlApi + 'orders/confirm', {
 				method: 'POST',
