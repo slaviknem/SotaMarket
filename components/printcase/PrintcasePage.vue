@@ -278,6 +278,14 @@
 								<AppIcon name="edit" :size="13" />
 							</button>
 							<button
+								v-if="canDownloadLayers && el.type === 'image'"
+								class="pc-layer__btn"
+								:title="t('printcase.layerDownload')"
+								@click.stop="downloadLayer(elements.length - 1 - revIdx)"
+							>
+								<AppIcon name="download" :size="14" />
+							</button>
+							<button
 								class="pc-layer__btn"
 								:class="{ 'is-off': el.hidden }"
 								:title="el.hidden ? t('printcase.layerShow') : t('printcase.layerHide')"
@@ -866,6 +874,38 @@ function onLayerClick(i: number) {
 function editLayerText(i: number) {
 	if (elements.value[i]?.hidden) toggleHidden(i)
 	openTextEdit(i)
+}
+
+// Скачування фото шару — лише менеджеру, що відкрив макет замовлення з адмінки.
+// Покупець, який править свій макет із кошика, цієї кнопки не бачить.
+const canDownloadLayers = computed(() => !!designDir.value && !cartItem.value)
+
+// Файл зветься {id макета}_{номер шару}: у теці менеджера одразу видно, з якого замовлення
+// й шару кожне фото. blob:/data: читаються напряму, а сховище віддає без CORS — звідти
+// беремо base64 через API (той самий обхід, що й для canvas).
+async function downloadLayer(i: number) {
+	const el = elements.value[i]
+	if (el?.type !== 'image' || !el.url) return
+
+	try {
+		let res = await fetch(el.url).catch(() => null)
+		if (!res?.ok) {
+			const b64 = await imageB64(el.url)
+			if (!b64) throw new Error(`не вдалося завантажити зображення: ${el.url}`)
+			res = await fetch(b64)
+		}
+		const blob = await res.blob()
+		const ext = (blob.type.match(/^image\/(\w+)/)?.[1] || 'jpg').replace('jpeg', 'jpg')
+
+		const a = document.createElement('a')
+		a.href = URL.createObjectURL(blob)
+		a.download = `${designDir.value?.split('_')[0]}_${i + 1}.${ext}`
+		a.click()
+		setTimeout(() => URL.revokeObjectURL(a.href), 1000)
+	} catch (e) {
+		console.error('[printcase] downloadLayer', e)
+		notify('error', t('printcase.layerDownloadFailed'))
+	}
 }
 
 // Додаємо зображення (вписане в сцену, по центру). origin — звідки воно взялося: саме він
