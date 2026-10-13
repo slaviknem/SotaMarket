@@ -77,7 +77,7 @@ export interface IOrderConfirm {
 	found: true
 	order: {
 		id: number
-		// Статус ще new / not_call / drop_first. Інакше — зведення лише для читання
+		// Статус ще new / messaged / not_call / drop_first. Інакше — зведення лише для читання
 		editable: boolean
 		items: IOrderConfirmItem[]
 		dispatch: string // «Завтра» / «Сьогодні або Завтра» / «в Понеділок - Вівторок» — з великої, усередині речення (DispatchTerm)
