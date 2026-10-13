@@ -145,7 +145,7 @@
 								id="co-fio"
 								v-model="order.fio"
 								class="form-control"
-								:class="fieldClass('fio', fioValid)"
+								:class="fioLatin && !errors.fio ? 'is-warn' : fieldClass('fio', fioValid)"
 								type="text"
 								name="name"
 								autocomplete="name"
@@ -153,6 +153,11 @@
 								@blur="touch('fio')"
 							/>
 							<p v-if="errors.fio" class="field-error">{{ errors.fio }}</p>
+							<!-- Латиниця — лише прохання, оформлення не зупиняє: зайва перешкода в кошику
+							     коштує замовлення. Одразу, без blur — з розкладкою людина розбереться
+							     ще до кінця слова. Не виправив — попросимо на сторінці підтвердження
+							     (OrderConfirm: recipient_missing) -->
+							<p v-else-if="fioLatin" class="field-warn">{{ t('cart.fioLatin') }}</p>
 						</div>
 
 						<!-- 2. Доставка. Перевізник не вибраний наперед — поля з'являються після вибору,
@@ -428,6 +433,7 @@ const shopApi = useShopApi()
 const novaPochta = useNovaPochta()
 const ukrPoshta = useUkrPoshta()
 const { maskPhone, isValidPhone } = usePhone()
+const { hasLatin } = useFio()
 const { notify } = useNotify()
 
 definePageMeta({ name: 'shop-cart' })
@@ -768,6 +774,7 @@ const touch = (field: string) => (touched[field] = true)
 const isShown = (field: string) => touched[field] || submitted.value
 
 const fioValid = computed(() => order.fio.trim().length >= 3)
+const fioLatin = computed(() => hasLatin(order.fio))
 
 const errors = computed(() => ({
 	phone: !isShown('phone') || isValidPhone(order.phone)

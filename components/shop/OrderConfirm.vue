@@ -16,7 +16,12 @@
 			<p v-else-if="!noCall" class="oc__note">{{ t('confirm.noCallOff') }}</p>
 			<p v-else class="oc__note oc__note--ok">{{ t('confirm.noCallOn') }}</p>
 			<p v-if="comment.trim()" class="oc__note">{{ t('confirm.doneComment') }}</p>
-			<p v-if="order.delivery_missing && address.trim()" class="oc__note">{{ t('confirm.doneDelivery') }}</p>
+			<p
+				v-if="(order.delivery_missing && address.trim()) || (order.recipient_missing && recipient.trim())"
+				class="oc__note"
+			>
+				{{ t('confirm.doneDelivery') }}
+			</p>
 
 			<!-- Ще не сплачено — ті самі кнопки й після підтвердження: хто обрав накладений чи
 			     реквізити, може передумати й сплатити одразу. Повернувся з MonoPay — їх немає (payState) -->
@@ -324,6 +329,29 @@
 								<p v-if="errors.delivery" class="field-error">{{ errors.delivery }}</p>
 							</div>
 
+							<!-- Отримувач — окремо від «Куди відправити?»: найчастіше адреса якраз є, а ПІБ
+							     латиницею (кошик лише попереджав). Латиницею накладну не оформити, тож і тут
+							     «підтверджую» без нього не пускає. autocomplete="off" — інакше браузер
+							     підставив би те саме «MELNIK JOSIP» з Google-акаунта -->
+							<div v-if="order.recipient_missing" class="oc__deliv">
+								<p class="oc__note oc__note--warn">
+									<b>{{ t('confirm.recipientTitle') }}</b> {{ order.recipient_missing }}
+								</p>
+								<input
+									id="oc-recipient"
+									v-model="recipient"
+									class="form-control oc__deliv-field"
+									:class="{ 'is-error': recipientError }"
+									type="text"
+									autocomplete="off"
+									maxlength="100"
+									:aria-label="t('confirm.recipientTitle')"
+									:placeholder="t('confirm.recipientPlaceholder')"
+									@input="errors.recipient = ''; save.later()"
+								/>
+								<p v-if="recipientError" class="field-error">{{ recipientError }}</p>
+							</div>
+
 							<!-- Єдина НОВА для клієнта інформація на цьому екрані — тому вона й виділена -->
 							<div class="oc__next">
 								<AppIcon name="truck" :size="18" class="oc__next-ico" />
@@ -458,6 +486,7 @@ const url = useUrl()
 const shopApi = useShopApi()
 const localePath = useLocalePath()
 const { maskPhone, isValidPhone, phoneDigits } = usePhone()
+const { hasLatin } = useFio()
 
 // ─────────────────────────── Стан ───────────────────────────
 
@@ -487,6 +516,7 @@ const noCall = ref(true)
 const comment = ref('')
 const commentOpen = ref(false)
 const address = ref('') // куди відправити — лише коли бракує даних доставки (order.delivery_missing)
+const recipient = ref('') // ПІБ кирилицею — лише коли його немає або він латиницею (order.recipient_missing)
 const otherText = ref<Record<string, string>>({})
 const errors = ref<Record<string, string>>({})
 const helpOpen = ref(false)
@@ -582,6 +612,7 @@ function reset() {
 	comment.value = saved?.comment || ''
 	commentOpen.value = !!comment.value
 	address.value = saved?.address || ''
+	recipient.value = saved?.recipient || ''
 	noCall.value = saved?.no_call ?? true
 	errors.value = {}
 	saveError.value = false
@@ -845,6 +876,20 @@ function savePhone() {
 
 // ─────────────────────────── Навігація ───────────────────────────
 
+// Латиницю в полі отримувача показуємо одразу, а не після «Підтверджую»: інакше клієнт
+// упише те саме «MELNIK JOSIP» і дізнається про це лише внизу, біля кнопки
+const recipientError = computed(() =>
+	errors.value.recipient || (hasLatin(recipient.value) ? t('confirm.errRecipientLatin') : '')
+)
+
+// Поле зведення (#oc-{key}), без якого «Підтверджую» не пускає: докручуємо й ставимо фокус
+function flagField(key: 'delivery' | 'recipient', error: string) {
+	errors.value[key] = error
+	const el = document.getElementById(`oc-${key}`)
+	el?.scrollIntoView({ block: 'center', behavior: smooth() })
+	el?.focus({ preventScroll: true })
+}
+
 // Усі питання екрана мають відповідь; перше порожнє — показуємо і трусимо
 function validateStep(): boolean {
 	for (const q of showQuestion.value ? stepBlocks.value : []) {
@@ -882,12 +927,13 @@ async function next() {
 	}
 
 	if (showSummary.value) {
-		// Без даних доставки посилку не відправити — підтвердження без них не приймаємо
+		// Без даних доставки й отримувача посилку не відправити — підтвердження без них не приймаємо
 		if (order.value.delivery_missing && !address.value.trim()) {
-			errors.value.delivery = t('confirm.errDelivery')
-			const el = document.getElementById('oc-delivery')
-			el?.scrollIntoView({ block: 'center', behavior: smooth() })
-			el?.focus({ preventScroll: true })
+			flagField('delivery', t('confirm.errDelivery'))
+			return
+		}
+		if (order.value.recipient_missing && (!recipient.value.trim() || hasLatin(recipient.value))) {
+			flagField('recipient', recipient.value.trim() ? t('confirm.errRecipientLatin') : t('confirm.errRecipient'))
 			return
 		}
 		// Питання пропустили через їхню кількість — галочки не було, звіряє менеджер
@@ -938,6 +984,7 @@ function payload(): IOrderConfirmAnswers {
 		phone: phoneEdited.value ? phoneDigits(phone.value) : null,
 		comment: comment.value.trim(),
 		address: address.value.trim(),
+		recipient: recipient.value.trim(),
 		no_call: noCall.value,
 		dispatch: dispatch.value,
 	}

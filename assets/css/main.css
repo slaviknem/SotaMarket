@@ -345,6 +345,11 @@ ul { padding-left: 1.2em; }
 	border-color: var(--success);
 }
 
+/* Заповнено, але варто виправити — не помилка, відправку не зупиняє (ПІБ латиницею) */
+.form-control.is-warn {
+	border-color: var(--warning);
+}
+
 select.form-control {
 	appearance: none;
 	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238b8b96' stroke-width='2' fill='none'/%3E%3C/svg%3E");
@@ -364,6 +369,7 @@ textarea.form-control {
 
 /* Підказка / текст помилки під полем — щоб користувач бачив причину, а не лише червону рамку */
 .field-hint,
+.field-warn,
 .field-error {
 	margin-top: 5px;
 	font-size: 12.5px;
@@ -372,6 +378,10 @@ textarea.form-control {
 
 .field-hint {
 	color: var(--text-muted);
+}
+
+.field-warn {
+	color: var(--warning);
 }
 
 .field-error {

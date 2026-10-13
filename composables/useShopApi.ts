@@ -89,9 +89,11 @@ export interface IOrderConfirm {
 		price: number // за товари, вже зі знижкою — те, що йде в ТТН
 		cod: boolean // накладений платіж (і ще не оплачено онлайн повністю)
 		due: number // «при отриманні ≈»: товари мінус аванс плюс доставка, округлено вгору до 5
-		// Чого бракує, щоб відправити (спосіб доставки, відділення, індекс, отримувач) — готовий
+		// Чого бракує, щоб відправити (спосіб доставки, відділення, індекс) — готовий
 		// текст; null — усе є. Немає ключа — адмінка ще старша за цю перевірку
 		delivery_missing?: string | null
+		// Що не так з отримувачем (немає прізвища або воно латиницею) — готовий текст; null — усе гаразд
+		recipient_missing?: string | null
 	}
 	pay: {
 		// Чи пропонувати онлайн-оплату взагалі. Чи є на чому друкувати (а отже, чи брати гроші),
@@ -122,6 +124,7 @@ export interface IOrderConfirmAnswers {
 	phone: string | null // номер, виправлений клієнтом; null — не правив
 	comment: string
 	address: string // куди відправити — своїми словами, коли бракує даних доставки
+	recipient: string // ПІБ отримувача кирилицею — коли його немає або він латиницею
 	no_call: boolean
 	dispatch?: string // коли відправимо — рівно той текст, що бачить клієнт (адмінка показує його менеджеру)
 }
@@ -350,6 +353,7 @@ export function useShopApi() {
 			fd.append('phone', state.phone ?? '')
 			fd.append('comment', state.comment)
 			fd.append('address', state.address)
+			fd.append('recipient', state.recipient)
 			fd.append('no_call', state.no_call ? '1' : '0')
 			if (state.dispatch) fd.append('dispatch', state.dispatch)
 			if (final) fd.append('final', '1')
