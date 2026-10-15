@@ -13,20 +13,20 @@
 
 ## Структура URL (ідентична старому сайту)
 
-| URL | Сторінка |
-|---|---|
-| `/` , `/uk` | Головна |
-| `/{category}` | Категорія (бренд/серія/модель) з фільтрами |
-| `/{category}/filter/{filter}` | Сторінка фільтра (SEO) |
-| `/{category}/{product}` | Товар |
-| `/{category}/{product}/attr/{attribute}` | Товар з вибраним атрибутом (SEO) |
-| `/chekhly` + `/chekhly/filter/...` | Всі чохли |
-| `/article`, `/article/{type}`, `/article/{type}/{alias}` | Блог |
-| `/shop/cart`, `/shop/cart/success` | Кошик / успішне замовлення (+ MonoPay) |
-| `/shop/wishlist`, `/shop/compare`, `/shop/track-order` | Обране / порівняння / трекінг |
-| `/about`, `/dostavka`, `/povernennya`, `/otzyvy-klientov` | Інфо-сторінки (контент з API) |
-| `/printcase` | Конструктор чохлів (хаб) |
-| `/printcase/{model}` | Конструктор під модель — індексована сторінка (`?model=` 301-иться сюди) |
+| URL                                                       | Сторінка                                                                 |
+| --------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `/` , `/uk`                                               | Головна                                                                  |
+| `/{category}`                                             | Категорія (бренд/серія/модель) з фільтрами                               |
+| `/{category}/filter/{filter}`                             | Сторінка фільтра (SEO)                                                   |
+| `/{category}/{product}`                                   | Товар                                                                    |
+| `/{category}/{product}/attr/{attribute}`                  | Товар з вибраним атрибутом (SEO)                                         |
+| `/chekhly` + `/chekhly/filter/...`                        | Всі чохли                                                                |
+| `/article`, `/article/{type}`, `/article/{type}/{alias}`  | Блог                                                                     |
+| `/shop/cart`, `/shop/cart/success`                        | Кошик / успішне замовлення (+ MonoPay)                                   |
+| `/shop/wishlist`, `/shop/compare`, `/shop/track-order`    | Обране / порівняння / трекінг                                            |
+| `/about`, `/dostavka`, `/povernennya`, `/otzyvy-klientov` | Інфо-сторінки (контент з API)                                            |
+| `/printcase`                                              | Конструктор чохлів (хаб)                                                 |
+| `/printcase/{model}`                                      | Конструктор під модель — індексована сторінка (`?model=` 301-иться сюди) |
 
 Параметри листингу теж збережені: `?page=2&limit=12&sort=price-asc&filter_{group}=a,b`.
 
@@ -101,3 +101,8 @@ SITE_URL='https://floy.com.ua'
 - `components/shop/ProductPage.vue` — товар (+ attr-сторінки)
 - `i18n/locales/ru.json`, `uk.json` — переклади (перенесені зі старого сайту + нові ключі)
 - `FLOY-ADMIN/` — копія бекенда для довідки (не частина фронтенда)
+
+## ДЕПЛОЙ
+
+cd /root/nodeapps/FLOY-PROD
+bash deploy.sh
