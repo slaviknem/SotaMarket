@@ -157,15 +157,24 @@ curl -I https://floy.com.ua                               # знову стар�
 
 ## 7. Оновлення після пушу в GitHub
 
+Звичайний шлях — `bash deploy.sh` (усе нижче він робить сам, разом із чисткою кешу nginx).
+Руками, якщо скрипт недоступний:
+
 ```bash
 cd /root/nodeapps/FLOY-PROD && git pull && nvm use 22 && npm install && \
   cp -rp .output/public/_nuxt /tmp/_nuxt-prev 2>/dev/null; \
   npx nuxi build && \
   cp -rpn /tmp/_nuxt-prev/. .output/public/_nuxt/ 2>/dev/null; \
   find .output/public/_nuxt -type f -mtime +14 -delete; \
-  nvm use 16 && pm2 restart floy-prod
+  nvm use 16 && pm2 restart floy-prod && \
+  sleep 5 && find /var/cache/nginx-floy -type f -delete
 ```
 (`npm install` можна пропустити, якщо залежності не мінялись.)
+
+⚠️ **Кеш nginx після рестарту чистити обов'язково.** Він тримає HTML до доби, а в HTML —
+імена чанків старої збірки. Новий процес їх не віддає (див. нижче), тож закешована сторінка
+приходить без жодного JS: не працюють кошик, пошук, меню, слайдер. 15.10.2026 так було з
+головною — її entry-скрипт віддавав 404, поки кеш не почистили.
 
 ### Чому тут копіювання `_nuxt`, а не просто `nuxi build`
 
@@ -178,7 +187,11 @@ cd /root/nodeapps/FLOY-PROD && git pull && nvm use 22 && npm install && \
 Тому:
 
 - **`cp -rp` до збірки + `cp -rpn` після** — старі чанки повертаються поруч із новими
-  (`-n` = не чіпати нові, імена з хешем ніколи не конфліктують, `-p` зберігає дати);
+  (`-n` = не чіпати нові, імена з хешем ніколи не конфліктують, `-p` зберігає дати).
+  ⚠️ Але **після рестарту Nitro їх не віддає**: `/_nuxt/*` він обслуговує лише за переліком,
+  зашитим у збірку (`nitropack` → `static.mjs` → `getAsset`), на все інше — 404. Тобто
+  повернуті файли допомагають лише старому процесу до рестарту і запрацюють повністю, тільки
+  якщо `/_nuxt/` колись віддаватиме nginx прямо з диска;
 - **`find -mtime +14 -delete`** — інакше `_nuxt` ріс би з кожною викладкою назавжди;
   два тижні старих чанків покривають будь-яку живу вкладку;
 - документ (HTML) віддається з `Cache-Control: no-cache` (`server/middleware/no-cache-html.ts`),

@@ -156,6 +156,106 @@ export interface INeoPrint {
 	type: string
 }
 
+// ---------- Обрізання відповідей API ----------
+// apisite віддає моделі адмінки цілком: закупівельну ціну, коди й посилання постачальників,
+// номер стелажа, дати кожного фото, повні SEO-описи категорій у плитках. Усе це потрапляло
+// в SSR-payload — а він лежить у HTML відкритим текстом і займав 50–60% ваги сторінки.
+// Прибираємо до того, як дані підуть у useAsyncData.
+
+// Службові поля адмінки, яких сайт ніде не показує
+const INTERNAL_PRODUCT = ['price_zakup', 'itsell_id', 'itsell_url']
+const INTERNAL_CATEGORY = [
+	'itsell_ids',
+	'itsell_parse',
+	'vdmt_url',
+	'vdmt_id',
+	'caseshop_id',
+	'caseshop_brend_id',
+	'endorphone_id',
+	'rack_num',
+	'prom_export',
+]
+
+// Чого не показує картка товару в списку (опис, характеристики, фільтри, відгуки —
+// усе це сторінка товару бере з власного запиту)
+const CARD_HEAVY = ['description', 'characteristics', 'linked_text', 'filters', 'reviews', 'video']
+
+function omit<T>(obj: T, keys: string[]): T {
+	if (!obj || typeof obj !== 'object') return obj
+	const out: any = { ...obj }
+	for (const key of keys) delete out[key]
+	return out
+}
+
+const cleanCategory = (cat: any) => {
+	const out: any = omit(cat, INTERNAL_CATEGORY)
+	if (out?.brend && typeof out.brend === 'object') out.brend = omit(out.brend, INTERNAL_CATEGORY)
+	return out
+}
+
+// Товар без службових полів. Фото — лише те, що читають галерея й картка
+// (без дат, прапорців обробки і посилань на сайт постачальника)
+function cleanProduct(p: any) {
+	if (!p || typeof p !== 'object') return p
+	const out: any = omit(p, INTERNAL_PRODUCT)
+	if (Array.isArray(p.images)) {
+		out.images = p.images.map(({ id, attribute_id, image_file }: any) => ({ id, attribute_id, image_file }))
+	}
+	if (Array.isArray(p.attributes)) out.attributes = p.attributes.map((a: any) => omit(a, ['vdmt_kod']))
+	if (Array.isArray(p.categories)) out.categories = p.categories.map(cleanCategory)
+	return out
+}
+
+// Картка у списку. Фото — по одному на атрибут: getImageByAttribute бере саме перше фото
+// атрибута (або images[0]), а API віддає всі — у товару з 19 кольорами їх було 83.
+// Порядок не міняємо, тож images[0] і перше фото кожного атрибута лишаються тими самими
+function cardProduct(p: any) {
+	const out: any = omit(cleanProduct(p), CARD_HEAVY)
+	if (Array.isArray(out?.images)) {
+		const seen = new Set<number>()
+		out.images = out.images
+			.filter((img: any) => {
+				const key = img.attribute_id ?? 0
+				if (seen.has(key)) return false
+				seen.add(key)
+				return true
+			})
+			.map(({ attribute_id, image_file }: any) => ({ attribute_id, image_file }))
+	}
+	return out
+}
+
+const cardList = (list: any) => (Array.isArray(list) ? list.map(cardProduct) : list)
+
+// Плитка моделі/категорії/бренда: рівно те, що малюють CategoryGrid, BrandTiles і пошук.
+// Повний SEO-опис категорії (6–13 КБ на кожну) у плитці не показується
+const categoryTile = ({ id, alias, type, title, title_full, title_rus, image_file, products_count }: any) => ({
+	id,
+	alias,
+	type,
+	title,
+	title_full,
+	title_rus,
+	image_file,
+	products_count,
+})
+
+// Серії бренду з моделями — лише назви й адреси (каталог брендів, мегаменю)
+export const menuSeries = (series: any) =>
+	Array.isArray(series)
+		? series.map((s: any) => ({
+				title: s.title,
+				url: s.url,
+				children: (s.children || []).map((m: any) => ({ title: m.title, url: m.url })),
+			}))
+		: []
+
+// Бренди → серії → моделі для каталогу брендів (/chekhly): без id, типів і дублювання бренду в кожній моделі
+export const menuBrands = (brands: any) =>
+	Array.isArray(brands)
+		? brands.map((b: any) => ({ title: b.title, url: b.url, children: menuSeries(b.children) }))
+		: []
+
 export function useShopApi() {
 	const config = useRuntimeConfig()
 	const { locale } = useI18n()
@@ -168,6 +268,10 @@ export function useShopApi() {
 	const api = <T = any>(path: string, params: Record<string, any> = {}) =>
 		$fetch<T>(config.public.urlApi + path, {
 			params: { ...baseParams(), ...params },
+			// На сервері запит до API, що завис, тримав би SSR-воркер без кінця (а за ним і чергу
+			// nginx). 15 с — із запасом над найдовшим реальним запитом; збій далі стає 503
+			// через throwIfApiDown. На клієнті не обмежуємо (там є фонові запити з очікуванням)
+			...(import.meta.server ? { timeout: 15000 } : {}),
 		})
 
 	// Деякі ендпоінти (меню) віддають JSON-рядок з text/html — парсимо самі
@@ -196,16 +300,16 @@ export function useShopApi() {
 			return res?.data ?? []
 		},
 
-		// Популярні категорії / моделі
+		// Популярні категорії / моделі (плитки — без описів)
 		getPopularCategory: async (opts: { type: string; limit: number }) => {
 			const res = await api<{ data: any[] }>(`categories/popular/${opts.type}/${opts.limit}`)
-			return res?.data ?? []
+			return (res?.data ?? []).map(categoryTile)
 		},
 
 		// Категорія за alias
 		getCategoryByAlias: async (alias: string) => {
 			const res = await api<{ data: any }>(`categories/category/${alias}`)
-			return res?.data ?? null
+			return res?.data ? cleanCategory(res.data) : null
 		},
 
 		// Список товарів (пагінація + фільтри + сортування)
@@ -217,25 +321,27 @@ export function useShopApi() {
 				else params.filters += filters[key] + ';' // групи фільтрів розділяються ';'
 			}
 
-			return api<{ data: any[]; meta: any; links: any }>('products', { ...options, ...params })
+			return api<{ data: any[]; meta: any; links: any }>('products', { ...options, ...params }).then((res) =>
+				res ? { ...res, data: cardList(res.data) } : res
+			)
 		},
 
 		// Товар за alias
 		getProductByAlias: async (alias: string) => {
 			const res = await api<{ data: any }>(`products/product/${alias}`)
-			return res?.data ?? null
+			return res?.data ? cleanProduct(res.data) : null
 		},
 
 		// Супутні товари
 		getRelatedProducts: async (alias: string) => {
 			const res = await api<{ data: any[] }>(`products/relateds/${alias}`)
-			return res?.data ?? []
+			return cardList(res?.data ?? [])
 		},
 
 		// Нові товари (type: all | chekhly | plenki | accessories)
 		getLatestProducts: async (opts: { category: string; limit: number }) => {
 			const res = await api<{ data: any[] }>(`products/latest/${opts.category}/${opts.limit}`)
-			return res?.data ?? []
+			return cardList(res?.data ?? [])
 		},
 
 		// Пошук: випадайка (моделі + типи чохлів + товари + статті).
@@ -256,7 +362,9 @@ export function useShopApi() {
 
 		// Пошук: сторінка всіх результатів (формат як у products + блок search)
 		searchPage: (query: string, opts: IListOptions = {}) =>
-			api<{ data: any[]; meta: any; search: any }>('search', { q: query, ...opts }),
+			api<{ data: any[]; meta: any; search: any }>('search', { q: query, ...opts }).then((res) =>
+				res ? { ...res, data: cardList(res.data) } : res
+			),
 
 		// Фільтри категорії (дерево)
 		getFilters: async (categoryAlias: string) => {

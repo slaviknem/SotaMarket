@@ -1,6 +1,7 @@
 <template>
 	<Transition name="lang-banner">
-		<aside v-if="show" class="lang-banner" role="dialog" :aria-label="t('langBanner.title')">
+		<!-- div, а не aside: роль dialog для <aside> заборонена ARIA (Lighthouse: aria-allowed-role) -->
+		<div v-if="show" class="lang-banner" role="dialog" :aria-label="t('langBanner.title')">
 			<p class="lang-banner__title">
 				<AppIcon name="globe" :size="20" class="lang-banner__icon" />
 				{{ t('langBanner.title') }}
@@ -18,7 +19,7 @@
 			<button type="button" class="lang-banner__close" :aria-label="t('other.close')" @click="stay">
 				<AppIcon name="close" :size="15" />
 			</button>
-		</aside>
+		</div>
 	</Transition>
 </template>
 

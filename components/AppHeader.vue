@@ -60,7 +60,14 @@
 
 		<!-- Навігація: «Категорії» (вертикальний список) + бренди з випадаючими меню -->
 		<nav class="header__nav">
-			<div ref="navInnerRef" class="container header__nav-inner" @mouseleave="closeBrand">
+			<!-- mouseenter: дерево моделей для мегаменю довантажується на клієнті (app.vue) —
+			     курсор над навігацією = скоро знадобиться, просимо його, якщо ще не прийшло -->
+			<div
+				ref="navInnerRef"
+				class="container header__nav-inner"
+				@mouseenter="emit('needMenu')"
+				@mouseleave="closeBrand"
+			>
 				<!-- Категорії (departments) -->
 				<div class="departments" @mouseleave="closeDeps">
 					<button class="departments__toggle" :class="{ 'is-open': depsOpen }" @mouseenter="openDepsDelayed" @click="toggleDeps">
@@ -69,8 +76,11 @@
 						<svg class="departments__caret" width="10" height="10" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l5 5 5-5"/></svg>
 					</button>
 
+					<!-- v-show, а не v-if: список розділів (аксесуари, конструктор) має бути в HTML
+					     кожної сторінки — інакше на /naushniki, /power-bank тощо не вело жодне
+					     наскрізне посилання, лише плитки на головній -->
 					<Transition name="drop">
-						<ul v-if="depsOpen" class="departments__list" @mouseenter="openDeps">
+						<ul v-show="depsOpen" class="departments__list" @mouseenter="openDeps">
 							<li v-for="cat in menu?.categories || []" :key="cat.url">
 								<NuxtLink :to="catLink(cat)" class="departments__item" @click="depsOpen = false">
 									<span class="departments__dot" aria-hidden="true" />
@@ -99,7 +109,7 @@
 							@click="closeBrand"
 						>
 							<span class="brands-nav__title">{{ brand.title }}</span>
-							<svg v-if="brand.children?.length" width="9" height="9" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l5 5 5-5"/></svg>
+							<svg v-if="brand.children?.length || brand.hasChildren" width="9" height="9" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l5 5 5-5"/></svg>
 						</NuxtLink>
 					</div>
 				</div>
@@ -149,6 +159,7 @@
 
 <script setup lang="ts">
 const props = defineProps<{ menu: any }>()
+const emit = defineEmits<{ needMenu: [] }>()
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -236,6 +247,17 @@ async function showBrand(i: number) {
 	await nextTick()
 	positionMenu(i)
 }
+
+// Дерево моделей довантажується на клієнті (app.vue). Якщо воно прийшло, коли курсор уже
+// на бренді, меню з'являється саме — і його треба поставити під кнопку, як у showBrand
+watch(
+	() => activeSeries.value.length,
+	async (count: number, prev: number | undefined) => {
+		if (!count || prev || openedBrand.value === null) return
+		await nextTick()
+		positionMenu(openedBrand.value)
+	}
+)
 
 // Скасувати відкладене відкриття (курсор пішов з бренда, не дочекавшись затримки)
 function cancelOpen() {

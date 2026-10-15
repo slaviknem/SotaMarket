@@ -64,14 +64,22 @@
 				     коли у нього ще немає власної статті -->
 				<p v-if="pageLead" class="filter-desc">{{ pageLead }}</p>
 
-				<!-- /chekhly: плитки брендів з логотипами + повний каталог бренд→серії→моделі -->
+				<!-- /chekhly: плитки брендів з логотипами + повний каталог бренд→серії→моделі.
+				     Каталог — сотні посилань: у HTML він є повністю (SSR), а гідратується лише
+				     коли доходить до екрана — інакше саме він давав найдовші задачі головного потоку -->
 				<template v-if="brandsLanding">
 					<ShopBrandTiles :brands="brandTiles" class="cat-brand-tiles" />
-					<ShopBrandsCatalog :brands="brands" class="cat-brands" />
+					<LazyShopBrandsCatalog hydrate-on-visible :brands="brands" class="cat-brands" />
 				</template>
 
 				<!-- Сторінка бренду: усі моделі цього бренду (той самий компонент, один бренд) -->
-				<ShopBrandsCatalog v-else-if="brandTree.length" :brands="brandTree" single class="cat-brands" />
+				<LazyShopBrandsCatalog
+					v-else-if="brandTree.length"
+					hydrate-on-visible
+					:brands="brandTree"
+					single
+					class="cat-brands"
+				/>
 
 				<!-- Товари (на лендінгу /chekhly — 6 у ряд) -->
 				<div v-if="pending" class="products-grid" :class="{ 'products-grid--six': brandsLanding }">
@@ -82,13 +90,17 @@
 					<div v-if="products.length" class="products-grid" :class="gridModifier">
 						<!-- Конструктор чохлів — перший товар (як на старому сайті) -->
 						<ProductCardPrintcase v-if="showPrintcaseCard" :category="category" eager />
-						<!-- Перше фото сітки — LCP сторінки: вантажимо його одразу, решту лениво -->
+						<!-- Перші картки — це перший екран (на телефоні два ряди по два), і LCP — будь-яка
+						     з них: фото на всю площу (alphaprint) більше за сусідні. Лениве фото тут
+						     чекало розкладки й затримувало LCP на ~2 с, тож перші чотири вантажимо одразу.
+						     Пріоритет і preload — лише першій, щоб не ділити канал порівну -->
 						<ProductCard
 							v-for="(item, i) in displayItems"
 							:key="item.product.id + '-' + (item.attribute?.id || 0)"
 							:product="item.product"
 							:attribute="item.attribute || undefined"
-							:eager="i === 0 && !showPrintcaseCard"
+							:eager="i < 4"
+							:priority="i === 0 && !showPrintcaseCard"
 						/>
 
 						<!-- Місток у порожній «хвіст» останнього ряду: заповнює пустку і веде вниз
@@ -158,9 +170,11 @@
 					<button class="btn btn-outline" @click="resetFilters">{{ t('filters.rezetFilters') }}</button>
 				</div>
 
-				<!-- Перелінковка: усі фільтри як crawlable посилання (для індексації одно-фасетних сторінок) -->
-				<ShopFilterLinks
+				<!-- Перелінковка: усі фільтри як crawlable посилання (для індексації одно-фасетних сторінок).
+				     Посилання в HTML є одразу (SSR), гідратація — коли блок доходить до екрана -->
+				<LazyShopFilterLinks
 					v-if="!brandsLanding && displayTree.length"
+					hydrate-on-visible
 					:groups="displayTree"
 					:category-alias="categoryAlias"
 					:active-alias="filterAlias"
@@ -225,11 +239,19 @@ const mobileFiltersOpen = ref(false)
 watch(() => route.path, () => { mobileFiltersOpen.value = false })
 
 // ---------- Параметри з URL ----------
-const options = computed(() => ({
-	page: Number(route.query.page) || 1,
-	limit: Number(route.query.limit) || 24,
-	sort: String(route.query.sort || 'default'),
-}))
+// ?limit лишився зі старого сайту й ішов в API як є: `?limit=1000` змушував бекенд віддавати
+// тисячу товарів (секунди), а SSR — рендерити тисячу карток. Будь-хто міг так класти воркери
+const LIMIT_MAX = 48
+const DEFAULT_LIMIT = 24
+
+const options = computed(() => {
+	const limit = Number(route.query.limit)
+	return {
+		page: Number(route.query.page) || 1,
+		limit: Number.isInteger(limit) && limit > 0 ? Math.min(limit, LIMIT_MAX) : DEFAULT_LIMIT,
+		sort: String(route.query.sort || 'default'),
+	}
+})
 
 // Вибрані фільтри з query: filter_{group}=a,b
 const selectedFilters = computed<Record<string, string[]>>(() => {
@@ -251,11 +273,12 @@ const keySuffix = computed(() => `${props.categoryAlias}-${props.filterAlias || 
 const [{ data: category, error: categoryError }, { data: filtersTree }, { data: brandsData }, { data: brandTilesData }] = await Promise.all([
 	useAsyncData('cat-' + keySuffix.value, async () => (await shopApi.getCategoryByAlias(props.categoryAlias)) ?? false),
 	useAsyncData('cat-filters-' + keySuffix.value, async () => (props.brandsLanding ? [] : shopApi.getFilters(props.categoryAlias))),
-	// Повний каталог брендів (бренд → серії → моделі) — лише для лендінгу /chekhly
+	// Повний каталог брендів (бренд → серії → моделі) — лише для лендінгу /chekhly.
+	// У payload — тільки назви й адреси (menuBrands): решта полів меню каталогу не потрібна
 	useAsyncData('brands-catalog-' + keySuffix.value, async () => {
 		if (!props.brandsLanding) return []
 		const menu = await shopApi.getMenu(100)
-		const list = [...(menu?.brends || [])]
+		const list = menuBrands(menu?.brends)
 		if (list.length && !list[list.length - 1].children?.length) list.pop() // прибираємо хвостовий «ВСІ»
 		return list
 	}),
@@ -327,6 +350,24 @@ throwIfApiDown(filterError.value, 'Filter')
 // Сторінка фільтра: фільтр не знайдено — редірект на категорію
 if (props.filterAlias && !filterPage.value) {
 	await navigateTo(url.category(props.categoryAlias), { redirectCode: 301 })
+} else if (!props.brandsLanding) {
+	// Адреса — рівно та, що в БД. Пошук в API не зважає на регістр, тож /IPHONE-17-PRO-MAX
+	// і /…/filter/ANIME віддавали повну сторінку з ВЛАСНИМ canonical — дублі в індексі.
+	// Легітимні alias із великими літерами (zte-blade-a53-Pro, Gucci) збігаються точно й не
+	// чіпаються. Лендінг /chekhly має окрему сторінку — його не перенаправляємо
+	const isAlias = (v: unknown): v is string => typeof v === 'string' && v !== ''
+	const dbCategory = category.value.alias
+	const dbFilter = props.filterAlias ? filterPage.value?.alias : undefined
+
+	const wrongCategory = isAlias(dbCategory) && dbCategory !== props.categoryAlias
+	const wrongFilter = isAlias(dbFilter) && dbFilter !== props.filterAlias
+
+	if (isAlias(dbCategory) && (wrongCategory || wrongFilter)) {
+		await navigateTo(
+			{ path: url.category(dbCategory, isAlias(dbFilter) ? dbFilter : props.filterAlias), query: route.query },
+			{ redirectCode: 301 }
+		)
+	}
 }
 
 // Три форми назви (повна / кирилиця / без бренду) — розподіл по блоках описаний у composable
@@ -337,7 +378,9 @@ const catAlt = computed(() => names.value.alt)
 // Сторінка бренду: тягнемо його серії+моделі для блоку каталогу зверху (як на /chekhly, але один бренд)
 let brandSeriesData = ref<any[]>([])
 if (!props.brandsLanding && !props.filterAlias && category.value && category.value.type === 'brend') {
-	const { data } = await useAsyncData('brand-series-' + keySuffix.value, () => shopApi.getMenuBrend(props.categoryAlias))
+	const { data } = await useAsyncData('brand-series-' + keySuffix.value, async () =>
+		menuSeries(await shopApi.getMenuBrend(props.categoryAlias))
+	)
 	brandSeriesData = data
 }
 
@@ -417,6 +460,16 @@ const { data: productsData, pending } = await useAsyncData(
 	() => shopApi.getProductsList(options.value, apiFilters.value),
 	{ watch: [() => route.query] }
 )
+
+// Сторінка за межами списку (?page=999) віддавала 200 з порожньою сіткою й власним canonical —
+// soft-404, який Google індексує як окрему порожню сторінку. Лише коли API відповів (є meta):
+// збій API тут не повинен ставати 404
+{
+	const apiLastPage = Number(productsData.value?.meta?.last_page)
+	if (apiLastPage > 0 && options.value.page > apiLastPage) {
+		throw createError({ statusCode: 404, statusMessage: 'Page not found', fatal: true })
+	}
+}
 
 const products = computed(() => productsData.value?.data || [])
 const total = computed(() => productsData.value?.meta?.total || 0)

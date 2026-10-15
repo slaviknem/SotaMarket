@@ -231,14 +231,36 @@ const compare = useCompare()
 const { notify } = useNotify()
 
 // ---------- Дані ----------
-const { data: product } = await useAsyncData(
+const route = useRoute()
+
+const { data: product, error: productError } = await useAsyncData(
 	`product-${props.productAlias}-${locale.value}`,
 	async () => (await shopApi.getProductByAlias(props.productAlias)) ?? false
 )
 
+// API не відповів — 503, а не 301 нижче: постійний редирект КОЖНОГО товару на категорію
+// Google запам'ятав би надовго (див. throwIfApiDown)
+throwIfApiDown(productError.value, 'Product')
+
 // Товар не знайдено — 301 на категорію (як на старому сайті)
 if (!product.value) {
 	await navigateTo(url.category(props.categoryAlias), { redirectCode: 301 })
+} else {
+	// Адреса — рівно та, що в БД. Товар шукається лише за alias, тож /samsung/{товар} чи інший
+	// регістр віддавали повну сторінку (canonical рятував, але бот обходив дублі). Атрибут
+	// /attr/… шукаємо без урахування регістру; якщо такого немає — ведемо на сам товар,
+	// а не показуємо під цією адресою підставлений перший варіант
+	const p = product.value
+	const wanted = props.attributeAlias
+		? (getAttributeByAlias(p.attributes, props.attributeAlias) ??
+			p.attributes?.find((a: any) => String(a.alias).toLowerCase() === props.attributeAlias!.toLowerCase()))
+		: null
+	const canonicalUrl = url.product(p, wanted?.alias)
+	const requestedUrl = url.product({ alias: props.productAlias, alias_cat: props.categoryAlias }, props.attributeAlias)
+
+	if (p.alias && p.alias_cat && canonicalUrl !== requestedUrl) {
+		await navigateTo({ path: canonicalUrl, query: route.query, hash: route.hash }, { redirectCode: 301 })
+	}
 }
 
 const { data: relatedProducts } = await useAsyncData(
@@ -458,8 +480,6 @@ const activeTab = ref('description')
 
 // Якір #reviews. Блок відгуків тут усередині таба, тобто display:none — браузер до
 // прихованого якоря не доскролить, тож таб спершу відкриваємо самі.
-const route = useRoute()
-
 async function openReviews() {
 	activeTab.value = 'reviews'
 	await nextTick()

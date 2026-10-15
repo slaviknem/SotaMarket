@@ -1,24 +1,16 @@
 <template>
+	<!-- Мікророзмітки тут немає навмисно: BreadcrumbList для пошуковиків віддає JSON-LD
+	     (useBreadcrumbsJsonLd) з тих самих даних. Дві копії давали Google два однакові списки -->
 	<nav :aria-label="t('header.bread.nav')">
-		<ol class="breadcrumbs" itemscope itemtype="https://schema.org/BreadcrumbList">
-			<li
-				v-for="(item, i) in allItems"
-				:key="i"
-				itemprop="itemListElement"
-				itemscope
-				itemtype="https://schema.org/ListItem"
-			>
-				<NuxtLink
-					v-if="item.url"
-					:to="item.url"
-					:aria-label="i === 0 ? t('header.topbar.home') : undefined"
-					itemprop="item"
-				>
+		<ol class="breadcrumbs">
+			<li v-for="(item, i) in allItems" :key="i">
+				<!-- Доступна назва першої крихти — її видимий текст (назва магазину), без
+				     окремого aria-label: «Головна» не збігалась із тим, що видно на екрані -->
+				<NuxtLink v-if="item.url" :to="item.url">
 					<AppIcon v-if="i === 0" name="home" :size="14" class="crumb-home" />
-					<span itemprop="name">{{ item.title }}</span>
+					<span>{{ item.title }}</span>
 				</NuxtLink>
-				<span v-else itemprop="name">{{ item.title }}</span>
-				<meta itemprop="position" :content="String(i + 1)" />
+				<span v-else>{{ item.title }}</span>
 				<span v-if="i < allItems.length - 1" class="sep">/</span>
 			</li>
 		</ol>

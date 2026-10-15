@@ -18,7 +18,10 @@ import type { NuxtError } from '#app'
 
 const props = defineProps<{ error: NuxtError }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+
+// error.vue замінює app.vue цілком, тож lang із useLocaleHead сюди не доходив — <html> без мови
+useHead({ htmlAttrs: { lang: locale } })
 
 // Сторінки помилок теж мають осмислений title (інакше — запасний з app.vue) і не індексуються
 usePageSeo({

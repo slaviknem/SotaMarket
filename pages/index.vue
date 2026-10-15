@@ -4,7 +4,17 @@
 
 		<BlocksFeaturesStrip />
 
-		<BlocksCategoryGrid :title="t('index.popularModels')" :categories="popularModels" variant="models" />
+		<!-- Блоки нижче першого екрана: у HTML вони є повністю (SSR — для пошуковиків і AI),
+		     а гідратуються лише коли доходять до екрана. Інакше вся сторінка оживала одним
+		     довгим завданням головного потоку (TBT), хоча людина бачить тільки банер.
+		     Карусель товарів — ні: картки малюють стан обраного/порівняння з localStorage,
+		     а пізня гідратація не виправляє класи, що розійшлися з SSR (сердечко лишилось би порожнім) -->
+		<LazyBlocksCategoryGrid
+			hydrate-on-visible
+			:title="t('index.popularModels')"
+			:categories="popularModels"
+			variant="models"
+		/>
 
 		<BlocksProductsCarousel
 			:title="t('index.latestProducts')"
@@ -13,11 +23,16 @@
 			:limit="10"
 		/>
 
-		<BlocksCategoryGrid :title="t('index.popularCategory')" :categories="popularCategories" variant="categories" />
+		<LazyBlocksCategoryGrid
+			hydrate-on-visible
+			:title="t('index.popularCategory')"
+			:categories="popularCategories"
+			variant="categories"
+		/>
 
-		<BlocksPostsGrid :title="t('index.lastBlog')" :posts="posts" />
+		<LazyBlocksPostsGrid hydrate-on-visible :title="t('index.lastBlog')" :posts="posts" />
 
-		<BlocksReviewsStrip :title="t('index.lastReviews')" :reviews="latestReviews" />
+		<LazyBlocksReviewsStrip hydrate-on-visible :title="t('index.lastReviews')" :reviews="latestReviews" />
 
 		<!-- SEO-текст -->
 		<section class="block">

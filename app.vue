@@ -1,12 +1,14 @@
 <template>
 	<div class="app">
-		<AppHeader :menu="menu" />
+		<AppHeader :menu="menu" @need-menu="loadMenuTree" />
 
 		<main class="app-main">
 			<NuxtPage />
 		</main>
 
-		<AppFooter />
+		<!-- Футер у HTML повністю (SSR), а гідратується лише коли до нього доскролили:
+		     його посилання й контакти статичні, а JS-робота на старті сторінки — ні -->
+		<LazyAppFooter hydrate-on-visible />
 
 		<AppNotifications />
 
@@ -147,12 +149,45 @@ useJsonLd(() => [
 	},
 ])
 
-// Меню вантажиться один раз на SSR і шариться між сторінками
+// Меню. У SSR (а отже, в payload КОЖНОЇ сторінки) — лише верхній рівень: бренди й категорії.
+// Повне дерево бренд → серії → моделі (880 моделей, ~90 КБ) малюють тільки мегаменю при
+// наведенні й мобільне меню після відкриття — у HTML його й раніше не було, воно лише
+// роздувало payload. Тож дерево дотягуємо на клієнті (loadMenuTree), коли браузер простоює.
+// categories лишаються повністю — їх читає ще й useProductTags через useNuxtData
 const shopApi = useShopApi()
-const { data: menu } = await useAsyncData('menu-' + locale.value, () => shopApi.getMenu(10), {
+const { data: menuShell } = await useAsyncData('menu-' + locale.value, () => shopApi.getMenu(10), {
 	watch: [locale],
 	default: () => ({ brends: [], categories: [] }),
+	transform: (m: any) => ({
+		categories: m?.categories || [],
+		brends: (m?.brends || []).map((b: any) => ({ title: b.title, url: b.url, hasChildren: !!b.children?.length })),
+	}),
 })
+
+const menuTree = shallowRef<any[] | null>(null)
+let menuTreeRequest: Promise<void> | null = null
+
+function loadMenuTree() {
+	if (!import.meta.client || menuTree.value || menuTreeRequest) return
+	const lang = locale.value
+	menuTreeRequest = shopApi
+		.getMenu(10)
+		.then((m: any) => {
+			// Поки йшов запит, мову могли перемкнути — чуже дерево не підставляємо
+			if (lang === locale.value && Array.isArray(m?.brends)) menuTree.value = m.brends
+		})
+		.catch(() => {})
+		.finally(() => (menuTreeRequest = null))
+}
+
+// Назви серій і моделей локалізовані — після зміни мови дерево вантажимо заново
+watch(locale, () => {
+	menuTree.value = null
+	menuTreeRequest = null
+	loadMenuTree()
+})
+
+const menu = computed(() => (menuTree.value ? { ...menuShell.value, brends: menuTree.value } : menuShell.value))
 
 // Оверлеї (кошик-слайдер, мобільне меню) монтуємо лениво — лише коли їх уперше відкрили,
 // щоб їхній JS не потрапляв у стартовий бандл.
@@ -171,7 +206,16 @@ watch(preOrderOpen, (v: boolean) => {
 const mobileMenuOpen = useState('mobileMenuOpen', () => false)
 const mobileMenuMounted = ref(false)
 watch(mobileMenuOpen, (v: boolean) => {
-	if (v) mobileMenuMounted.value = true
+	if (!v) return
+	mobileMenuMounted.value = true
+	loadMenuTree() // якщо ще не встигло підтягнутись у простої
+})
+
+// Дерево меню — коли браузер простоює після завантаження (до наведення на бренд воно,
+// як правило, вже є; якщо ні — шапка й мобільне меню попросять його самі)
+onMounted(() => {
+	if ('requestIdleCallback' in window) (window as any).requestIdleCallback(loadMenuTree, { timeout: 4000 })
+	else setTimeout(loadMenuTree, 3000)
 })
 
 // Підказка про мову: чанк вантажиться лише для тих, хто ще не робив вибір і зайшов на ru-версію.

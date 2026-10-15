@@ -21,7 +21,7 @@
 					<h1>{{ article.title }}</h1>
 					<div class="post__meta">
 						<span class="post__type">{{ t('blogCategory.' + article.type) }}</span>
-						<time class="text-muted">{{ article.date }}</time>
+						<time class="text-muted" :datetime="reviewIsoDate(article.date)">{{ article.date }}</time>
 					</div>
 				</header>
 
@@ -64,10 +64,13 @@ const { blogMenu } = useSiteMenus()
 
 const alias = computed(() => String(route.params.article))
 
-const { data: article } = await useAsyncData(
+const { data: article, error } = await useAsyncData(
 	`article-${alias.value}-${locale.value}`,
 	async () => (await shopApi.getArticleByAlias(alias.value)) ?? false
 )
+
+// API не відповів — 503, а не 301 нижче (див. throwIfApiDown у useShopApi)
+throwIfApiDown(error.value, 'Article')
 
 // Статтю не знайдено — 301 на блог (як на старому сайті)
 if (!article.value) {

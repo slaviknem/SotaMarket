@@ -4,7 +4,12 @@
 // одразу, разом із LCP, хоча цей текст завжди нижче згину. Дописуємо lazy на SSR:
 // це чиста робота з рядком, на клієнті нуль коштів.
 // Теги, де loading уже проставлений, не чіпаємо.
+//
+// <h1> у тексті з редактора стає <h2>: H1 на сторінці вже є (назва товару, категорії,
+// статті), а другий — з опису категорії — розмивав головний заголовок для пошуковиків.
 export function contentHtml(html?: string | null): string {
 	if (!html) return ''
-	return html.replace(/<img\b(?![^>]*\bloading=)/gi, '<img loading="lazy" decoding="async"')
+	return html
+		.replace(/<img\b(?![^>]*\bloading=)/gi, '<img loading="lazy" decoding="async"')
+		.replace(/<(\/?)h1\b/gi, '<$1h2')
 }

@@ -62,13 +62,28 @@ export function useProductJsonLd(opts: {
 		// Група має сенс лише коли є з чого вибирати: один атрибут — це просто товар
 		const hasVariants = attrs.length > 1
 
+		// Модель телефону — це сумісність, а не бренд: «brand: Apple» на чохлі Nova вводив в
+		// оману і Google, і AI. Для чохлів і скла під модель бренд — магазин (власний друк або
+		// товар без бренду), а модель іде в isAccessoryOrSparePartFor — як на сторінках неопрінтів
+		const model = product.categories?.[0]
+		const forModel = model?.type === 'model'
+
 		const base = {
 			'@context': 'https://schema.org',
 			description: opts.description.value,
 			brand: {
 				'@type': 'Brand',
-				name: product.categories?.[0]?.brend_name || config.public.siteName,
+				name: (!forModel && model?.brend_name) || config.public.siteName,
 			},
+			...(forModel && (model.name_full || model.name)
+				? {
+						isAccessoryOrSparePartFor: {
+							'@type': 'Product',
+							name: model.name_full || model.name,
+							...(model.brend_name ? { brand: { '@type': 'Brand', name: model.brend_name } } : {}),
+						},
+					}
+				: {}),
 			// Відгуки + зведений рейтинг (лише з реальних даних)
 			...reviewsJsonLd(product.reviews),
 		}
