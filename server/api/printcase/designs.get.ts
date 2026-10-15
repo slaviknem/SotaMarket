@@ -21,10 +21,14 @@ const LIMIT = 24
 // Година: дизайни додають в адмінці пачками, добірка не мусить оновлюватись миттєво
 const TTL = 60 * 60
 
+// Лише свої мови: lang іде в ключ кешу, і довільне значення плодило б записи кешу
+// та щоразу новий запит повного списку (~370 КБ) до адмінки
+const langOf = (event: Parameters<typeof getQuery>[0]) => (getQuery(event).lang === 'uk' ? 'uk' : 'ru')
+
 export default defineCachedEventHandler(
 	async (event) => {
 		const config = useRuntimeConfig()
-		const lang = String(getQuery(event).lang || 'ru')
+		const lang = langOf(event)
 
 		const all = await $fetch<RawNeoPrint[]>(config.public.urlApi + 'attributes/neo_prints', {
 			params: { lang, site: config.public.site },
@@ -62,6 +66,6 @@ export default defineCachedEventHandler(
 	{
 		name: 'printcase-designs',
 		maxAge: TTL,
-		getKey: (event) => String(getQuery(event).lang || 'ru'),
+		getKey: langOf,
 	}
 )

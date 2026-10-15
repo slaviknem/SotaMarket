@@ -85,17 +85,22 @@ async function layer(buf: Buffer, w: number, h: number) {
 		.toBuffer()
 }
 
-async function compose(storage: string, category: string, alias: string, preset: Preset, ext: string) {
+// Свіжий запис кешу або null
+async function fresh(key: string): Promise<Buffer | null> {
+	const cache = useStorage('neoprint')
+	const meta = await cache.getMeta(key)
+	if (!meta?.mtime || Date.now() - new Date(meta.mtime).getTime() >= TTL) return null
+	return (await cache.getItemRaw<Buffer>(key)) ?? null
+}
+
+async function compose(storage: string, alias: string, preset: Preset, ext: string, mask: Buffer | null) {
 	const { w, h, pad } = PRESETS[preset]
 
 	// Висота самого чохла: кадр лишається w×h, а шари вписуємо в менший прямокутник —
 	// composite(gravity:'center') сам розкладе поля порівну зверху й знизу
 	const inner = Math.round(h * (1 - pad * 2))
 
-	const [template, mask] = await Promise.all([
-		loadTemplate(storage, alias, h),
-		fetchImage(`${storage}images/printcase/masks/${category}.png`),
-	])
+	const template = await loadTemplate(storage, alias, h)
 
 	if (!template) throw createError({ statusCode: 404, statusMessage: 'Template not found' })
 
@@ -114,6 +119,23 @@ async function compose(storage: string, category: string, alias: string, preset:
 	return ext === 'webp'
 		? image.webp({ quality: 80 }).toBuffer()
 		: image.jpeg({ quality: 88, progressive: true }).toBuffer()
+}
+
+// Без маски кадр однаковий для будь-якої моделі, тож у кеш лягає один раз на дизайн, а не
+// на кожен {category} з URL: модель у шляху ніхто не звіряє, і бот із вигаданими моделями
+// інакше засипав би диск копіями того самого принта
+async function build(storage: string, category: string, alias: string, preset: Preset, ext: string, key: string) {
+	const mask = await fetchImage(`${storage}images/printcase/masks/${category}.png`)
+	const storeKey = mask ? key : `_nomask:${alias}-${preset}.${ext}`
+
+	if (!mask) {
+		const cached = await fresh(storeKey)
+		if (cached) return cached
+	}
+
+	const image = await compose(storage, alias, preset, ext, mask)
+	await useStorage('neoprint').setItemRaw(storeKey, image)
+	return image
 }
 
 export default defineEventHandler(async (event) => {
@@ -136,27 +158,17 @@ export default defineEventHandler(async (event) => {
 		'Cache-Control': 'public, max-age=2592000',
 	})
 
-	const cache = useStorage('neoprint')
 	const key = `${category}:${alias}-${preset}.${ext}`
 
 	// Свіжий кеш віддаємо як є; протухлий перезбираємо — так підхоплюється заміна шаблона в адмінці
-	const meta = await cache.getMeta(key)
-	if (meta?.mtime && Date.now() - new Date(meta.mtime).getTime() < TTL) {
-		const cached = await cache.getItemRaw<Buffer>(key)
-		if (cached) return cached
-	}
+	const cached = await fresh(key)
+	if (cached) return cached
 
 	const { urlStorage } = useRuntimeConfig(event).public
 
 	let job = inflight.get(key)
 	if (!job) {
-		job = compose(urlStorage, category, alias, preset, ext)
-			.then(async (image) => {
-				await cache.setItemRaw(key, image)
-				return image
-			})
-			.finally(() => inflight.delete(key))
-
+		job = build(urlStorage, category, alias, preset, ext, key).finally(() => inflight.delete(key))
 		inflight.set(key, job)
 	}
 

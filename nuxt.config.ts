@@ -132,6 +132,17 @@ export default defineNuxtConfig({
 	// перезавантажував і шрифти, і картинки. Імена без хеша, тож immutable — лише
 	// шрифтам (файл фіксований), решті — місяць.
 	routeRules: {
+		// Базові заголовки безпеки на все. Nitro зливає правила, тож кеш-заголовки нижче
+		// лишаються. SAMEORIGIN — щоб сайт не можна було загорнути в чужий фрейм (clickjacking);
+		// referrer — не no-referrer: аналітиці й платіжним сторінкам потрібен хоча б origin
+		'/**': {
+			headers: {
+				'x-frame-options': 'SAMEORIGIN',
+				'x-content-type-options': 'nosniff',
+				'referrer-policy': 'strict-origin-when-cross-origin',
+			},
+		},
+
 		// Службові розділи (кошик, порівняння, обране, відстеження) — noindex на рівні
 		// заголовка, окремо від robots.txt: там вони теж закриті, але Disallow лише
 		// забороняє обхід, а вже проіндексовані адреси прибирає саме noindex.
