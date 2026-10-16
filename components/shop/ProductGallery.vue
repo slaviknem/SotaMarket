@@ -16,7 +16,8 @@
 			<SwiperSlide v-for="(slide, i) in slides" :key="slide.id">
 				<figure class="gallery__figure" @click="openLightbox(i)">
 					<AppImage
-						:src="url.productBig(slide.file)"
+						:src="slide.big"
+						:fallback="slide.bigFallback"
 						:alt="slide.alt"
 						:title="slide.alt"
 						:fetchpriority="i === 0 ? 'high' : 'auto'"
@@ -60,7 +61,7 @@
 				@keydown.enter="goTo(i)"
 				@keydown.space.prevent="goTo(i)"
 			>
-				<AppImage :src="url.productThumb(slide.file)" :alt="slide.alt" :width="72" :height="72" />
+				<AppImage :src="slide.thumb" :fallback="slide.thumbFallback" :alt="slide.alt" :width="72" :height="72" />
 			</SwiperSlide>
 		</Swiper>
 
@@ -86,7 +87,8 @@
 							<SwiperSlide v-for="slide in slides" :key="slide.id">
 								<div class="swiper-zoom-container">
 									<AppImage
-										:src="url.productBig(slide.file)"
+										:src="slide.big"
+										:fallback="slide.bigFallback"
 										:alt="slide.alt"
 										:title="slide.alt"
 										:width="1000"

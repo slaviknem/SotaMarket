@@ -173,7 +173,7 @@ export default defineNuxtConfig({
 	nitro: {
 		compressPublicAssets: true,
 
-		// Кеш зібраних композицій «дизайн + модель» (server/routes/img/neoprint) —
+		// Кеш зібраних композицій «принт + модель» (/img/neoprint і /img/print, server/utils/caseImage.ts) —
 		// sharp відпрацьовує один раз на пару, далі віддаємо з диска
 		storage: {
 			neoprint: { driver: 'fs', base: './.cache/neoprint' },

@@ -7,7 +7,8 @@
 				:class="{ 'p-card__img-link--fill': isAlphaprint(product) }"
 			>
 				<AppImage
-					:src="url.productThumb(imageFile)"
+					:src="cardImage.src"
+					:fallback="cardImage.fallback"
 					:alt="cardTitle"
 					:width="280"
 					:height="280"
@@ -121,6 +122,13 @@ const imageFile = computed(
 		getImageByAttribute(props.product, props.attribute?.id ?? props.product.attribute_id) ??
 		props.product.image_file
 )
+
+// Альфапринт — кадр на льоту 300×300 (як thumb адмінки); файл сховища лишається запасним
+const cardImage = computed(() => {
+	const thumb = url.productThumb(imageFile.value)
+	const onFly = url.alphaprintImage(props.product, imageFile.value, 's300')
+	return onFly ? { src: onFly, fallback: thumb } : { src: thumb, fallback: undefined }
+})
 
 const cardTitle = computed(() =>
 	props.attribute ? `${props.product.title} (${props.attribute.title})` : props.product.title

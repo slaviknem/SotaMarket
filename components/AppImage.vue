@@ -1,9 +1,10 @@
 <template>
-	<!-- Готові файли (SVG-плейсхолдери, стиснені webp-прев'ю) віддаємо як є, повз IPX -->
+	<!-- Готові файли (SVG-плейсхолдери, стиснені webp-прев'ю, кадри /img) віддаємо як є, повз IPX -->
 	<img
 		v-if="isRaw"
+		ref="rawImg"
 		:src="finalSrc"
-		:srcset="srcset"
+		:srcset="failed ? undefined : srcset"
 		:alt="alt"
 		:title="title"
 		:width="width"
@@ -48,6 +49,9 @@ const props = withDefaults(
 		// webp-джерело, яке все одно треба зменшити (повнорозмірний шаблон принта
 		// 1100×2100) — пускаємо через IPX попри розширення
 		resize?: boolean
+		// Запасна адреса, якщо src не віддався (404/429/5xx): у кадру на льоту (/img/print) —
+		// той самий альфапринт файлом зі сховища
+		fallback?: string
 	}>(),
 	{ alt: '', loading: 'lazy' }
 )
@@ -57,18 +61,26 @@ const isRaw = computed(
 	() => /\.svg(\?|$)/i.test(props.src) || (/\.webp(\?|$)/i.test(props.src) && !props.resize)
 )
 
-// Стиснений webp може бути ще не згенерований в адмінці — разово падаємо назад на вихідний jpg.
-// Сховище на неіснуючий файл віддає HTML зі статусом 200, тож ловимо саме помилку декодування
-const fallback = ref(false)
-watch(() => props.src, () => (fallback.value = false))
+// Якщо src не віддався — разово переходимо на запасний варіант: заданий fallback, а без нього
+// вихідний jpg (стиснений webp може бути ще не згенерований в адмінці). Сховище на неіснуючий
+// файл відповідає не картинкою, тож ловимо саме помилку завантаження/декодування
+const failed = ref(false)
+watch(() => props.src, () => (failed.value = false))
 
 const finalSrc = computed(() =>
-	fallback.value ? props.src.replace(/\.webp(\?|$)/i, '.jpg$1') : props.src
+	failed.value ? props.fallback || props.src.replace(/\.webp(\?|$)/i, '.jpg$1') : props.src
 )
 
 function onError() {
-	if (/\.webp(\?|$)/i.test(props.src)) fallback.value = true
+	if (!failed.value && (props.fallback || /\.webp(\?|$)/i.test(props.src))) failed.value = true
 }
+
+// Фото, що зламалось ще до гідрації, подію error пропустило: обробник Vue вішає лише під час
+// гідрації. Тож після монтування дивимось стан самої картинки (complete без розмірів = бита)
+const rawImg = ref<HTMLImageElement | null>(null)
+onMounted(() => {
+	if (rawImg.value?.complete && rawImg.value.naturalWidth === 0) onError()
+})
 
 const $img = useImage()
 
@@ -85,8 +97,8 @@ if (props.preload) {
 	useHead(() => {
 		// Модифікатори мусять збігатися з тими, що NuxtImg рахує для <img> (useImageProps
 		// у @nuxt/image), інакше URL у preload не збіжиться з обраним кандидатом.
-		// Джерело — props.src, а не finalSrc: клієнтський фолбек на .jpg стається вже
-		// після завантаження, і переписувати через нього preload немає сенсу.
+		// Джерело — props.src, а не finalSrc: клієнтський фолбек стається вже після
+		// завантаження, і переписувати через нього preload немає сенсу.
 		const variant = isRaw.value
 			? { src: props.src, srcset: props.srcset, sizes: undefined }
 			: $img.getSizes(props.src, {

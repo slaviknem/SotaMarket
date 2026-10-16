@@ -10,7 +10,7 @@ interface IAttrImage {
 	alias: string
 }
 
-// Кадри готового чохла — whitelist на боці Nitro-роуту (server/routes/img/neoprint).
+// Кадри готового чохла — whitelist на боці Nitro-роуту (server/utils/caseImage.ts).
 // Без пресета роут віддає квадрат 600×600 jpg (og:image, JSON-LD, кошик)
 type NeoprintPreset = 'card' | 'card2x' | 'hero' | 'hero2x'
 
@@ -19,12 +19,22 @@ const neoprintUrl = (categoryAlias: string, alias: string | number, preset?: Neo
 		? `/img/neoprint/${categoryAlias}/${alias}-${preset}.webp`
 		: `/img/neoprint/${categoryAlias}/${alias}.jpg`
 
-// Пропорції кадрів мусять збігатися з PRESETS у server/routes/img/neoprint
+// Пропорції кадрів мусять збігатися з PRESETS у server/utils/caseImage.ts
 const NEOPRINT_FRAMES = { card: { width: 252, height: 315 }, hero: { width: 402, height: 502 } }
+
+// Файл альфапринта, який генерує адмінка (ImageH::generateAlphaprint): {модель}/{шаблон}_{принт}.jpg.
+// У шаблонах «_» не буває, тож принт — усе після першого «_» (перевірено на 19 731 файлі);
+// фото інших товарів мають числові імена без «_». Розбір — PLAN-ALPHAPRINT-IMAGES.md
+const ALPHAPRINT_FILE = /^([a-z0-9-]+)\/[a-z0-9-]+_([a-z0-9_-]+)\.jpg$/
+
+// Квадратні кадри альфапринта без полів (PRESETS у server/utils/caseImage.ts):
+// s300 — як products/thumb, s600 — як products/big
+type AlphaprintSize = 's300' | 's600'
 
 export function useUrl() {
 	const config = useRuntimeConfig()
 	const localePath = useLocalePath()
+	const settings = useSiteSettingsState()
 
 	// Зображення атрибута: завантажений свотч/принт → превʼю за alias.
 	// Одна точка істини для картки, сторінки товару і кружечка кольору
@@ -61,6 +71,16 @@ export function useUrl() {
 		// Велике фото — поки що тільки jpg (стиснених копій ще немає)
 		productBig: (imageFile?: string | null) =>
 			imageFile ? config.public.urlStorage + 'images/products/big/' + imageFile : '/images/no-photo.svg',
+
+		// Альфапринт (товар «шаблон × модель»): кадр на льоту /img/print/{модель}/{принт}-{кадр}.webp
+		// замість файлу адмінки. null — не альфапринт, нестандартне ім'я файлу або вимкнено в
+		// налаштуваннях: тоді лишається файл сховища (productThumb/productBig) — він же запасний,
+		// якщо кадр не віддасться. og:image, JSON-LD, кошик і замовлення поки беруть файли сховища
+		alphaprintImage: (product: any, imageFile: string | null | undefined, size: AlphaprintSize) => {
+			if (!settings.value.alphaprint_on_fly || !isAlphaprint(product) || !imageFile) return null
+			const match = ALPHAPRINT_FILE.exec(imageFile)
+			return match ? `/img/print/${match[1]}/${match[2]}-${size}.webp` : null
+		},
 
 		// Готовий webp зі сховища (лежить поруч з оригіналом) — як і productThumb
 		attributeImg: attributeUrl,

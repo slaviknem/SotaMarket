@@ -12,6 +12,12 @@ export interface IGallerySlide {
 	attributeId: number | null
 	alt: string // унікальний опис фото (alt + title)
 	label: string // короткий підпис: назва атрибута або «Зображення N»
+	// Готові адреси фото: в альфапринта — кадри на льоту (/img/print), у решти — файли сховища
+	big: string
+	thumb: string
+	// Файли сховища на випадок, якщо кадр на льоту не віддасться (лише в альфапринта)
+	bigFallback?: string
+	thumbFallback?: string
 }
 
 export function useProductGallery(product: Ref<any>, selectedAttributeId: Ref<number>) {
@@ -61,12 +67,21 @@ export function useProductGallery(product: Ref<any>, selectedAttributeId: Ref<nu
 
 			const attr = img.attribute_id ? attrById.value.get(img.attribute_id) : null
 
+			const big = url.productBig(img.image_file)
+			const thumb = url.productThumb(img.image_file)
+			const bigOnFly = url.alphaprintImage(product.value, img.image_file, 's600')
+			const thumbOnFly = url.alphaprintImage(product.value, img.image_file, 's300')
+
 			return {
 				id: img.id,
 				file: img.image_file,
 				attributeId: attr?.id ?? null,
 				alt: imageAlt(attr, num, totals.get(key) ?? 1),
 				label: attr?.title || `${t('product.image')} ${num}`,
+				big: bigOnFly ?? big,
+				thumb: thumbOnFly ?? thumb,
+				bigFallback: bigOnFly ? big : undefined,
+				thumbFallback: thumbOnFly ? thumb : undefined,
 			}
 		})
 	}

@@ -52,6 +52,10 @@ export interface SiteSettings {
 	// Галочка «Відділення НП зі своєї БД» в адмінці: міста й відділення беремо з адмінки,
 	// а не з API Нової Пошти (коли НП лежить). Див. useNovaPochta
 	np_local_db: boolean
+	// Альфапринти в картці й галереї — кадри на льоту (/img/print), а не файли адмінки.
+	// Вимикач на випадок проблем: false у вузлі public.{site} адмінки повертає файли сховища
+	// без деплою (через ≤5 хв кешу налаштувань + чистку кешу nginx). Див. useUrl().alphaprintImage
+	alphaprint_on_fly: boolean
 }
 
 const DEFAULTS: SiteSettings = {
@@ -91,6 +95,7 @@ const DEFAULTS: SiteSettings = {
 		whatsapp: 'https://wa.me/380990721412',
 	},
 	np_local_db: false,
+	alphaprint_on_fly: true,
 }
 
 // Глибоке злиття «дефолти ← дані з адмінки»: часткова відповідь (наприклад, лише prices)

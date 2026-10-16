@@ -3,7 +3,7 @@
 .output
 .data
 dist
-# Кеш зібраних композицій neoprint (server/routes/img/neoprint)
+# Кеш зібраних композицій /img/neoprint і /img/print (server/utils/caseImage.ts)
 .cache
 
 # Node
