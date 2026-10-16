@@ -1,10 +1,12 @@
 import sharp from 'sharp'
 
 // Композиція «принт на моделі»: шаблон принта + маска моделі одним файлом. Дві адреси, один
-// обробник і один кеш (ключ — модель + принт + кадр, від адреси не залежить):
-//   /img/neoprint/{модель}/{дизайн}[-{кадр}].{webp|jpg} — готові дизайни (неопрінти);
+// обробник, а кеш на диску в кожної свій (nitro storage з nuxt.config):
+//   /img/neoprint/{модель}/{дизайн}[-{кадр}].{webp|jpg} — готові дизайни (неопрінти) → .cache/neoprint;
 //   /img/print/{модель}/{принт}[-{кадр}].{webp|jpg}     — альфапринти: замість файлів, які
-//                                                         генерує адмінка (PLAN-ALPHAPRINT-IMAGES.md).
+//                                                         генерує адмінка → .cache/alphaprint
+//                                                         (PLAN-ALPHAPRINT-IMAGES.md).
+// Окремі теки — щоб розмір і чистку кожного типу було видно й робити незалежно.
 //
 // ЄДИНЕ джерело зображень неопрінта: картки на сторінці фільтра, галерея сторінки дизайну,
 // og:image, прев'ю в кошику. Раніше композицію робив CSS (шаблон і маска двома шарами):
@@ -12,8 +14,8 @@ import sharp from 'sharp'
 // індексували не те, що показано.
 //
 // Повторює бекендовий ImageH::composeAlphaprint: білий кадр → шаблон принта по висоті,
-// по центру → маска моделі поверх. Результат кешується на диску (nitro storage 'neoprint'),
-// тож sharp відпрацьовує один раз на «модель + принт + кадр».
+// по центру → маска моделі поверх. Результат кешується на диску, тож sharp відпрацьовує
+// один раз на «модель + принт + кадр».
 
 // Кадри — рівно під місця у верстці (1x/2x). Довільні розміри не приймаємо: кожен новий
 // варіант це ще один файл у кеші на КОЖНУ пару «модель + дизайн».
@@ -38,6 +40,9 @@ const PRESETS = {
 } as const
 
 type Preset = keyof typeof PRESETS
+
+// Тека кешу на диску — назва nitro storage (nuxt.config): своя на кожну адресу
+type CacheName = 'neoprint' | 'alphaprint'
 
 // Прев'ю шаблона (264×504) вистачає кадрам не вищим за нього — не тягнемо заради картки
 // повний 576×1100. Обидва розміри робить адмінка (ImageH::makeTemplateWebp + artisan
@@ -186,8 +191,8 @@ async function layer(buf: Buffer, w: number, h: number) {
 }
 
 // Свіжий запис кешу або null
-async function fresh(key: string): Promise<Buffer | null> {
-	const cache = useStorage('neoprint')
+async function fresh(cacheName: CacheName, key: string): Promise<Buffer | null> {
+	const cache = useStorage(cacheName)
 	const meta = await cache.getMeta(key)
 	if (!meta?.mtime || Date.now() - new Date(meta.mtime).getTime() >= TTL) return null
 	return (await cache.getItemRaw<Buffer>(key)) ?? null
@@ -226,21 +231,30 @@ async function compose(storage: string, alias: string, preset: Preset, ext: stri
 // Без маски кадр однаковий для будь-якої моделі, тож у кеш лягає один раз на дизайн, а не
 // на кожен {category} з URL: модель у шляху ніхто не звіряє, і бот із вигаданими моделями
 // інакше засипав би диск копіями того самого принта
-async function build(storage: string, category: string, alias: string, preset: Preset, ext: string, key: string) {
+async function build(
+	cacheName: CacheName,
+	storage: string,
+	category: string,
+	alias: string,
+	preset: Preset,
+	ext: string,
+	key: string
+) {
 	const mask = await fetchSource(`${storage}images/printcase/masks/${category}.png`)
 	const storeKey = mask ? key : `_nomask:${alias}-${preset}.${ext}`
 
 	if (!mask) {
-		const cached = await fresh(storeKey)
+		const cached = await fresh(cacheName, storeKey)
 		if (cached) return cached
 	}
 
 	const image = await compose(storage, alias, preset, ext, mask)
-	await useStorage('neoprint').setItemRaw(storeKey, image)
+	await useStorage(cacheName).setItemRaw(storeKey, image)
 	return image
 }
 
-export const caseImageHandler = defineEventHandler(async (event) => {
+// Обробник роуту з кешем у своїй теці: defineCaseImageHandler('neoprint' | 'alphaprint')
+export const defineCaseImageHandler = (cacheName: CacheName) => defineEventHandler(async (event) => {
 	const category = getRouterParam(event, 'category') || ''
 	const file = getRouterParam(event, 'alias') || ''
 
@@ -258,15 +272,19 @@ export const caseImageHandler = defineEventHandler(async (event) => {
 
 	try {
 		// Свіжий кеш віддаємо як є; протухлий перезбираємо — так підхоплюється заміна шаблона в адмінці
-		let image = await fresh(key)
+		let image = await fresh(cacheName, key)
 
 		if (!image) {
 			const { urlStorage } = useRuntimeConfig(event).public
 
-			let job = inflight.get(key)
+			// Тека в ключі: та сама пара з іншої адреси має лягти у свій кеш, а не взяти чужу збірку
+			const jobKey = `${cacheName}:${key}`
+			let job = inflight.get(jobKey)
 			if (!job) {
-				job = build(urlStorage, category, alias, preset, ext, key).finally(() => inflight.delete(key))
-				inflight.set(key, job)
+				job = build(cacheName, urlStorage, category, alias, preset, ext, key).finally(() =>
+					inflight.delete(jobKey)
+				)
+				inflight.set(jobKey, job)
 			}
 
 			image = await job

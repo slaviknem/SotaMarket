@@ -173,13 +173,16 @@ export default defineNuxtConfig({
 	nitro: {
 		compressPublicAssets: true,
 
-		// Кеш зібраних композицій «принт + модель» (/img/neoprint і /img/print, server/utils/caseImage.ts) —
-		// sharp відпрацьовує один раз на пару, далі віддаємо з диска
+		// Кеш зібраних композицій «принт + модель» (server/utils/caseImage.ts) — sharp відпрацьовує
+		// один раз на пару, далі віддаємо з диска. Окремі теки: неопрінти (/img/neoprint) і
+		// альфапринти (/img/print) — розмір і чистка кожного типу незалежні
 		storage: {
 			neoprint: { driver: 'fs', base: './.cache/neoprint' },
+			alphaprint: { driver: 'fs', base: './.cache/alphaprint' },
 		},
 		devStorage: {
 			neoprint: { driver: 'fs', base: './.cache/neoprint' },
+			alphaprint: { driver: 'fs', base: './.cache/alphaprint' },
 		},
 	},
 
