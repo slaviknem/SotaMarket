@@ -505,7 +505,7 @@ const dispatch = computed(() => freshDispatch.value || order.value.dispatch)
 const pay = computed(() => props.data.pay)
 // Накладений платіж (за товар ще платять на пошті) — якщо не щойно сплатили все онлайн
 const cod = computed(() => order.value.cod && props.justPaid !== 'full')
-// Замовлення вже поза new / messaged / not_call / drop_first — лише перегляд, без питань і кнопки
+// Замовлення вже поза new / messaged / not_call / waiting / drop_first — лише перегляд, без питань і кнопки
 const editable = computed(() => props.data.order.editable)
 
 const answers = ref<Record<string, { v: string; text?: string }>>({})
