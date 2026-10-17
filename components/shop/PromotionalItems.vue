@@ -20,7 +20,7 @@
 							/>
 							<span class="promo__media">
 								<span class="promo__check"><AppIcon name="check" :size="13" :stroke-width="3" /></span>
-								<AppImage :src="row.image" :alt="row.title" :width="160" :height="160" />
+								<AppImage :src="row.image" :fallback="row.fallback" :alt="row.title" :width="160" :height="160" />
 							</span>
 							<span class="promo__prices">
 								<!-- Стара ціна завжди займає рядок (спейсер), щоб картки були однакової висоти -->
@@ -124,12 +124,15 @@ function toggle(id: number) {
 
 // Головний товар (завжди обраний, без знижки) + аксесуари
 const rows = computed(() => {
+	// В альфапринта — кадр на льоту, файл сховища — fallback
+	const thumb = url.productThumbImage(props.image, props.product)
 	const main = {
 		id: props.product?.id,
 		main: true,
 		selected: true,
 		title: props.product?.title || '',
-		image: url.productThumb(props.image),
+		image: thumb.src,
+		fallback: thumb.fallback,
 		price: props.product?.price || 0,
 		discount: 0,
 	}
@@ -139,6 +142,7 @@ const rows = computed(() => {
 		selected: selectedIds.value.has(a.id),
 		title: locale.value === 'uk' ? a.title_uk : a.title_ru,
 		image: a.image,
+		fallback: undefined,
 		price: a.price,
 		discount: a.discount,
 	}))

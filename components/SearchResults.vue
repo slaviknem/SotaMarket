@@ -96,7 +96,7 @@
 							:class="{ 'is-active': active === offProducts + i }"
 							@click="pick"
 						>
-							<AppImage :src="url.productThumb(p.image)" :alt="p.title" :width="46" :height="46" class="sr__row-img" />
+							<AppImage v-bind="url.productThumbImage(p.image, p)" :alt="p.title" :width="46" :height="46" class="sr__row-img" />
 							<span class="sr__row-info">
 								<span class="sr__row-title" v-html="highlight(p.title)" />
 								<span class="sr__row-price">

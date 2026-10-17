@@ -781,11 +781,11 @@ const breadcrumbs = computed(() => {
 // Дизайн теми беремо, коли товарів немає (сторінка теми з одними готовими принтами).
 // Фолбек на брендований og-default робить usePageSeo.
 //
-// productBig віддає готову адресу у сховищі, а neoprintImage — шлях на нашому домені,
+// productSeoImage одразу віддає абсолютну адресу, а neoprintImage — шлях на нашому домені,
 // тож абсолютним його робимо лише в другому випадку.
 const shareImage = computed(() => {
 	const first = products.value[0]
-	if (first) return url.productBig(getImageByAttribute(first, 0) ?? first.image_file)
+	if (first) return url.productSeoImage(getImageByAttribute(first, 0) ?? first.image_file, 'og', first)
 
 	const np = neoprints.value[0]
 	return np ? url.absolute(url.neoprintImage(props.categoryAlias, np.alias)) : undefined

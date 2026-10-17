@@ -508,7 +508,7 @@ const seoDescription = computed(
 usePageSeo({
 	title: () => `${seoTitle.value} — ${formatPrice(product.value?.price)}`,
 	description: () => seoDescription.value,
-	image: () => (currentImageFile.value ? url.productBig(currentImageFile.value) : undefined),
+	image: () => url.productSeoImage(currentImageFile.value, 'og', product.value),
 	path: () => canonicalPath.value,
 	ogType: 'product',
 })

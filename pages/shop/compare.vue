@@ -24,7 +24,7 @@
 									<AppIcon name="close" :size="13" />
 								</button>
 								<NuxtLink :to="url.product(p)" class="compare-product">
-									<AppImage :src="url.productThumb(p.image_file)" :alt="p.title" :width="110" :height="110" />
+									<AppImage v-bind="url.productThumbImage(p.image_file, p)" :alt="p.title" :width="110" :height="110" />
 									<span>{{ p.title }}</span>
 								</NuxtLink>
 							</td>

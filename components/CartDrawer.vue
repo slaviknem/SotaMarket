@@ -32,8 +32,12 @@
 						<div class="cart-drawer__body">
 							<div v-for="item in items" :key="item.id" class="cart-drawer__item">
 								<NuxtLink :to="url.cartItem(item)" class="cart-drawer__item-img thumb-frame" @click="close">
-									<img :src="itemImage(item)" :alt="item.product.title" width="64" height="64"
-										loading="lazy" />
+									<!-- Макет конструктора чи неопрінта — готове прев'ю повз IPX; товар — мініатюра
+										 (в альфапринта кадр на льоту, файл сховища — fallback) -->
+									<img v-if="item.printcase" :src="item.product.image || '/images/no-photo.svg'"
+										:alt="item.product.title" width="64" height="64" loading="lazy" />
+									<AppImage v-else v-bind="url.productThumbImage(item.product.image)"
+										:alt="item.product.title" :width="64" :height="64" />
 								</NuxtLink>
 
 								<div class="cart-drawer__item-main">
@@ -120,10 +124,6 @@ const route = useRoute()
 const items = computed(() => cart.state.value.items)
 
 const close = () => closeCart()
-
-// Картинка товару: для конструктора — готове прев'ю, інакше — мініатюра зі сховища
-const itemImage = (item: CartItem) =>
-	item.printcase ? item.product.image || '/images/no-photo.svg' : url.productThumb(item.product.image)
 
 // Блокуємо скрол сторінки під час відкритого слайдера
 watch(open, (v) => {

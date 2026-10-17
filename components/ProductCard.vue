@@ -124,11 +124,7 @@ const imageFile = computed(
 )
 
 // Альфапринт — кадр на льоту 300×300 (як thumb адмінки); файл сховища лишається запасним
-const cardImage = computed(() => {
-	const thumb = url.productThumb(imageFile.value)
-	const onFly = url.alphaprintImage(props.product, imageFile.value, 's300')
-	return onFly ? { src: onFly, fallback: thumb } : { src: thumb, fallback: undefined }
-})
+const cardImage = computed(() => url.productThumbImage(imageFile.value, props.product))
 
 const cardTitle = computed(() =>
 	props.attribute ? `${props.product.title} (${props.attribute.title})` : props.product.title

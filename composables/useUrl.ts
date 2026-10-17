@@ -27,9 +27,12 @@ const NEOPRINT_FRAMES = { card: { width: 252, height: 315 }, hero: { width: 402,
 // фото інших товарів мають числові імена без «_». Розбір — PLAN-ALPHAPRINT-IMAGES.md
 const ALPHAPRINT_FILE = /^([a-z0-9-]+)\/[a-z0-9-]+_([a-z0-9_-]+)\.jpg$/
 
-// Квадратні кадри альфапринта без полів (PRESETS у server/utils/caseImage.ts):
-// s300 — як products/thumb, s600 — як products/big
-type AlphaprintSize = 's300' | 's600'
+// Кадри альфапринта (PRESETS у server/utils/caseImage.ts): s300 і s600 — квадрат без полів, як
+// products/thumb і products/big; og — jpg 600×600 з полями для соцмереж (адреса без суфікса кадру)
+type AlphaprintFrame = 's300' | 's600' | 'og'
+
+const alphaprintPath = (model: string, print: string, frame: AlphaprintFrame) =>
+	frame === 'og' ? `/img/print/${model}/${print}.jpg` : `/img/print/${model}/${print}-${frame}.webp`
 
 export function useUrl() {
 	const config = useRuntimeConfig()
@@ -43,17 +46,36 @@ export function useUrl() {
 		'images/attributes/' +
 		(attr.image_file ? toWebp(attr.image_file) : attr.alias + '.webp')
 
+	// Прев'ю товару — одразу готовий стиснений webp (у сховищі лежить поруч із jpg).
+	// Віддаємо його напряму, без IPX: файл уже потрібного розміру, зайве перекодування
+	// лише додало б проксі-запит і втрату якості (див. AppImage).
+	// Абсолютний URL (напр. акційні товари) лишаємо як є; інакше — шлях у сховищі
+	const productThumb = (imageFile?: string | null) =>
+		imageFile
+			? /^https?:\/\//.test(imageFile)
+				? imageFile
+				: config.public.urlStorage + 'images/products/thumb/' + toWebp(imageFile)
+			: '/images/no-photo.svg'
+
+	// Велике фото — поки що тільки jpg (стиснених копій ще немає)
+	const productBig = (imageFile?: string | null) =>
+		imageFile ? config.public.urlStorage + 'images/products/big/' + imageFile : '/images/no-photo.svg'
+
+	const absolute = (path: string) => config.public.siteUrl + path
+
+	// Альфапринт (товар «шаблон × модель»): кадр на льоту /img/print/… замість файлу адмінки.
+	// null — вимкнено в налаштуваннях, не альфапринт або нестандартне ім'я файлу: тоді лишається
+	// файл сховища. Товар звіряємо за group, лише коли group відомий: кошик, порівняння й пошук
+	// мають саме ім'я файлу, а воно в альфапринта впізнаване (PLAN-ALPHAPRINT-IMAGES.md §6)
+	const alphaprintImage = (imageFile: string | null | undefined, frame: AlphaprintFrame, product?: any) => {
+		if (!settings.value.alphaprint_on_fly || !imageFile) return null
+		if (product?.group && !isAlphaprint(product)) return null
+		const match = ALPHAPRINT_FILE.exec(imageFile)
+		return match ? alphaprintPath(match[1], match[2], frame) : null
+	}
+
 	return {
-		// Прев'ю товару — одразу готовий стиснений webp (у сховищі лежить поруч із jpg).
-		// Віддаємо його напряму, без IPX: файл уже потрібного розміру, зайве перекодування
-		// лише додало б проксі-запит і втрату якості (див. AppImage).
-		// Абсолютний URL (напр. акційні товари) лишаємо як є; інакше — шлях у сховищі
-		productThumb: (imageFile?: string | null) =>
-			imageFile
-				? /^https?:\/\//.test(imageFile)
-					? imageFile
-					: config.public.urlStorage + 'images/products/thumb/' + toWebp(imageFile)
-				: '/images/no-photo.svg',
+		productThumb,
 
 		// Прев'ю позиції для ЗАМОВЛЕННЯ (адмінка підставляє його в <img src> як є).
 		// Тому тут завжди АБСОЛЮТНИЙ URL: голе ім'я файлу чи шлях від кореня на домені
@@ -68,18 +90,24 @@ export function useUrl() {
 						: config.public.urlStorage + 'images/products/thumb/' + image
 				: null,
 
-		// Велике фото — поки що тільки jpg (стиснених копій ще немає)
-		productBig: (imageFile?: string | null) =>
-			imageFile ? config.public.urlStorage + 'images/products/big/' + imageFile : '/images/no-photo.svg',
+		productBig,
+		alphaprintImage,
 
-		// Альфапринт (товар «шаблон × модель»): кадр на льоту /img/print/{модель}/{принт}-{кадр}.webp
-		// замість файлу адмінки. null — не альфапринт, нестандартне ім'я файлу або вимкнено в
-		// налаштуваннях: тоді лишається файл сховища (productThumb/productBig) — він же запасний,
-		// якщо кадр не віддасться. og:image, JSON-LD, кошик і замовлення поки беруть файли сховища
-		alphaprintImage: (product: any, imageFile: string | null | undefined, size: AlphaprintSize) => {
-			if (!settings.value.alphaprint_on_fly || !isAlphaprint(product) || !imageFile) return null
-			const match = ALPHAPRINT_FILE.exec(imageFile)
-			return match ? `/img/print/${match[1]}/${match[2]}-${size}.webp` : null
+		// Мініатюра товару для <AppImage>: в альфапринта — кадр s300 на льоту, а файл сховища —
+		// fallback, якщо кадр не віддасться. Замовлення й фіди і далі беруть файли сховища
+		productThumbImage: (imageFile?: string | null, product?: any) => {
+			const thumb = productThumb(imageFile)
+			const onFly = alphaprintImage(imageFile, 's300', product)
+			return onFly ? { src: onFly, fallback: thumb } : { src: thumb, fallback: undefined }
+		},
+
+		// Фото товару для og:image і JSON-LD — абсолютна адреса без fallback (її забирає бот).
+		// Альфапринт — кадр на льоту: s600 — те саме фото, що в галереї (окремого файлу не треба),
+		// og — jpg із полями (соцмережі webp перетравлюють через раз). Решта — big зі сховища
+		productSeoImage: (imageFile: string | null | undefined, frame: 's600' | 'og', product?: any) => {
+			if (!imageFile) return undefined
+			const onFly = alphaprintImage(imageFile, frame, product)
+			return onFly ? absolute(onFly) : productBig(imageFile)
 		},
 
 		// Готовий webp зі сховища (лежить поруч з оригіналом) — як і productThumb
@@ -164,7 +192,7 @@ export function useUrl() {
 			localePath(`/article/${post.type}/${post.alias}`),
 
 		// Абсолютний URL сайту (для canonical, og, schema.org)
-		absolute: (path: string) => config.public.siteUrl + path,
+		absolute,
 	}
 }
 

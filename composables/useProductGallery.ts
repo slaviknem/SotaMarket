@@ -69,8 +69,8 @@ export function useProductGallery(product: Ref<any>, selectedAttributeId: Ref<nu
 
 			const big = url.productBig(img.image_file)
 			const thumb = url.productThumb(img.image_file)
-			const bigOnFly = url.alphaprintImage(product.value, img.image_file, 's600')
-			const thumbOnFly = url.alphaprintImage(product.value, img.image_file, 's300')
+			const bigOnFly = url.alphaprintImage(img.image_file, 's600', product.value)
+			const thumbOnFly = url.alphaprintImage(img.image_file, 's300', product.value)
 
 			return {
 				id: img.id,
@@ -109,19 +109,22 @@ export function useProductGallery(product: Ref<any>, selectedAttributeId: Ref<nu
 		return i > 0 ? i : 0
 	})
 
+	// Абсолютні адреси для JSON-LD: в альфапринта — ті самі кадри s600, що й головне фото галереї
+	const seoUrls = (list: any[]) =>
+		list.flatMap((img) => url.productSeoImage(img.image_file, 's600', product.value) ?? [])
+
 	// Для JSON-LD товару/групи: усі фото (не лише видимі в галереї), фото обраного атрибута — першим
 	const seoImages = computed(() => {
 		const own = images.value.filter((img) => img.attribute_id === selectedAttributeId.value)
 		const rest = images.value.filter((img) => img.attribute_id !== selectedAttributeId.value)
-		return [...own, ...rest].slice(0, 10).map((img) => url.productBig(img.image_file))
+		return seoUrls([...own, ...rest].slice(0, 10))
 	})
 
 	// Для JSON-LD сторінки варіанта: лише фото цього варіанта + спільні фото товару
 	const variantImages = computed(() => {
 		const own = images.value.filter((img) => img.attribute_id === selectedAttributeId.value)
 		const shared = images.value.filter((img) => !img.attribute_id)
-		const list = own.length ? [...own, ...shared] : images.value
-		return list.map((img) => url.productBig(img.image_file))
+		return seoUrls(own.length ? [...own, ...shared] : images.value)
 	})
 
 	return { slides, activeIndex, seoImages, variantImages }

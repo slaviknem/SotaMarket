@@ -21,12 +21,22 @@
 				<div class="cart-items">
 					<div v-for="item in cart.state.value.items" :key="item.id" class="cart-item">
 						<NuxtLink :to="url.cartItem(item)" class="cart-item__img thumb-frame">
+							<!-- Макет конструктора чи неопрінта — готове прев'ю повз IPX; товар — мініатюра
+								 (в альфапринта кадр на льоту, файл сховища — fallback) -->
 							<img
-								:src="item.printcase ? (item.product.image || '/images/no-photo.svg') : url.productThumb(item.product.image)"
+								v-if="item.printcase"
+								:src="item.product.image || '/images/no-photo.svg'"
 								:alt="item.product.title"
 								width="84"
 								height="84"
 								loading="lazy"
+							/>
+							<AppImage
+								v-else
+								v-bind="url.productThumbImage(item.product.image)"
+								:alt="item.product.title"
+								:width="84"
+								:height="84"
 							/>
 						</NuxtLink>
 

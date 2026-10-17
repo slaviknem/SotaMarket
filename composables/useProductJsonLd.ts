@@ -121,7 +121,7 @@ export function useProductJsonLd(opts: {
 					name: variantTitle(a),
 					sku: `${groupId}-${a.id}`,
 					url: linkTo(a),
-					image: url.productBig(getImageByAttribute(product, a.id)),
+					image: url.productSeoImage(getImageByAttribute(product, a.id), 's600', product),
 					...variesByProp(a),
 					offers: offerFor(a, linkTo(a)),
 				})),
