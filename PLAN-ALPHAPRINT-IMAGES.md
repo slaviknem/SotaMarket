@@ -32,8 +32,8 @@
 | ✅ | nginx: `/img/` без `limit_conn`; копії конфігів у `FLOY-ADMIN/NOTES/nginx/` | 429 після правки — 0; закомічено `e38da5b2` |
 | ✅ | Перевірки 17.10: 403 на `/img/print` — не пошуковики, а збирач; збоїв `[caseImage]` немає; 98% кадрів поки запитано рівно раз (боти обходять каталог) | команди — §2 «Регулярні перевірки» |
 | ✅ | Етап 0 — цифри (таблиця нижче) | 17.10 |
-| ⏳ | og:image, JSON-LD, кошик, порівняння, пошук, промоблок → `/img/print` (§2 п. 1) | код 17.10, **чекає збірки й викладки** |
-| ⏳ | AI-описи товарів з `<img>` на файли сховища (§2 п. 2) | SQL не запускали |
+| ✅ | og:image, JSON-LD, кошик, порівняння, пошук, промоблок → `/img/print` (§2 п. 1) | **викладено 17.10**, на проді перевірено — від цієї дати відлік «кількох місяців» для floy |
+| ⏳ | AI-описи товарів з `<img>` на файли сховища (§2 п. 2) | SQL 17.10: floy 62 711, smarket 23 308 товарів; підміна на сайті — код 17.10, **чекає викладки** |
 | ⏳ | Звірка росту кешу ~21.10 і ~28.10 (§2 п. 3) | — |
 | ⏳ | Перемикач «файли альфапринтів наперед» по сайту (адмінка, §2 п. 4) | код 17.10, **чекає заливки**; без вузла налаштувань — генерує, як завжди |
 | ⏸ | Підготовка до переїзду smarket / sotamarket / print-case (§2 п. 5) | порядок — §11 |
@@ -89,8 +89,8 @@
 
 ### А. Сайт floy: прибрати посилання на файли сховища (FLOY-NEW)
 
-**1. og:image, JSON-LD, кошик, порівняння, пошук, промоблок → `/img/print`.** Код — 17.10, чекає
-збірки й викладки (`build.cmd` → коміт → `bash deploy.sh`).
+**1. ✅ (викладено 17.10) og:image, JSON-LD, кошик, порівняння, пошук, промоблок → `/img/print`.**
+На проді (curl нижче): og:image — `…/img/print/oneplus-ace-6t/real-madrid.jpg`, у JSON-LD — лише `…-s600.webp`.
 
 - **JSON-LD** (`Product`, `ProductGroup` + `hasVariant`, сторінка варіанта) — кадр `s600`: той самий
   файл, що головне фото галереї, окремого місця не займає, і Google бачить одну адресу фото в `<img>`
@@ -127,8 +127,20 @@ WHERE p.`group` = 'alphaprint' AND p.template = 0
   AND (p.description_ru LIKE '%products/thumb/%' OR p.description_uk LIKE '%products/thumb/%')
 GROUP BY p.site;
 ```
-0 — нічого не робити. Інакше — підміняти такі адреси на кадр `s300` під час рендеру опису на сайті
-(без змін у БД, слухається вимикача) або разово переписати описи в адмінці; вирішити за кількістю.
+**Результат 17.10: floy — 62 711, smarket — 23 308 товарів.** Формат (з живої сторінки):
+`<img src="https://admin.floy.com.ua/storage/images/products/thumb/iphone-13/{шаблон}_cr7-real.jpg" class="article_imgs" style="float: left">`
+— 300×300, ім'я файлу альфапринта.
+
+**Рішення — підміна на сайті під час рендеру** (код 17.10, чекає викладки): `useUrl().alphaprintHtml()`
+міняє такі адреси на кадр `s300` (той самий розмір), решту картинок не чіпає; викликається в
+`ProductPage.vue` перед `contentHtml`. Слухається вимикача `alphaprint_on_fly`. БД **не** переписуємо:
+smarket на старому рушії показує ці ж описи, і відносна адреса `/img/print` у нього не відкрилася б;
+після переїзду на рушій підміна запрацює для нього сама. Кадри з описів — ті самі `s300`, що в картках,
+тож місця не додають. Перевірка після викладки (має бути `/img/print/iphone-13/cr7-real-s300.webp`,
+жодного `products/thumb`):
+```bash
+curl -s https://floy.com.ua/iphone-13/chehol-s-printom-krishtianu-ronaldu-dlya-brandtitle-modeltitle-alphaprint-apple-iphone-13 | grep -oE 'class="article_imgs"|src="[^"]*(cr7-real|products/thumb/iphone-13/chehol)[^"]*"' | sort | uniq -c
+```
 
 **3. Звірка росту кешу ~21.10 і ~28.10** (кожна команда окремо):
 ```bash
@@ -246,13 +258,15 @@ pm2 logs floy-prod --lines 200 --nostream | grep -i caseImage
 | `composables/useUrl.ts` → `alphaprintImage(imageFile, frame, product?)` | адреса кадру (`s300`, `s600`, `og`) за іменем файлу `{модель}/{шаблон}_{принт}.jpg`; якщо в товару відомий `group` — лише для `alphaprint`; інакше `null` → файл сховища |
 | `useUrl.ts` → `productThumbImage(imageFile, product?)` | `{ src, fallback }` для `<AppImage>`: кадр `s300` + файл сховища запасним — картка, кошик, порівняння, пошук, промоблок |
 | `useUrl.ts` → `productSeoImage(imageFile, 's600' \| 'og', product?)` | абсолютна адреса для JSON-LD (`s600`) і og:image (`og`, jpg із полями); не альфапринт — `products/big` |
+| `useUrl.ts` → `alphaprintHtml(html)` | в описі товару (HTML з адмінки) вшиті мініатюри альфапринтів сховища → кадр `s300`; викликає `ProductPage.vue` перед `contentHtml` |
 | `composables/useSiteSettings.ts` → `alphaprint_on_fly` | вимикач (за замовчуванням `true`) — діє на все перелічене |
 | `components/ProductCard.vue`, `composables/useProductGallery.ts`, `components/shop/ProductGallery.vue` | картка, галерея, мініатюри й лайтбокс беруть кадри на льоту |
 | `useProductGallery.ts` (`seoImages`, `variantImages`), `useProductJsonLd.ts`, `ProductPage.vue`, `CategoryPage.vue` | JSON-LD і og:image (з 17.10) |
 | `CartDrawer.vue`, `pages/shop/cart/index.vue`, `pages/shop/compare.vue`, `SearchResults.vue`, `PromotionalItems.vue` | мініатюри (з 17.10); макети конструктора й неопрінти в кошику — як були |
 | `components/AppImage.vue` → `fallback` | якщо кадр не віддався (404/429/5xx) — файл сховища; ловить і помилки до гідрації |
 
-Файли сховища на сайті беруть лише `orderImage` (прев'ю в замовленні) і товари без альфапринта.
+Файли сховища на сайті беруть лише `orderImage` (прев'ю в замовленні) і товари без альфапринта
+(після викладки `alphaprintHtml` — і в описах товарів теж ні).
 Поза сайтом — фіди й адмінка (§2 «Г»).
 
 ### Вимкнути без деплою

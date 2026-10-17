@@ -184,7 +184,7 @@
 						<p><NuxtLink :to="url.product(product)">{{ t('product.lead.full') }} →</NuxtLink></p>
 					</template>
 					<template v-else>
-						<div v-if="product.description" v-html="contentHtml(product.description)" />
+						<div v-if="product.description" v-html="contentHtml(url.alphaprintHtml(product.description))" />
 						<p v-else class="text-muted">—</p>
 						<div v-if="product.linked_text" v-html="contentHtml(product.linked_text)" />
 					</template>

@@ -34,6 +34,10 @@ type AlphaprintFrame = 's300' | 's600' | 'og'
 const alphaprintPath = (model: string, print: string, frame: AlphaprintFrame) =>
 	frame === 'og' ? `/img/print/${model}/${print}.jpg` : `/img/print/${model}/${print}-${frame}.webp`
 
+// Мініатюра альфапринта зі сховища всередині HTML з адмінки: AI-описи товарів вшивають
+// <img src="…/storage/images/products/thumb/{модель}/{шаблон}_{принт}.jpg"> (ProductAction::insertImgInProduct)
+const STORAGE_ALPHAPRINT_THUMB = /https?:\/\/[^"'\s]+\/images\/products\/thumb\/([a-z0-9-]+\/[a-z0-9-]+_[a-z0-9_-]+\.jpg)/g
+
 export function useUrl() {
 	const config = useRuntimeConfig()
 	const localePath = useLocalePath()
@@ -100,6 +104,11 @@ export function useUrl() {
 			const onFly = alphaprintImage(imageFile, 's300', product)
 			return onFly ? { src: onFly, fallback: thumb } : { src: thumb, fallback: undefined }
 		},
+
+		// Опис товару: вшиті адмінкою мініатюри альфапринтів → кадр s300 (той самий розмір 300×300).
+		// БД не чіпаємо — старий рушій інших сайтів показує ці описи з тими самими адресами сховища
+		alphaprintHtml: (html?: string | null) =>
+			html?.replace(STORAGE_ALPHAPRINT_THUMB, (src, file) => alphaprintImage(file, 's300') ?? src) ?? '',
 
 		// Фото товару для og:image і JSON-LD — абсолютна адреса без fallback (її забирає бот).
 		// Альфапринт — кадр на льоту: s600 — те саме фото, що в галереї (окремого файлу не треба),
