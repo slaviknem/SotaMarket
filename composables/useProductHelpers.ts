@@ -30,13 +30,6 @@ export function isAlphaprint(product: any): boolean {
 	return product?.group === 'alphaprint'
 }
 
-// Назва атрибута за id
-export function getAttributeTitle(attributes: any[] | undefined, attributeId?: number): string {
-	if (!attributes?.length || !attributeId) return ''
-	const attr = attributes.find((a) => a.id === attributeId)
-	return attr?.title || ''
-}
-
 // Атрибут за alias
 export function getAttributeByAlias(attributes: any[] | undefined, alias: string) {
 	return attributes?.find((a) => a.alias === alias) ?? null
@@ -118,11 +111,8 @@ export function productStockState(product: any, selectedAttr?: any | null): Stoc
 	return product?.available ? 'in' : 'pre_order'
 }
 
-// Короткі перевірки для місць, де важливий лише факт «можна покласти в кошик»
+// Коротка перевірка для місць, де важливий лише факт «можна покласти в кошик»
 export const isAttrInStock = (product: any, attr: any) => attrStockState(product, attr) === 'in'
-
-export const isProductInStock = (product: any, selectedAttr?: any | null) =>
-	productStockState(product, selectedAttr) === 'in'
 
 // Модифікатор картки за станом наявності: приглушене превʼю (стилі — .p-card--* у main.css).
 // Спільний для картки товару і картки готового дизайну.

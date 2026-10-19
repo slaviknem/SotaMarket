@@ -5,6 +5,12 @@
 dist
 # Кеш зібраних композицій /img/neoprint і /img/print (server/utils/caseImage.ts)
 .cache
+# Зліпки «до/після» (scripts/seo-snapshot.mjs, scripts/style-snapshot.mjs)
+.snapshots
+# Службове Claude Code: lock планувальника і SQL-вивантаження налаштувань (у них доступи
+# до сервісів — у git їм не місце). Дані для скілів (.claude/skills/**) лишаються в git
+.claude/scheduled_tasks.lock
+.claude/*.sql
 
 # Node
 node_modules
@@ -19,5 +25,3 @@ logs
 .env.local
 # Office тимчасові lock-файли (~$Документ.docx)
 ~$*
-# Зліпки «до/після» (scripts/seo-snapshot.mjs, scripts/style-snapshot.mjs)
-.snapshots
