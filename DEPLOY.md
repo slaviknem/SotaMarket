@@ -447,6 +447,10 @@ find /var/cache/nginx-floy -type f -delete
 Nitro віддає його зі збірки, а `deploy.sh` чистить кеш nginx. Правка = commit → push → `bash deploy.sh`.
 Правити файл на сервері марно: до Node доходить лише те, що в збірці.
 
+**Перехід виконано 19.10.2026:** `nginx.ssl.conf_robots` перенесено в `/root/nginx-disabled/`, домен
+віддає robots із Node (у відповіді є `x-frame-options`), вміст побайтно той самий. Перевірка одразу
+після `systemctl reload nginx` може раз показати старий або порожній результат — повторити за кілька секунд.
+
 До 19.10.2026 robots віддавав nginx з окремого файлу `/var/www/floy/robots.txt`
 (`nginx.ssl.conf_robots`, див. `FLOY-ADMIN/NOTES/SERVER.md`), і копія в репозиторії непомітно
 застаріла: правила для GoogleOther, PetalBot і Applebot (18.09) були лише на сервері. 19.10 прод-версію
