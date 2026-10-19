@@ -435,6 +435,38 @@ find /var/cache/nginx-floy -type f -delete
 тож зламана сторінка, закешована з кодом 200, віддаватиметься ще 24 години після
 лікування — чистити після кожного підйому.
 
+### robots.txt — лише з репозиторію
+
+Джерело — `public/robots.txt` у цьому репозиторії. На сайт він потрапляє з кожною викладкою:
+Nitro віддає його зі збірки, а `deploy.sh` чистить кеш nginx. Правка = commit → push → `bash deploy.sh`.
+Правити файл на сервері марно: до Node доходить лише те, що в збірці.
+
+До 19.10.2026 robots віддавав nginx з окремого файлу `/var/www/floy/robots.txt`
+(`nginx.ssl.conf_robots`, див. `FLOY-ADMIN/NOTES/SERVER.md`), і копія в репозиторії непомітно
+застаріла: правила для GoogleOther, PetalBot і Applebot (18.09) були лише на сервері. 19.10 прод-версію
+перенесено в `public/robots.txt` побайтно. **Одноразово після викладки з цією правкою** — прибрати
+`location`, щоб домен віддавав robots із коду:
+
+```bash
+# 1. Node віддає ту саму версію, що й nginx (має вивести SAME)
+diff <(curl -s http://127.0.0.1:3000/robots.txt) /var/www/floy/robots.txt && echo SAME
+
+# 2. прибрати location. Саме перенести: суфікс .off файл НЕ вимикає — шаблон
+#    nginx.ssl.conf_* підхоплює й nginx.ssl.conf_robots.off (див. NOTES/SERVER.md)
+ls /home/wm/conf/web/floy.com.ua/ | grep -i robots
+mkdir -p /root/nginx-disabled
+mv /home/wm/conf/web/floy.com.ua/nginx.ssl.conf_robots /root/nginx-disabled/
+nginx -t && systemctl reload nginx
+
+# 3. тепер відповідає Node: є x-frame-options (routeRules), вміст той самий (SAME)
+curl -sI https://floy.com.ua/robots.txt | grep -i -E '^(HTTP|content-type|x-frame)'
+diff <(curl -s https://floy.com.ua/robots.txt) /var/www/floy/robots.txt && echo SAME
+```
+
+Відкат — повернути файл: `mv /root/nginx-disabled/nginx.ssl.conf_robots /home/wm/conf/web/floy.com.ua/`
+і `nginx -t && systemctl reload nginx`. `/var/www/floy/robots.txt` після кроку 2 ні на що не впливає —
+лишити як резервну копію.
+
 ## Що зробити після запуску (не в коді)
 
 - [ ] **Google Search Console**: додати ресурс `floy.com.ua`, підтвердити власність
@@ -451,6 +483,11 @@ find /var/cache/nginx-floy -type f -delete
 ## Чекліст безпеки/гігієни
 
 - [ ] GitHub-токен (PAT) для clone — **відкликати** після використання; краще SSH-ключ.
+- [ ] **Доступи в історії git.** До 19.10.2026 у репозиторії лежали вивантаження налаштувань
+      (`.claude/settings*.sql`): токени Укрпошти, токени кабінетів магазинів, логін/пароль SMS-сервісу,
+      ще один API-пароль. 19.10 їх прибрано з git (локальні копії лишились, `.gitignore`), але в
+      **історії комітів вони є**. Репозиторій приватний; якщо доступ до нього колись мав хтось сторонній —
+      змінити ці паролі й токени.
 - [ ] Тестовий стенд закрити від індексації (Password Protection або `noindex`).
 - [ ] `SITE_URL` на кожному стенді свій (canonical/OG/sitemap).
 - [ ] `pm2 save` після кожної зміни складу процесів (інакше після ребуту не підніметься).

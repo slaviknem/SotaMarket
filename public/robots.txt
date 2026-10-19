@@ -49,3 +49,27 @@ Disallow: /uk/search
 
 Host: https://floy.com.ua
 Sitemap: https://floy.com.ua/sitemap.xml
+
+# --- Службові краулери без цінності для магазину ---
+# GoogleOther не бере участі в індексації Пошуку; Google-Extended вище лишається дозволеним.
+User-agent: GoogleOther
+Disallow: /
+
+User-agent: PetalBot
+Disallow: /
+
+# Applebot не блокуємо (Siri/Spotlight), лише гальмуємо.
+User-agent: Applebot
+Crawl-delay: 10
+Disallow: /shop/cart
+Disallow: /shop/checkout
+Disallow: /shop/compare
+Disallow: /shop/wishlist
+Disallow: /shop/track-order
+Disallow: /search
+Disallow: /uk/shop/cart
+Disallow: /uk/shop/checkout
+Disallow: /uk/shop/compare
+Disallow: /uk/shop/wishlist
+Disallow: /uk/shop/track-order
+Disallow: /uk/search
