@@ -19,3 +19,5 @@ logs
 .env.local
 # Office тимчасові lock-файли (~$Документ.docx)
 ~$*
+# Зліпки «до/після» (scripts/seo-snapshot.mjs, scripts/style-snapshot.mjs)
+.snapshots
