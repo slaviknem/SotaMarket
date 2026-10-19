@@ -56,7 +56,7 @@ function stay() {
 	position: fixed;
 	top: calc(var(--header-stuck-h) + 12px);
 	right: 16px;
-	z-index: 1095; /* над чат-кнопкою, під модалками */
+	z-index: var(--z-lang-banner);
 	width: calc(100% - 32px);
 	max-width: 330px;
 	padding: 18px 20px 20px;

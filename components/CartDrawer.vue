@@ -148,7 +148,7 @@ onUnmounted(() => {
 .cart-drawer {
 	position: fixed;
 	inset: 0;
-	z-index: 1100;
+	z-index: var(--z-modal);
 }
 
 .cart-drawer__backdrop {
@@ -312,7 +312,7 @@ onUnmounted(() => {
 }
 
 .cart-drawer__item-remove:hover {
-	background: rgba(255, 71, 87, 0.12);
+	background: rgba(var(--danger-rgb), 0.12);
 	color: var(--danger);
 }
 

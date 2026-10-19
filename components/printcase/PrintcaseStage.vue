@@ -229,7 +229,7 @@ defineExpose({ displayScale })
 	font-weight: 600;
 	color: var(--text-muted);
 	cursor: pointer;
-	background: rgba(255, 255, 255, 0.55);
+	background: rgba(var(--on-overlay-rgb), 0.55);
 }
 
 /* Порожній чохол: заклик додати перше фото просто на макеті */

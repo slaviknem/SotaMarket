@@ -68,7 +68,7 @@ const stock = computed(() => printStockState(props.category))
 	justify-content: center;
 	width: 40px;
 	height: 40px;
-	border-radius: 12px;
+	border-radius: calc(var(--radius) - 2px);
 	background: var(--accent);
 	color: var(--on-accent);
 	transition: all 0.15s;

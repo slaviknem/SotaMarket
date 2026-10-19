@@ -145,7 +145,7 @@ const time = computed(() => props.m.created_at?.slice(11, 16) || '')
 	gap: 8px;
 	padding: 8px 10px;
 	border-radius: var(--radius-sm);
-	background: rgba(0, 0, 0, 0.14);
+	background: rgba(var(--shade-rgb), 0.14);
 	font-size: 13px;
 	font-weight: 500;
 	max-width: 220px;

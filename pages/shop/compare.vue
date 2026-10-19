@@ -157,11 +157,11 @@ usePageSeo({ title: () => t('other.comparison'), noindex: true })
 	display: flex;
 	padding: 6px;
 	color: var(--text-muted);
-	border-radius: 6px;
+	border-radius: calc(var(--radius-sm) - 2px);
 }
 
 .compare-remove:hover {
-	background: rgba(255, 71, 87, 0.12);
+	background: rgba(var(--danger-rgb), 0.12);
 	color: var(--danger);
 }
 </style>

@@ -73,7 +73,7 @@ const { freeDeliveryFrom } = useSiteSettings()
 	justify-content: center;
 	width: 50px;
 	height: 50px;
-	border-radius: 14px;
+	border-radius: var(--radius);
 	background: var(--accent-soft);
 	color: var(--accent);
 	flex-shrink: 0;

@@ -17,7 +17,7 @@
 	display: block;
 	height: 34px;
 	width: auto;
-	color: #fff;
+	color: var(--logo-color);
 	transition: opacity 0.2s;
 }
 

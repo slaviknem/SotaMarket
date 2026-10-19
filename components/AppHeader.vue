@@ -403,8 +403,8 @@ onMounted(() => {
 .header__main {
 	position: sticky;
 	top: 0;
-	z-index: 100;
-	background: rgba(13, 13, 16, 0.92);
+	z-index: var(--z-header);
+	background: rgba(var(--bg-rgb), 0.92);
 	backdrop-filter: blur(14px);
 	-webkit-backdrop-filter: blur(14px);
 	border-bottom: 1px solid var(--border);
@@ -412,7 +412,7 @@ onMounted(() => {
 }
 
 .header__main.is-sticky {
-	box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+	box-shadow: 0 8px 30px rgba(var(--shade-rgb), 0.45);
 }
 
 .header__main-inner {
@@ -495,7 +495,7 @@ onMounted(() => {
 
 .departments__toggle {
 	position: relative;
-	z-index: 96;
+	z-index: calc(var(--z-dropdown) + 1);
 	display: inline-flex;
 	align-items: center;
 	gap: 9px;
@@ -509,7 +509,7 @@ onMounted(() => {
 	border-radius: var(--radius-sm);
 	box-shadow: 0 4px 16px var(--accent-glow);
 	transition: background 0.18s, box-shadow 0.18s, border-radius 0.18s;
-	min-width: 270px; /* збігається з шириною сайдбара фільтрів (.cat-layout) */
+	min-width: var(--sidebar-w); /* та сама ширина, що в сайдбара фільтрів (.cat-layout) */
 }
 
 .departments__toggle:hover {
@@ -538,7 +538,7 @@ onMounted(() => {
 	position: absolute;
 	top: calc(100% - 5px);
 	left: 0;
-	z-index: 95;
+	z-index: var(--z-dropdown);
 	width: 100%;
 	margin: 0;
 	padding: 6px;
@@ -650,7 +650,7 @@ onMounted(() => {
 	transform: translateY(-50%);
 	width: 1px;
 	height: 22px;
-	background: rgba(255, 255, 255, 0.08);
+	background: rgba(var(--tint-rgb), 0.08);
 	pointer-events: none;
 }
 
@@ -665,7 +665,7 @@ onMounted(() => {
 	font-weight: 600;
 	color: var(--text-soft);
 	white-space: nowrap;
-	border-radius: 10px;
+	border-radius: calc(var(--radius-sm) + 2px);
 	transition: background 0.18s, color 0.18s, box-shadow 0.18s;
 }
 
@@ -683,7 +683,7 @@ onMounted(() => {
 }
 
 .brands-nav__link:hover {
-	background: rgba(255, 255, 255, 0.06);
+	background: rgba(var(--tint-rgb), 0.06);
 	color: var(--text);
 }
 
@@ -707,7 +707,7 @@ onMounted(() => {
 .brand-menu {
 	position: absolute;
 	top: 100%;
-	z-index: 95;
+	z-index: var(--z-dropdown);
 	display: flex;
 	flex-direction: column;
 	width: max-content;
@@ -717,7 +717,7 @@ onMounted(() => {
 	border: 1px solid var(--border-light);
 	border-top: none;
 	border-radius: 0 0 var(--radius) var(--radius);
-	box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+	box-shadow: 0 24px 60px rgba(var(--shade-rgb), 0.55);
 	overflow: hidden;
 	/* плавне ковзання під нову кнопку при перемиканні (під час появи перекривається mega-анімацією) */
 	transition: left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -818,7 +818,7 @@ onMounted(() => {
 .brand-menu__serie li a {
 	display: block;
 	padding: 7px 10px;
-	border-radius: 8px;
+	border-radius: var(--radius-sm);
 	font-size: 13.5px;
 	color: var(--text-soft);
 	transition: background 0.16s ease, color 0.16s ease, padding-left 0.16s ease;

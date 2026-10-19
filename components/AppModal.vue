@@ -42,11 +42,11 @@ const close = () => emit('update:modelValue', false)
 .app-modal {
 	position: fixed;
 	inset: 0;
-	z-index: 1100;
+	z-index: var(--z-modal);
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: rgba(0, 0, 0, 0.65);
+	background: var(--overlay);
 	backdrop-filter: blur(3px);
 	padding: 16px;
 }

@@ -50,9 +50,34 @@
 		U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
+/* ---------- Палітра бренду ----------
+   Усі кольори сайту — лише тут. Етап 2 (PLAN-SCALING.md) переносить цей блок у brand/theme.css.
+
+   Правило: колір — токен; прозорість, властива одному елементу, лишається в його стилях:
+   rgba(var(--shade-rgb), 0.45). Тому кольори, потрібні з прозорістю, задано каналами RGB (--*-rgb).
+   Синтаксис з комами — rgba(var(--x-rgb), α) — працює в усіх браузерах із CSS-змінними;
+   color-mix() старі браузери відкидають цілком (шапка стала б прозорою).
+   Канали перевизначати лише на :root: похідні токени обчислюються тут же, і нащадки
+   успадковують уже готове значення.
+   --accent-hover і --accent-active — окремі відтінки від дизайнера: при зміні акценту
+   міняти всі три. */
 :root {
-	/* Colors */
-	--bg: #0d0d10;
+	/* Канали RGB */
+	--bg-rgb: 13, 13, 16;
+	--accent-rgb: 255, 122, 0;
+	--success-rgb: 46, 204, 113;
+	--danger-rgb: 255, 71, 87;
+	--warning-rgb: 255, 192, 72;
+	/* Світле поверх завжди темних затемнень і фото (лайтбокс, сцена конструктора) — від теми не залежить */
+	--on-overlay-rgb: 255, 255, 255;
+	/* Світлі підсвітки на поверхнях сторінки (у світлій темі стануть темними: 0, 0, 0) */
+	--tint-rgb: 255, 255, 255;
+	/* Затемнення й тіні */
+	--shade-rgb: 0, 0, 0;
+	/* Темна підкладка кнопок поверх фото товару й сцени конструктора */
+	--on-photo-rgb: 20, 20, 26;
+
+	--bg: rgb(var(--bg-rgb));
 	--bg-soft: #131318;
 	--bg-card: #18181f;
 	--bg-elevated: #1f1f28;
@@ -63,48 +88,44 @@
 	--text-soft: #c3c3cc;
 	--text-muted: #8b8b96;
 
-	--accent: #ff7a00;
+	--accent: rgb(var(--accent-rgb));
 	--accent-hover: #ff9233;
 	--accent-active: #e66e00;
-	--accent-soft: rgba(255, 122, 0, 0.12);
-	--accent-glow: rgba(255, 122, 0, 0.35);
+	--accent-soft: rgba(var(--accent-rgb), 0.12);
+	--accent-glow: rgba(var(--accent-rgb), 0.35);
 	/* Текст/іконки поверх помаранчевих поверхонь */
 	--on-accent: #14100b;
 	/* Текст/іконки поверх затемнених підкладок і фото (кнопки на знімку товару, бейдж
 	   непрочитаних у чаті). Саме чистий білий, а не --text: під ним не фон теми, а
 	   довільне зображення чи суцільний колір, де потрібен максимальний контраст. */
-	--on-overlay: #fff;
+	--on-overlay: rgb(var(--on-overlay-rgb));
 	/* Глибокий фон (верхня смуга шапки, футер) */
 	--bg-deep: #08080a;
 	/* Підкладка під фото товарів (товари знімаються на білому) */
 	--img-bg: #fff;
+	/* Лого — чистий білий, а не --text (#f5f5f7): інакше стало б тьмянішим */
+	--logo-color: #fff;
 
-	--success: #2ecc71;
-	--danger: #ff4757;
+	--success: rgb(var(--success-rgb));
+	/* Текст на зеленій плашці (бейдж «новинка») */
+	--on-success: #0b1410;
+	--danger: rgb(var(--danger-rgb));
 	/* Той самий червоний, але притемнений — для суцільних плашок під білим текстом
 	   (#ff4757 з білим дає лише 3.3:1, цей — 4.8:1) */
 	--danger-strong: #d92b45;
+	/* Текст на червоній плашці (бейдж знижки на --danger-strong) */
+	--on-danger: #fff;
 	/* Підкладка під червоним (попередження, яке клієнт НЕ має проґавити) — як --warning-soft */
-	--danger-soft: rgba(255, 71, 87, 0.13);
-	--warning: #ffc048;
+	--danger-soft: rgba(var(--danger-rgb), 0.13);
+	--warning: rgb(var(--warning-rgb));
 	/* Підкладка під жовтим (кнопки й плашки передзамовлення) — як --accent-soft у акценту */
-	--warning-soft: rgba(255, 192, 72, 0.14);
+	--warning-soft: rgba(var(--warning-rgb), 0.14);
 
-	/* Layout */
-	--container: 1550px;
-	--radius-sm: 8px;
-	--radius: 14px;
-	--radius-lg: 20px;
-	--radius-pill: 99px;
-
-	--shadow-card: 0 4px 24px rgba(0, 0, 0, 0.35);
-	--shadow-pop: 0 12px 48px rgba(0, 0, 0, 0.55);
+	--shadow-card: 0 4px 24px rgba(var(--shade-rgb), 0.35);
+	--shadow-pop: 0 12px 48px rgba(var(--shade-rgb), 0.55);
 
 	/* Затемнення під модальними вікнами */
-	--overlay: rgba(0, 0, 0, 0.65);
-
-	/* Спектр для контролів вибору кольору (обідець навколо поточного відтінку) */
-	--color-wheel: conic-gradient(#ff4757, #ffc048, #2ecc71, #18dcff, #4e6bff, #b64cff, #ff4757);
+	--overlay: rgba(var(--shade-rgb), 0.65);
 
 	/* Захист тексту поверх фото (банери, герої): легка розтяжка від того краю кадру,
 	   звідки починається напис, до прозорого. Ставиться на весь кадр — меж підкладки
@@ -113,25 +134,61 @@
 	   строкатого фону під літерами. */
 	--scrim-text: linear-gradient(
 		to right,
-		rgba(0, 0, 0, 0.4) 0%,
-		rgba(0, 0, 0, 0.24) 32%,
-		rgba(0, 0, 0, 0.07) 56%,
-		rgba(0, 0, 0, 0) 72%
+		rgba(var(--shade-rgb), 0.4) 0%,
+		rgba(var(--shade-rgb), 0.24) 32%,
+		rgba(var(--shade-rgb), 0.07) 56%,
+		rgba(var(--shade-rgb), 0) 72%
 	);
 	/* Тінь тексту поверх фото — читабельність незалежно від того, що під ним.
 	   Основну роботу робить не підкладка, а щільний ореол по самому контуру літер
 	   (шари без зсуву): він «вирізає» напис із фону, тож затемнювати кадр майже не
 	   треба. Чотири шари: притиск під літерами / контур / ближній ореол / м'яка
 	   розтяжка на випадок світлого фото. */
-	--text-shadow-on-img: 0 1px 2px rgba(0, 0, 0, 0.9), 0 0 5px rgba(0, 0, 0, 0.85),
-		0 0 16px rgba(0, 0, 0, 0.6), 0 6px 26px rgba(0, 0, 0, 0.45);
+	--text-shadow-on-img: 0 1px 2px rgba(var(--shade-rgb), 0.9), 0 0 5px rgba(var(--shade-rgb), 0.85),
+		0 0 16px rgba(var(--shade-rgb), 0.6), 0 6px 26px rgba(var(--shade-rgb), 0.45);
+
+	/* Стрілка нативного select. Колір (= --text-muted) зашитий у data-URI, а змінна туди
+	   не підставляється — тож токеном є весь url(…) */
+	--select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238b8b96' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+}
+
+/* ---------- Структура ----------
+   Розміри, скруглення, шари, шрифт — від бренду не залежать. Тема бренду підключається
+   після main.css, тож за потреби може перевизначити й їх. */
+:root {
+	--container: 1550px;
+	--radius-sm: 8px;
+	--radius: 14px;
+	--radius-lg: 20px;
+	--radius-pill: 99px;
 
 	--font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
 	--header-h: 72px;
 	/* Висота прибитої до верху панелі з логотипом (--header-h + 1px бордер).
 	   Орієнтир для sticky-елементів під шапкою (напр. сайдбар фільтрів). */
-	--header-stuck-h: 73px;
+	--header-stuck-h: calc(var(--header-h) + 1px);
+	/* Ширина лівої колонки: кнопка «Каталог товарів» = сайдбар фільтрів = .side-layout */
+	--sidebar-w: 270px;
+
+	/* Шари (z-index) — від нижнього до верхнього. Локальні, до 50 включно, лишаються
+	   числами на місці (конструктор, лічильники галерей, випадайка автопідказки) */
+	--z-dropdown: 95; /* «Каталог» і мегаменю бренду; кнопка «Каталог» — calc(+1) */
+	--z-header: 100; /* прибита шапка */
+	/* Підказка про українську версію — над шапкою (на початку сторінки шапка вища за прибиту
+	   й заходить під банер), але під усім, що людина відкриває сама: підказки пошуку, шторки,
+	   чат, модалки. Була 1095 і закривала відкрите мобільне меню й шторку фільтрів (PLAN-SCALING 6.6) */
+	--z-lang-banner: 105;
+	--z-search-drop: 110; /* підказки пошуку під полем */
+	--z-drawer: 1000; /* мобільне меню, фільтри на телефоні */
+	--z-chat: 1090;
+	--z-modal: 1100; /* модалки, шторка кошика */
+	--z-top: 1200; /* лайтбокс галереї, повноекранний пошук, сповіщення */
+	--z-chat-lightbox: 1300;
+
+	/* Спектр для контролів вибору кольору (обідець навколо поточного відтінку).
+	   Не тема: це кольори друку, від палітри сайту не залежать (PLAN-SCALING §5) */
+	--color-wheel: conic-gradient(#ff4757, #ffc048, #2ecc71, #18dcff, #4e6bff, #b64cff, #ff4757);
 }
 
 /* ---------- Reset ---------- */
@@ -352,7 +409,7 @@ ul { padding-left: 1.2em; }
 
 select.form-control {
 	appearance: none;
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238b8b96' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+	background-image: var(--select-arrow);
 	background-repeat: no-repeat;
 	background-position: right 14px center;
 	padding-right: 36px;
@@ -488,7 +545,7 @@ textarea.form-control {
 .modal {
 	position: fixed;
 	inset: 0;
-	z-index: 1100;
+	z-index: var(--z-modal);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -572,7 +629,7 @@ textarea.form-control {
 .p-card:hover {
 	transform: translateY(-3px);
 	border-color: var(--accent);
-	box-shadow: 0 8px 24px rgba(255, 122, 0, 0.16);
+	box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.16);
 }
 
 .p-card__media {
@@ -683,7 +740,7 @@ textarea.form-control {
 	justify-content: center;
 	width: 40px;
 	height: 40px;
-	border-radius: 12px;
+	border-radius: calc(var(--radius) - 2px);
 	background: var(--accent-soft);
 	color: var(--accent);
 	transition: all 0.15s;
@@ -751,12 +808,12 @@ img.np-img {
 
 .badge-sale {
 	background: var(--danger-strong);
-	color: #fff;
+	color: var(--on-danger);
 }
 
 .badge-new {
 	background: var(--success);
-	color: #0b1410;
+	color: var(--on-success);
 }
 
 /* Наявність на картці: передзамовлення / знято з продажу */
@@ -1043,9 +1100,9 @@ img.np-img {
 /* ---------- Notifications ---------- */
 .notifications-wrap {
 	position: fixed;
-	top: 84px;
+	top: calc(var(--header-h) + 12px);
 	right: 16px;
-	z-index: 1200;
+	z-index: var(--z-top);
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
@@ -1200,7 +1257,7 @@ mark.hl {
 	justify-content: center;
 	width: 64px;
 	height: 64px;
-	border-radius: 12px;
+	border-radius: calc(var(--radius) - 2px);
 	background: var(--img-bg);
 	padding: 6px;
 	flex-shrink: 0;
@@ -1303,8 +1360,8 @@ mark.hl {
    Контентом керує сама сторінка; сайдбар — <BlocksSideMenu>. */
 .side-layout {
 	display: grid;
-	/* 270px — збігається з шириною кнопки «Каталог товарів» і сайдбара фільтрів */
-	grid-template-columns: 270px 1fr;
+	/* --sidebar-w — та сама ширина, що в кнопки «Каталог товарів» і сайдбара фільтрів */
+	grid-template-columns: var(--sidebar-w) 1fr;
 	gap: 22px;
 	align-items: start;
 	padding-bottom: 30px;

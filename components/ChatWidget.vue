@@ -407,7 +407,7 @@ onUnmounted(() => {
 	right: 20px;
 	bottom: 20px;
 	bottom: calc(20px + env(safe-area-inset-bottom));
-	z-index: 1090;
+	z-index: var(--z-chat);
 }
 
 /* ---------- FAB ---------- */
@@ -576,7 +576,7 @@ onUnmounted(() => {
 	height: 7px;
 	border-radius: 50%;
 	background: var(--success);
-	box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.18);
+	box-shadow: 0 0 0 3px rgba(var(--success-rgb), 0.18);
 	flex-shrink: 0;
 }
 
@@ -993,7 +993,7 @@ onUnmounted(() => {
 	align-items: center;
 	justify-content: center;
 	gap: 10px;
-	background: rgba(13, 13, 16, 0.9);
+	background: rgba(var(--bg-rgb), 0.9);
 	border: 2px dashed var(--accent);
 	border-radius: var(--radius-lg);
 	color: var(--accent);
@@ -1006,12 +1006,12 @@ onUnmounted(() => {
 .chat__lightbox {
 	position: fixed;
 	inset: 0;
-	z-index: 1300;
+	z-index: var(--z-chat-lightbox);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	padding: 24px;
-	background: rgba(0, 0, 0, 0.85);
+	background: rgba(var(--shade-rgb), 0.85);
 	backdrop-filter: blur(3px);
 	cursor: zoom-out;
 }
@@ -1031,7 +1031,7 @@ onUnmounted(() => {
 	padding: 8px;
 	color: var(--on-overlay);
 	border-radius: var(--radius-sm);
-	background: rgba(255, 255, 255, 0.12);
+	background: rgba(var(--on-overlay-rgb), 0.12);
 }
 
 /* ---------- Анімації ---------- */

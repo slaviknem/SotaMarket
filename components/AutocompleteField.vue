@@ -205,7 +205,7 @@ function clear() {
 	padding: 8px 10px;
 	font-size: 13.5px;
 	color: var(--text-soft);
-	border-radius: 6px;
+	border-radius: calc(var(--radius-sm) - 2px);
 }
 
 .ac__list button:hover,

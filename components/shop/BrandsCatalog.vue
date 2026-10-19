@@ -113,7 +113,7 @@ const displayBrands = computed(() => {
 	flex-shrink: 0;
 	padding: 6px;
 	background: var(--img-bg);
-	border-radius: 10px;
+	border-radius: calc(var(--radius-sm) + 2px);
 }
 
 .brand-block__logo :deep(img) {

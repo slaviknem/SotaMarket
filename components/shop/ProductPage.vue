@@ -692,7 +692,7 @@ onMounted(() => {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
-	border-radius: 7px;
+	border-radius: calc(var(--radius-sm) - 1px);
 	filter: brightness(1.12) saturate(1.08);
 }
 

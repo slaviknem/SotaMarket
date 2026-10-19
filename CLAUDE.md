@@ -31,7 +31,15 @@ Nuxt 3 + Vue 3 (SSR) фронтенд floy.com.ua. Працюй **завжди**
   Жодних літералів типу `#ff7a00`, `#14100b`, `99px`, `#fff` у компонентах.
   Потрібен новий колір/розмір → **додай токен** у `main.css`, не хардкодь.
   Чинні токени: `--bg*`, `--text*`, `--accent*`, `--on-accent`, `--bg-deep`, `--img-bg`,
-  `--radius-sm|--radius|--radius-lg|--radius-pill`, `--shadow-*`, `--success/--danger/--warning`.
+  `--radius-sm|--radius|--radius-lg|--radius-pill`, `--shadow-*`, `--success/--danger/--warning`,
+  `--on-success/--on-danger/--on-overlay`, `--logo-color`, `--overlay`, `--select-arrow`, `--sidebar-w`,
+  шари `--z-*` (`--z-dropdown` … `--z-chat-lightbox`).
+  `:root` поділено на «Палітру бренду» (усі кольори) і «Структуру» (розміри, шари, шрифт).
+  **Колір з прозорістю** — через канал: `rgba(var(--shade-rgb), 0.45)`; канали: `--bg-rgb`, `--accent-rgb`,
+  `--success-rgb`, `--danger-rgb`, `--warning-rgb`, `--on-overlay-rgb` (світле поверх затемнень і фото),
+  `--tint-rgb` (світлі підсвітки на поверхнях), `--shade-rgb` (тіні, затемнення), `--on-photo-rgb`
+  (кнопки поверх фото). Не `color-mix()` — старі браузери відкидають властивість цілком.
+  Скруглення-проміжки — `calc()` від токена (`calc(var(--radius-sm) + 2px)`), не число.
 - **Перевикористовуй глобальні класи** з `main.css`: `.container`, `.btn`/`.btn-*`, `.card`, `.badge`,
   `.form-control`, `.typography`, `.section-title`, `.skeleton`, `.products-grid`, `.p-card*` (база картки товару),
   утиліти (`.text-muted`, `.visually-hidden` тощо). Не дублюй ці стилі в `scoped`.

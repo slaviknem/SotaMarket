@@ -918,7 +918,7 @@ function scrollToNeoprints() {
 <style scoped>
 .cat-layout {
 	display: grid;
-	grid-template-columns: 270px 1fr;
+	grid-template-columns: var(--sidebar-w) 1fr;
 	gap: 22px;
 	align-items: start;
 	padding-bottom: 30px;
@@ -1202,7 +1202,7 @@ function scrollToNeoprints() {
 	.cat-layout__sidebar {
 		position: fixed;
 		inset: 0;
-		z-index: 1000;
+		z-index: var(--z-drawer);
 		visibility: hidden;
 		pointer-events: none;
 	}
@@ -1216,7 +1216,7 @@ function scrollToNeoprints() {
 		display: block;
 		position: absolute;
 		inset: 0;
-		background: rgba(0, 0, 0, 0.6);
+		background: rgba(var(--shade-rgb), 0.6);
 		opacity: 0;
 		transition: opacity 0.2s;
 	}

@@ -440,7 +440,7 @@ onUnmounted(unbind)
 	width: 34px;
 	height: 34px;
 	border-radius: 50%;
-	background: rgba(20, 20, 26, 0.8);
+	background: rgba(var(--on-photo-rgb), 0.8);
 	color: var(--on-overlay);
 	cursor: ew-resize;
 	z-index: 4;

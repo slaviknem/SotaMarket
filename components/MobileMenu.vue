@@ -115,13 +115,13 @@ watch(open, (v: boolean) => {
 .mobile-menu {
 	position: fixed;
 	inset: 0;
-	z-index: 1000;
+	z-index: var(--z-drawer);
 }
 
 .mobile-menu__backdrop {
 	position: absolute;
 	inset: 0;
-	background: rgba(0, 0, 0, 0.6);
+	background: rgba(var(--shade-rgb), 0.6);
 	backdrop-filter: blur(2px);
 }
 

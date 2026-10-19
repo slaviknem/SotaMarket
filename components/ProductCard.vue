@@ -256,9 +256,9 @@ const toggleCompare = () => compare.toggle(props.product)
 	justify-content: center;
 	width: 34px;
 	height: 34px;
-	background: rgba(20, 20, 26, 0.85);
+	background: rgba(var(--on-photo-rgb), 0.85);
 	color: var(--on-overlay);
-	border-radius: 10px;
+	border-radius: calc(var(--radius-sm) + 2px);
 	backdrop-filter: blur(4px);
 	transition: all 0.15s;
 }

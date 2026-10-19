@@ -293,7 +293,7 @@ const hasSelected = computed(() => Object.values(props.selected).some((v) => v.l
 	justify-content: center;
 	width: 18px;
 	height: 18px;
-	border-radius: 5px;
+	border-radius: calc(var(--radius-sm) - 3px);
 	border: 1.5px solid var(--border-light);
 	color: transparent;
 	transition: all 0.15s;

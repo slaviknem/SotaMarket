@@ -1134,7 +1134,7 @@ async function sendOrder() {
 }
 
 .cart-item__remove:hover {
-	background: rgba(255, 71, 87, 0.12);
+	background: rgba(var(--danger-rgb), 0.12);
 	color: var(--danger);
 }
 
@@ -1408,7 +1408,7 @@ async function sendOrder() {
 	justify-content: center;
 	width: 18px;
 	height: 18px;
-	border-radius: 5px;
+	border-radius: calc(var(--radius-sm) - 3px);
 	border: 1.5px solid var(--border-light);
 	color: transparent;
 	transition: all 0.14s;

@@ -282,7 +282,7 @@ watch(() => route.fullPath, close)
 	top: calc(100% + 8px);
 	left: 0;
 	right: 0;
-	z-index: 110;
+	z-index: var(--z-search-drop);
 	max-height: min(72vh, 620px);
 	overflow-y: auto;
 	background: var(--bg-card);
@@ -298,7 +298,7 @@ watch(() => route.fullPath, close)
 .search-full {
 	position: fixed;
 	inset: 0;
-	z-index: 1200;
+	z-index: var(--z-top);
 	display: flex;
 	flex-direction: column;
 	background: var(--bg);

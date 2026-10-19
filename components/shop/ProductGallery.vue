@@ -278,11 +278,11 @@ onBeforeUnmount(() => {
 .lb {
 	position: fixed;
 	inset: 0;
-	z-index: 1200;
+	z-index: var(--z-top);
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: rgba(0, 0, 0, 0.92);
+	background: rgba(var(--shade-rgb), 0.92);
 	backdrop-filter: blur(2px);
 	/* Поля сцени: зверху лічильник, з боків стрілки, знизу підпис + пагінація.
 	   Решту простору віддаємо фото */
@@ -328,12 +328,12 @@ onBeforeUnmount(() => {
 	display: flex;
 	padding: 8px;
 	color: var(--on-overlay);
-	background: rgba(255, 255, 255, 0.12);
+	background: rgba(var(--on-overlay-rgb), 0.12);
 	border-radius: var(--radius-pill);
 }
 
 .lb__close:hover {
-	background: rgba(255, 255, 255, 0.22);
+	background: rgba(var(--on-overlay-rgb), 0.22);
 }
 
 .lb__counter {
@@ -357,7 +357,7 @@ onBeforeUnmount(() => {
 	max-width: 80vw;
 	padding: 7px 16px;
 	border-radius: var(--radius-pill);
-	background: rgba(0, 0, 0, 0.55);
+	background: rgba(var(--shade-rgb), 0.55);
 	color: var(--on-overlay);
 	font-size: 14px;
 	font-weight: 600;

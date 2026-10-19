@@ -2361,7 +2361,7 @@ if (!isModelPage.value) {
 	justify-content: center;
 	width: 40px;
 	height: 40px;
-	border-radius: 10px;
+	border-radius: calc(var(--radius-sm) + 2px);
 	background: var(--accent-soft);
 	color: var(--accent);
 	flex-shrink: 0;
@@ -2500,7 +2500,7 @@ if (!isModelPage.value) {
 	width: 34px;
 	height: 34px;
 	object-fit: cover;
-	border-radius: 7px;
+	border-radius: calc(var(--radius-sm) - 1px);
 	background: var(--img-bg);
 	flex-shrink: 0;
 }
