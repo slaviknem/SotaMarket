@@ -1764,7 +1764,7 @@ const lead = computed(() =>
 const faqItems = computed(() => {
 	if (!isModelPage.value) return []
 	const p = { model: names.value.full, model_short: names.value.short_, model_alt: names.value.alt_, price, priceOld }
-	return [1, 2, 3, 4, 5].map((i) => ({
+	return [1, 2, 3, 4, 5, 6].map((i) => ({
 		q: t(`printcase.seo.faq.q${i}`, p),
 		a: t(`printcase.seo.faq.a${i}`, p),
 	}))
