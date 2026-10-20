@@ -9,7 +9,8 @@
 - **Nuxt 3.21** (Vue 3.5, SSR) — повна серверна генерація для індексації
 - **@nuxtjs/i18n** — `/` = ru, `/uk/...` = українська (як на старому сайті), hreflang автоматично
 - **Swiper 11** — слайдер банерів
-- Без Bootstrap — власна легка дизайн-система (чорний + оранжевий), CSS-змінні в `assets/css/main.css`
+- Без Bootstrap — власна легка дизайн-система на CSS-змінних: палітра — `brand/theme.css`,
+  розміри, шари й глобальні класи — `assets/css/main.css` (правила — `CLAUDE.md`)
 
 ## Структура URL (ідентична старому сайту)
 
@@ -38,8 +39,8 @@
 ```powershell
 $env:Path = "C:\Web-SERVER\domains\FLOY-NEW\.node\node-v22.14.0-win-x64;" + $env:Path
 cd C:\Web-SERVER\domains\FLOY-NEW
-npm install        # один раз
-npx nuxt dev       # http://localhost:3000
+.\install.cmd     # залежності, один раз (голий npm install під Node 16 ламає node_modules)
+.\dev.cmd         # http://localhost:3000
 ```
 
 ## Продакшн
@@ -86,20 +87,46 @@ SITE_URL='https://floy.com.ua'
 - `hreflang` ru/uk/x-default + `canonical` на кожній сторінці
 - JSON-LD: WebSite + Organization (головна), Product + Offer + Review (товар), ItemList (категорія), Article (блог), BreadcrumbList (мікродані в крихтах)
 - Open Graph + Twitter Card
-- `robots.txt` в `public/` (як на старому сайті)
+- `robots.txt` і `site.webmanifest` — маршрути (`server/routes/`) з `brand/`: шаблон `brand/robots.txt`,
+  `Host` і `Sitemap` — з `SITE_URL`. Тестовий стенд — `NUXT_NOINDEX=1` (закриває від індексації)
 - **Sitemap**: генерує адмінка (`SitemapUtil.php`) і пише файли у статичну папку фронтенда.
   Для нового сайту в `SitemapUtil` треба змінити `$pathSuffix` з `/public_html/src/static/` на
   `/public_html/public/` (папка `public/` — аналог `static/` в Nuxt 3).
 
+## Як зробити сайт під інший бренд
+
+Рушій спільний, усе брендове — в одній теці `brand/` (аліас `#brand`). Докладно, з полями конфігу, —
+**`brand/README.md`**; коротко:
+
+1. **`brand/`** — змінити `site.config.ts` (ключ сайту в адмінці, назва, домен, адреса, запасні
+   налаштування, графік, політики, вкладки головної, промотовари), `theme.css` (палітра; акцент —
+   канал `--accent-rgb` **і** відтінки `--accent-hover`/`--accent-active`), `public/images/logo.svg`,
+   `public/favicon.svg`, файл верифікації Google, `robots.txt`, `i18n/*.json` (тексти про магазин).
+2. **Фавікони й og** — `node scripts/gen-icons.mjs` і `node scripts/gen-og.mjs` (портативний Node 22),
+   пишуть у `brand/public/`.
+3. **`.env`** — `SITE_URL` нового домену; `URL_API` і `URL_STORAGE` — спільна адмінка.
+4. **Адмінка** — вузол налаштувань `public.{key}` (ціни, доставка, контакти, соцмережі); поки його
+   немає — `settingsFallback` з конфігу. Категорії, SEO-тексти, банери, статті — вміст бази під цим ключем.
+5. **Перевірка** — тест бренду: SEO-зліпок (`node scripts/seo-snapshot.mjs <ім'я>`) без згадок старого
+   бренду поза вмістом бази; тест палітри — `scripts/style-snapshot.mjs … find`. Порядок —
+   `PLAN-SCALING.md`, 1.9 і 2.12.
+
+Свідомо спільне: шаблони FAQ і лідів (`{brand}`/`{domain}` підставляються), ключі сховища `floy_*`
+у браузері (на іншому домені не конфліктують), адмінка `admin.floy.com.ua`. Вибір сайту при збірці,
+деплой на кілька доменів — крок 2 (`PLAN-MULTISITE.md`).
+
 ## Що де лежить
 
+- `brand/` — усе, чим магазин відрізняється від копій рушія (див. вище)
 - `composables/useShopApi.ts` — всі виклики до apisite (дзеркало старого `api/shop.ts`)
 - `composables/useCart.ts`, `useLists.ts` — кошик / wishlist / compare (localStorage)
 - `composables/useNovaPochta.ts` — пошук міст і відділень НП
 - `composables/useSeo.ts` — canonical / OG / JSON-LD хелпери
 - `components/shop/CategoryPage.vue` — спільна логіка категорії та сторінки фільтра
 - `components/shop/ProductPage.vue` — товар (+ attr-сторінки)
-- `i18n/locales/ru.json`, `uk.json` — переклади (перенесені зі старого сайту + нові ключі)
+- `i18n/locales/ru.json`, `uk.json` — переклади (перенесені зі старого сайту + нові ключі);
+  тексти про сам магазин — поверх них з `brand/i18n/`
+- `scripts/seo-snapshot.mjs`, `style-snapshot.mjs` — зліпки «до/після» для перевірки змін (`PLAN-SCALING.md` §2)
 - `FLOY-ADMIN/` — копія бекенда для довідки (не частина фронтенда)
 
 ## ДЕПЛОЙ
