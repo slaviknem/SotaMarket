@@ -24,7 +24,7 @@
 					class="brand-block__serie"
 					:style="{ '--cols': serie.cols }"
 				>
-					<component :is="single ? 'h2' : 'h3'" class="brand-block__serie-title">{{ serie.title.replace(' - Serie', '') }}</component>
+					<component :is="single ? 'h2' : 'h3'" class="brand-block__serie-title">{{ serieTitle(serie.title) }}</component>
 					<ul>
 						<li v-for="model in serie.children" :key="model.url">
 							<NuxtLink :to="catLink(model.url)">{{ model.title }}</NuxtLink>

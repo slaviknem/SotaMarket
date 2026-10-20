@@ -67,7 +67,7 @@
 									</div>
 								</div>
 
-								<button class="cart-drawer__item-remove" :title="t('cart.delete')"
+								<button class="remove-btn cart-drawer__item-remove" :title="t('cart.delete')"
 									@click="cart.remove(item.id)">
 									<AppIcon name="close" :size="15" />
 								</button>
@@ -303,17 +303,11 @@ onUnmounted(() => {
 	white-space: nowrap;
 }
 
+/* База — .remove-btn у main.css */
 .cart-drawer__item-remove {
-	display: flex;
 	padding: 6px;
-	color: var(--text-muted);
 	border-radius: var(--radius-sm);
 	transition: background 0.13s, color 0.13s;
-}
-
-.cart-drawer__item-remove:hover {
-	background: rgba(var(--danger-rgb), 0.12);
-	color: var(--danger);
 }
 
 /* Підсумок + дії */

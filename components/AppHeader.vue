@@ -4,16 +4,11 @@
 		<div class="header__topbar">
 			<div class="container header__topbar-inner">
 				<nav class="topbar-links">
-					<NuxtLink :to="localePath('/about')">{{ t('header.topbar.about') }}</NuxtLink>
-					<NuxtLink :to="localePath('/dostavka')">{{ t('header.topbar.dostavka') }}</NuxtLink>
-					<NuxtLink :to="localePath('/povernennya')">{{ t('header.topbar.povernennya') }}</NuxtLink>
-					<NuxtLink :to="localePath('/otzyvy-klientov')">{{ t('header.topbar.otzyvy') }}</NuxtLink>
-					<NuxtLink :to="localePath('/shop/track-order')">{{ t('header.topbar.trackOrder') }}</NuxtLink>
-					<NuxtLink :to="localePath('/article')">{{ t('header.topbar.blog') }}</NuxtLink>
+					<NuxtLink v-for="link in infoLinks" :key="link.to" :to="link.to">{{ link.label }}</NuxtLink>
 				</nav>
 
 				<div class="topbar-right">
-					<a :href="`tel:+38${phoneDigits}`" class="topbar-phone">
+					<a :href="telHref(phone)" class="topbar-phone">
 						<AppIcon name="phone" :size="14" />
 						{{ phone }}
 					</a>
@@ -132,7 +127,7 @@
 										class="brand-menu__serie"
 										:style="{ '--cols': serie.cols }"
 									>
-										<div class="brand-menu__serie-title">{{ serie.title.replace(' - Serie', '') }}</div>
+										<div class="brand-menu__serie-title">{{ serieTitle(serie.title) }}</div>
 										<ul>
 											<li v-for="model in serie.children" :key="model.url">
 												<NuxtLink :to="localePath(`/${model.url}`)" @click="closeBrand">
@@ -164,7 +159,8 @@ const emit = defineEmits<{ needMenu: [] }>()
 const { t } = useI18n()
 const localePath = useLocalePath()
 const siteBrand = useBrand()
-const { phone, phoneDigits } = useSiteSettings()
+const { phone } = useSiteSettings()
+const { infoLinks } = useSiteMenus()
 
 const cart = useCart()
 const cartQty = cart.quantity

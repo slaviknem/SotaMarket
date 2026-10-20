@@ -20,7 +20,7 @@
 						<tr>
 							<th>{{ t('product.product') }}</th>
 							<td v-for="p in compare.items.value" :key="p.id">
-								<button class="compare-remove" :title="t('other.remove')" @click="compare.remove(p.id)">
+								<button class="remove-btn compare-remove" :title="t('other.remove')" @click="compare.remove(p.id)">
 									<AppIcon name="close" :size="13" />
 								</button>
 								<NuxtLink :to="url.product(p)" class="compare-product">
@@ -150,18 +150,12 @@ usePageSeo({ title: () => t('other.comparison'), noindex: true })
 	color: var(--text-soft);
 }
 
+/* База — .remove-btn у main.css */
 .compare-remove {
 	position: absolute;
 	top: 8px;
 	right: 8px;
-	display: flex;
 	padding: 6px;
-	color: var(--text-muted);
 	border-radius: calc(var(--radius-sm) - 2px);
-}
-
-.compare-remove:hover {
-	background: rgba(var(--danger-rgb), 0.12);
-	color: var(--danger);
 }
 </style>

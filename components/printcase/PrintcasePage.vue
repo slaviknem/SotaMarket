@@ -94,7 +94,7 @@
 							<span class="ctrl-bg__ring">
 								<span
 									class="ctrl-bg__swatch"
-									:class="{ 'is-transparent': transparentBg }"
+									:class="{ 'is-transparent checkerboard': transparentBg }"
 									:style="transparentBg ? undefined : { background: backgroundColor }"
 								/>
 							</span>
@@ -118,7 +118,7 @@
 							<div class="bg-pop__grid">
 								<!-- Прозорий — рівноправний варіант фону, тому стоїть першим у сітці -->
 								<button
-									class="bg-sw bg-sw--transparent"
+									class="bg-sw bg-sw--transparent checkerboard"
 									:class="{ 'is-active': transparentBg }"
 									:title="t('printcase.control.transparentShort')"
 									@click="setBg('transparent')"
@@ -2103,18 +2103,7 @@ if (!isModelPage.value) {
 }
 
 /* Прозорість показуємо тим самим шаховим візерунком, що й у графічних редакторах —
-   пояснювати словами не доводиться */
-.ctrl-bg__swatch.is-transparent,
-.bg-sw--transparent {
-	background-color: #fff;
-	background-image:
-		linear-gradient(45deg, #c8c8c8 25%, transparent 25%),
-		linear-gradient(-45deg, #c8c8c8 25%, transparent 25%),
-		linear-gradient(45deg, transparent 75%, #c8c8c8 75%),
-		linear-gradient(-45deg, transparent 75%, #c8c8c8 75%);
-	background-size: 8px 8px;
-	background-position: 0 0, 0 4px, 4px -4px, -4px 0;
-}
+   пояснювати словами не доводиться: клас .checkerboard (main.css) на кнопці й у палітрі фону */
 
 /* ----- Палітра фону ----- */
 /* Затемнення потрібне лише нижній шторці на телефоні — на десктопі це звичайний поповер */

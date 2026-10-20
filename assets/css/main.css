@@ -442,6 +442,45 @@ textarea.form-control {
 	font-size: 14px;
 }
 
+/* ---------- Кнопка «прибрати позицію» (шторка кошика, кошик, порівняння) ----------
+   Лише спільне: хрестик приглушений, під курсором червоніє. Відступи, скруглення, анімацію
+   й положення кожен компонент задає свої */
+.remove-btn {
+	display: flex;
+	color: var(--text-muted);
+}
+
+.remove-btn:hover {
+	background: rgba(var(--danger-rgb), 0.12);
+	color: var(--danger);
+}
+
+/* ---------- Шахівниця «прозоро» (конструктор: кнопка й палітра фону, сцена) ----------
+   Як у графічних редакторах. Кольори — не тема: це умовне позначення прозорості на білому
+   чохлі, від палітри сайту не залежить (PLAN-SCALING §5) */
+.checkerboard {
+	--checker-color: #c8c8c8;
+	--checker-size: 8px;
+	background-color: #fff;
+	background-image:
+		linear-gradient(45deg, var(--checker-color) 25%, transparent 25%),
+		linear-gradient(-45deg, var(--checker-color) 25%, transparent 25%),
+		linear-gradient(45deg, transparent 75%, var(--checker-color) 75%),
+		linear-gradient(-45deg, transparent 75%, var(--checker-color) 75%);
+	background-size: var(--checker-size) var(--checker-size);
+	background-position:
+		0 0,
+		0 calc(var(--checker-size) / 2),
+		calc(var(--checker-size) / 2) calc(var(--checker-size) / -2),
+		calc(var(--checker-size) / -2) 0;
+}
+
+/* Велика клітинка — на сцені конструктора */
+.checkerboard--lg {
+	--checker-color: #dcdcdc;
+	--checker-size: 22px;
+}
+
 /* ---------- Modal ---------- */
 .modal {
 	position: fixed;

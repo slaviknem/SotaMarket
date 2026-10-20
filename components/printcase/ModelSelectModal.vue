@@ -52,7 +52,7 @@
 
 						<div v-if="openBrand === bi" class="model-tree__series">
 							<template v-for="serie in brand.children || []" :key="serie.url">
-								<div class="model-tree__serie">{{ serie.title.replace(' - Serie', '') }}</div>
+								<div class="model-tree__serie">{{ serieTitle(serie.title) }}</div>
 								<button
 									v-for="m in serie.children || []"
 									:key="m.url"

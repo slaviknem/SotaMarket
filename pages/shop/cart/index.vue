@@ -71,7 +71,7 @@
 
 						<div class="cart-item__total">{{ formatPrice(item.total) }}</div>
 
-						<button class="cart-item__remove" :title="t('cart.delete')" @click="cart.remove(item.id)">
+						<button class="remove-btn cart-item__remove" :title="t('cart.delete')" @click="cart.remove(item.id)">
 							<AppIcon name="close" :size="16" />
 						</button>
 					</div>
@@ -1125,17 +1125,11 @@ async function sendOrder() {
 	text-align: right;
 }
 
+/* База — .remove-btn у main.css */
 .cart-item__remove {
-	display: flex;
 	padding: 8px;
-	color: var(--text-muted);
 	border-radius: var(--radius-sm);
 	transition: all 0.13s;
-}
-
-.cart-item__remove:hover {
-	background: rgba(var(--danger-rgb), 0.12);
-	color: var(--danger);
 }
 
 .cart-summary {

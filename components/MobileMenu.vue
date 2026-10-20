@@ -45,7 +45,7 @@
 
 							<div v-if="openedBrand === i && brand.children?.length" class="mobile-menu__sub">
 								<template v-for="serie in brand.children" :key="serie.url">
-									<div class="mobile-menu__serie">{{ serie.title.replace(' - Serie', '') }}</div>
+									<div class="mobile-menu__serie">{{ serieTitle(serie.title) }}</div>
 									<NuxtLink
 										v-for="model in serie.children || []"
 										:key="model.url"
@@ -61,11 +61,11 @@
 
 						<!-- Інфо-посилання -->
 						<div class="mobile-menu__section">{{ t('footer.information') }}</div>
-						<NuxtLink v-for="link in infoLinks" :key="link.to" :to="localePath(link.to)" class="mobile-menu__link" @click="open = false">
-							{{ link.title }}
+						<NuxtLink v-for="link in infoLinks" :key="link.to" :to="link.to" class="mobile-menu__link" @click="open = false">
+							{{ link.label }}
 						</NuxtLink>
 
-						<a :href="`tel:+38${phoneDigits}`" class="mobile-menu__phone">
+						<a :href="telHref(phone)" class="mobile-menu__phone">
 							{{ phone }}
 						</a>
 					</div>
@@ -81,7 +81,8 @@ defineProps<{ menu: any }>()
 const { t } = useI18n()
 const localePath = useLocalePath()
 const siteBrand = useBrand()
-const { phone, phoneDigits } = useSiteSettings()
+const { phone } = useSiteSettings()
+const { infoLinks } = useSiteMenus()
 
 const open = useState('mobileMenuOpen', () => false)
 const openedBrand = ref<number | null>(null)
@@ -96,15 +97,6 @@ function openSearchFromMenu() {
 const toggleBrand = (i: number) => {
 	openedBrand.value = openedBrand.value === i ? null : i
 }
-
-const infoLinks = computed(() => [
-	{ to: '/about', title: t('header.topbar.about') },
-	{ to: '/dostavka', title: t('header.topbar.dostavka') },
-	{ to: '/povernennya', title: t('header.topbar.povernennya') },
-	{ to: '/otzyvy-klientov', title: t('header.topbar.otzyvy') },
-	{ to: '/shop/track-order', title: t('header.topbar.trackOrder') },
-	{ to: '/article', title: t('header.topbar.blog') },
-])
 
 // Блокуємо скрол сторінки коли меню відкрите
 watch(open, (v: boolean) => {

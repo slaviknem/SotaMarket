@@ -240,6 +240,10 @@ const categoryTile = ({ id, alias, type, title, title_full, title_rus, image_fil
 	products_count,
 })
 
+// Назва серії без службового хвоста « - Serie» з адмінки (мегаменю, мобільне меню, каталог
+// брендів, вибір моделі в конструкторі)
+export const serieTitle = (title: string) => title.replace(' - Serie', '')
+
 // Серії бренду з моделями — лише назви й адреси (каталог брендів, мегаменю)
 export const menuSeries = (series: any) =>
 	Array.isArray(series)

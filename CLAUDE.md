@@ -43,6 +43,7 @@ Nuxt 3 + Vue 3 (SSR) фронтенд floy.com.ua. Працюй **завжди**
   Скруглення-проміжки — `calc()` від токена (`calc(var(--radius-sm) + 2px)`), не число.
 - **Перевикористовуй глобальні класи** з `main.css`: `.container`, `.btn`/`.btn-*`, `.card`, `.badge`,
   `.form-control`, `.typography`, `.section-title`, `.skeleton`, `.products-grid`, `.p-card*` (база картки товару),
+  `.remove-btn` (хрестик «прибрати позицію»), `.checkerboard` / `.checkerboard--lg` (шахівниця «прозоро»),
   утиліти (`.text-muted`, `.visually-hidden` тощо). Не дублюй ці стилі в `scoped`.
 - **Scoped-стилі не шаряться між компонентами.** Якщо стиль потрібен ≥2 компонентам — виноси базу в `main.css`,
   а в компоненті лишай лише його унікальні відмінності (приклад: `.p-card` у `main.css`, специфіка — у
@@ -63,6 +64,8 @@ Nuxt 3 + Vue 3 (SSR) фронтенд floy.com.ua. Працюй **завжди**
   WebP + адаптивний `srcset` + retina, з обходом IPX для SVG-плейсхолдерів. Не став «голий» `<img>` для фото товарів/категорій/статей.
 - **Логіку — у composables** (`composables/`): API → `useShopApi`, URL/зображення/ціна → `useUrl`,
   SEO → `useSeo`, кошик/списки → `useCart`/`useLists`, хелпери товару → `useProductHelpers`. Не дублюй fetch/обчислення в сторінках.
+  Посилання меню (інфо-сторінки, «Покупцям», блог) — лише з `useSiteMenus` (один перелік для шапки, мобільного
+  меню, футера й бокових меню); `tel:` — `telHref()` (`usePhone.ts`); назва серії — `serieTitle()` (`useShopApi.ts`).
 - Компоненти — **малі, сфокусовані, керовані пропсами**, з типами через `defineProps<…>()`. DRY. Без «магічних» копіпаст.
 
 ## 3. SEO + заточеність під ШІ/AI-краулери

@@ -107,7 +107,5 @@ export function useSiteSettings() {
 		social: computed(() => settings.value.social),
 		phones,
 		phone,
-		// Для tel: та посилань — лише цифри
-		phoneDigits: computed(() => phone.value.replace(/\D/g, '')),
 	}
 }

@@ -16,7 +16,7 @@
 						</li>
 						<li v-for="phone in phones" :key="phone">
 							<AppIcon name="phone" :size="15" />
-							<a :href="`tel:+38${phone.replace(/\D/g, '')}`">{{ phone }}</a>
+							<a :href="telHref(phone)">{{ phone }}</a>
 						</li>
 						<li>
 							<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
@@ -29,11 +29,7 @@
 				<div class="footer__col">
 					<div class="footer__title">{{ t('footer.information') }}</div>
 					<ul class="footer__links">
-						<li><NuxtLink :to="localePath('/about')">{{ t('header.topbar.about') }}</NuxtLink></li>
-						<li><NuxtLink :to="localePath('/dostavka')">{{ t('header.topbar.dostavka') }}</NuxtLink></li>
-						<li><NuxtLink :to="localePath('/povernennya')">{{ t('header.topbar.povernennya') }}</NuxtLink></li>
-						<li><NuxtLink :to="localePath('/otzyvy-klientov')">{{ t('header.topbar.otzyvy') }}</NuxtLink></li>
-						<li><NuxtLink :to="localePath('/article')">{{ t('header.topbar.blog') }}</NuxtLink></li>
+						<li v-for="link in footerInfoLinks" :key="link.to"><NuxtLink :to="link.to">{{ link.label }}</NuxtLink></li>
 					</ul>
 				</div>
 
@@ -41,11 +37,7 @@
 				<div class="footer__col">
 					<div class="footer__title">{{ t('footer.buyers') }}</div>
 					<ul class="footer__links">
-						<li><NuxtLink :to="localePath('/shop/cart')">{{ t('cart.cart') }}</NuxtLink></li>
-						<li><NuxtLink :to="localePath('/shop/wishlist')">{{ t('other.wishlist') }}</NuxtLink></li>
-						<li><NuxtLink :to="localePath('/shop/compare')">{{ t('other.comparison') }}</NuxtLink></li>
-						<li><NuxtLink :to="localePath('/shop/track-order')">{{ t('header.topbar.trackOrder') }}</NuxtLink></li>
-						<li><NuxtLink :to="localePath('/printcase')">{{ t('printcase.constructor') }}</NuxtLink></li>
+						<li v-for="link in buyerLinks" :key="link.to"><NuxtLink :to="link.to">{{ link.label }}</NuxtLink></li>
 					</ul>
 				</div>
 
@@ -77,6 +69,7 @@ const { t } = useI18n()
 const localePath = useLocalePath()
 const brand = useBrand()
 const { contacts, phones } = useSiteSettings()
+const { footerInfoLinks, buyerLinks } = useSiteMenus()
 </script>
 
 <style scoped>

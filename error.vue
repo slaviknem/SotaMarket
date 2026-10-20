@@ -30,7 +30,9 @@ usePageSeo({
 	noindex: true,
 })
 
-const handleError = () => clearError({ redirect: '/' })
+// На головну тієї ж мови: з /uk/… — на /uk (раніше вело на російську)
+const localePath = useLocalePath()
+const handleError = () => clearError({ redirect: localePath('/') })
 </script>
 
 <style scoped>
