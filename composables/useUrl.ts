@@ -24,7 +24,7 @@ const NEOPRINT_FRAMES = { card: { width: 252, height: 315 }, hero: { width: 402,
 
 // Файл альфапринта, який генерує адмінка (ImageH::generateAlphaprint): {модель}/{шаблон}_{принт}.jpg.
 // У шаблонах «_» не буває, тож принт — усе після першого «_» (перевірено на 19 731 файлі);
-// фото інших товарів мають числові імена без «_». Розбір — PLAN-ALPHAPRINT-IMAGES.md
+// фото інших товарів мають числові імена без «_». Розбір — NOTES/plans/PLAN-ALPHAPRINT-IMAGES.md
 const ALPHAPRINT_FILE = /^([a-z0-9-]+)\/[a-z0-9-]+_([a-z0-9_-]+)\.jpg$/
 
 // Кадри альфапринта (PRESETS у server/utils/caseImage.ts): s300 і s600 — квадрат без полів, як
@@ -70,7 +70,7 @@ export function useUrl() {
 	// Альфапринт (товар «шаблон × модель»): кадр на льоту /img/print/… замість файлу адмінки.
 	// null — вимкнено в налаштуваннях, не альфапринт або нестандартне ім'я файлу: тоді лишається
 	// файл сховища. Товар звіряємо за group, лише коли group відомий: кошик, порівняння й пошук
-	// мають саме ім'я файлу, а воно в альфапринта впізнаване (PLAN-ALPHAPRINT-IMAGES.md §6)
+	// мають саме ім'я файлу, а воно в альфапринта впізнаване (NOTES/plans/PLAN-ALPHAPRINT-IMAGES.md §6)
 	const alphaprintImage = (imageFile: string | null | undefined, frame: AlphaprintFrame, product?: any) => {
 		if (!settings.value.alphaprint_on_fly || !imageFile) return null
 		if (product?.group && !isAlphaprint(product)) return null

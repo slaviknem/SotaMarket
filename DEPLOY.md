@@ -236,7 +236,7 @@ curl -sI https://floy.com.ua/_nuxt/<будь-який-чанк>.js | grep -i cac
 Файли адмінки **не видаляються** (видаляти — через місяці, умови в плані): з них і далі працюють
 замовлення, фіди, адмінка, інші сайти. Вони ж — запасний варіант: якщо кадр не віддався
 (404/429/5xx), `AppImage` сам підставляє файл сховища. Адреси будує `useUrl()`
-(`alphaprintImage`, `productThumbImage`, `productSeoImage`). План і обґрунтування — `PLAN-ALPHAPRINT-IMAGES.md`.
+(`alphaprintImage`, `productThumbImage`, `productSeoImage`). План і обґрунтування — `NOTES/plans/PLAN-ALPHAPRINT-IMAGES.md`.
 
 **Вимкнути без деплою:** в адмінці у вузол налаштувань `public.floy` додати `alphaprint_on_fly`
 = вимкнено (false) і зберегти. Через ≤5 хв (кеш налаштувань) — почистити кеш nginx:

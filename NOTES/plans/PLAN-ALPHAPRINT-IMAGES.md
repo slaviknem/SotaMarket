@@ -170,7 +170,7 @@ crontab -l | sed 's#-atime +60#-atime +30#' | crontab -
 ### Б. Адмінка (FLOY-ADMIN)
 
 **4. Перемикач «файли альфапринтів наперед» по сайту.** Код — 17.10
-([AlphaPrint.php](../FLOY-ADMIN/app/Actions/Generate/AlphaPrint.php): `DEFAULT_PREGENERATE_FILES`,
+([AlphaPrint.php](../../../FLOY-ADMIN/app/Actions/Generate/AlphaPrint.php): `DEFAULT_PREGENERATE_FILES`,
 `pregenerateFiles()`), чекає заливки. Без вузла налаштувань поведінка **не змінюється** — файли
 генеруються, як завжди.
 - Вимкнено — `generateImagesProduct` створює рядки `images` з тими самими іменами, але не файли
@@ -213,22 +213,22 @@ crontab -l | sed 's#-atime +60#-atime +30#' | crontab -
 
 **6. Адмінка не має залежати від файлів альфапринтів.** Повний перелік (grep `products/thumb|big`, 17.10):
 - **читають диск — правити кожне** (хелпер «переконатись, що файл є»):
-  [Prom.php:260](../FLOY-ADMIN/app/Actions/Generate/Prom.php#L260) (Exception),
-  [ExportStokProductsProm.php:212](../FLOY-ADMIN/app/Actions/ImportExport/Prom/ExportStokProductsProm.php#L212)
-  (фото мовчки пропущене), [CategoryAction.php:213](../FLOY-ADMIN/app/Actions/CategoryAction.php#L213) (Exception).
+  [Prom.php:260](../../../FLOY-ADMIN/app/Actions/Generate/Prom.php#L260) (Exception),
+  [ExportStokProductsProm.php:212](../../../FLOY-ADMIN/app/Actions/ImportExport/Prom/ExportStokProductsProm.php#L212)
+  (фото мовчки пропущене), [CategoryAction.php:213](../../../FLOY-ADMIN/app/Actions/CategoryAction.php#L213) (Exception).
   `ImageUtil::compresAllImage` перевіряє `file_exists` — безпечний (і на проді не працює: колонки `is_compres` немає);
 - **лише будують адресу — закриває маршрут самовідновлення (п. 7) одним махом**, правити не треба:
-  [OrderConfirm.php:285](../FLOY-ADMIN/app/Actions/Order/Confirm/OrderConfirm.php#L285),
-  [CaseShopAction.php:270](../FLOY-ADMIN/app/Actions/ImportExport/CaseShop/CaseShopAction.php#L270),
-  [ControlCheck.php:82](../FLOY-ADMIN/app/Actions/Control/ControlCheck.php#L82),
-  [CreateTtnController.php:160](../FLOY-ADMIN/app/Http/Controllers/CreateTtnController.php#L160),
+  [OrderConfirm.php:285](../../../FLOY-ADMIN/app/Actions/Order/Confirm/OrderConfirm.php#L285),
+  [CaseShopAction.php:270](../../../FLOY-ADMIN/app/Actions/ImportExport/CaseShop/CaseShopAction.php#L270),
+  [ControlCheck.php:82](../../../FLOY-ADMIN/app/Actions/Control/ControlCheck.php#L82),
+  [CreateTtnController.php:160](../../../FLOY-ADMIN/app/Http/Controllers/CreateTtnController.php#L160),
   `DO/RunController.php` (4 місця), `ProductAction::insertImgInProduct` (описи — на сайті вже підміняються, п. 2),
   адмінський фронт (`resources/js/mixins/imagePathMixin.js`, `views/Cart/IndexCart.vue`,
   `views/Control/ControlPanel.vue`, `views/Inventory/IndexInventory.vue`, `views/Product/BlockImages.vue`,
   `IndexProduct.vue`, `ItemProduct.vue`), `xml/sitemap/url.blade.php` (`SitemapUtil` smarket, sotamarket);
 - **фіди** (`xml/rozetka/offer.blade.php`, `xml/prom/stocks/{alphaprint,main}/…`) — товари з фідів не
   видаляються, тож нічого не робити;
-- [ItemPreviewImage.php:55](../FLOY-ADMIN/app/Actions/Order/ItemPreviewImage.php#L55) уже сам збирає відсутнє ✅.
+- [ItemPreviewImage.php:55](../../../FLOY-ADMIN/app/Actions/Order/ItemPreviewImage.php#L55) уже сам збирає відсутнє ✅.
 
 Висновок: перед видаленням — 3 правки «читають диск» + маршрут самовідновлення (п. 7); правити
 ~20 місць, що будують адресу, не потрібно.
@@ -424,8 +424,8 @@ webp-прев'ю (§5) — без генерації на запит перед 
 ### Файли альфапринтів
 
 - Альфапринт — справжній `Product` (шаблон × модель) з рядком `images` на кожен принт
-  ([AlphaPrint::generateImagesProduct](../FLOY-ADMIN/app/Actions/Generate/AlphaPrint.php#L177)),
-  файли робить [ImageH::generateAlphaprint](../FLOY-ADMIN/app/Actions/Helpers/ImageH.php#L400) (GD):
+  ([AlphaPrint::generateImagesProduct](../../../FLOY-ADMIN/app/Actions/Generate/AlphaPrint.php#L177)),
+  файли робить [ImageH::generateAlphaprint](../../../FLOY-ADMIN/app/Actions/Helpers/ImageH.php#L400) (GD):
   `products/big/{модель}/{шаблон}_{принт}.jpg` 600×600, `products/thumb/…jpg` 300×300, `products/thumb/…webp`.
 - Вага на принт (150 випадкових файлів): big **47,8 КБ**, thumb jpg **16,0 КБ**, thumb webp **7,1 КБ**
   → **≈71 КБ** на floy.
@@ -460,15 +460,15 @@ webp-прев'ю (§5) — без генерації на запит перед 
 | Споживач | Як читає | Якщо файлу немає |
 |---|---|---|
 | Сайти floy (og/JSON-LD, кошик) / StekloMarket / SotaMARKET | URL сховища | бита картинка |
-| Фід Розетки [offer.blade:15](../FLOY-ADMIN/resources/views/xml/rozetka/offer.blade.php#L15), фіди ПРОМ `stocks/alphaprint` | URL big jpg | офер без фото |
-| [Generate/Prom.php:260](../FLOY-ADMIN/app/Actions/Generate/Prom.php#L260) | `is_file` | **Exception** |
-| [ExportStokProductsProm.php:212](../FLOY-ADMIN/app/Actions/ImportExport/Prom/ExportStokProductsProm.php#L212) | `file_exists` | фото мовчки пропущене |
-| [CategoryAction.php:213](../FLOY-ADMIN/app/Actions/CategoryAction.php#L213) | `Image::make(thumb)` | Exception |
-| [ItemPreviewImage.php:55](../FLOY-ADMIN/app/Actions/Order/ItemPreviewImage.php#L55) | `is_file` | ✅ сам збирає `composeAlphaprint` |
+| Фід Розетки [offer.blade:15](../../../FLOY-ADMIN/resources/views/xml/rozetka/offer.blade.php#L15), фіди ПРОМ `stocks/alphaprint` | URL big jpg | офер без фото |
+| [Generate/Prom.php:260](../../../FLOY-ADMIN/app/Actions/Generate/Prom.php#L260) | `is_file` | **Exception** |
+| [ExportStokProductsProm.php:212](../../../FLOY-ADMIN/app/Actions/ImportExport/Prom/ExportStokProductsProm.php#L212) | `file_exists` | фото мовчки пропущене |
+| [CategoryAction.php:213](../../../FLOY-ADMIN/app/Actions/CategoryAction.php#L213) | `Image::make(thumb)` | Exception |
+| [ItemPreviewImage.php:55](../../../FLOY-ADMIN/app/Actions/Order/ItemPreviewImage.php#L55) | `is_file` | ✅ сам збирає `composeAlphaprint` |
 | CaseShop-прев'ю, OrderConfirm, прев'ю в адмінці, старі замовлення, описи з `ProductAction` | URL thumb | бита картинка |
 
-**Друк від цих файлів не залежить**: CaseShop ([CaseShopAction.php:268](../FLOY-ADMIN/app/Actions/ImportExport/CaseShop/CaseShopAction.php#L268))
-і EndorPhone ([EndorPhonePrint.php:92](../FLOY-ADMIN/app/Actions/ImportExport/EndorPhone/EndorPhonePrint.php#L92))
+**Друк від цих файлів не залежить**: CaseShop ([CaseShopAction.php:268](../../../FLOY-ADMIN/app/Actions/ImportExport/CaseShop/CaseShopAction.php#L268))
+і EndorPhone ([EndorPhonePrint.php:92](../../../FLOY-ADMIN/app/Actions/ImportExport/EndorPhone/EndorPhonePrint.php#L92))
 беруть `templates/{принт}.jpg`.
 
 **Відсутній файл уже зараз доходить до Laravel**: nginx віддає статику, а на промах — PHP 8.1,

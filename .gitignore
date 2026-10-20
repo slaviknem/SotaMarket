@@ -11,6 +11,8 @@ dist
 # до сервісів — у git їм не місце). Дані для скілів (.claude/skills/**) лишаються в git
 .claude/scheduled_tasks.lock
 .claude/*.sql
+# Особисті дозволи Claude Code (у кожного свої; спільні — .claude/settings.json)
+.claude/settings.local.json
 
 # Node
 node_modules

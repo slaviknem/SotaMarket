@@ -109,11 +109,11 @@ SITE_URL='https://floy.com.ua'
    немає — `settingsFallback` з конфігу. Категорії, SEO-тексти, банери, статті — вміст бази під цим ключем.
 5. **Перевірка** — тест бренду: SEO-зліпок (`node scripts/seo-snapshot.mjs <ім'я>`) без згадок старого
    бренду поза вмістом бази; тест палітри — `scripts/style-snapshot.mjs … find`. Порядок —
-   `PLAN-SCALING.md`, 1.9 і 2.12.
+   `NOTES/plans/PLAN-SCALING.md`, 1.9 і 2.12.
 
 Свідомо спільне: шаблони FAQ і лідів (`{brand}`/`{domain}` підставляються), ключі сховища `floy_*`
 у браузері (на іншому домені не конфліктують), адмінка `admin.floy.com.ua`. Вибір сайту при збірці,
-деплой на кілька доменів — крок 2 (`PLAN-MULTISITE.md`).
+деплой на кілька доменів — крок 2 (`NOTES/plans/PLAN-MULTISITE.md`).
 
 ## Що де лежить
 
@@ -126,10 +126,16 @@ SITE_URL='https://floy.com.ua'
 - `components/shop/ProductPage.vue` — товар (+ attr-сторінки)
 - `i18n/locales/ru.json`, `uk.json` — переклади (перенесені зі старого сайту + нові ключі);
   тексти про сам магазин — поверх них з `brand/i18n/`
-- `scripts/seo-snapshot.mjs`, `style-snapshot.mjs` — зліпки «до/після» для перевірки змін (`PLAN-SCALING.md` §2)
-- `FLOY-ADMIN/` — копія бекенда для довідки (не частина фронтенда)
+- `scripts/seo-snapshot.mjs`, `style-snapshot.mjs` — зліпки «до/після» для перевірки змін (`NOTES/plans/PLAN-SCALING.md` §2)
+- `NOTES/plans/` — плани робіт (`PLAN-*.md`, стан і порядок продовження — у шапці кожного);
+  `NOTES/PROMTS.docx` — робочі нотатки із завданнями
+- Бекенд (адмінка й apisite) — сусідній репозиторій `../FLOY-ADMIN` (не частина фронтенда)
 
 ## ДЕПЛОЙ
 
+```bash
 cd /root/nodeapps/FLOY-PROD
 bash deploy.sh
+```
+
+Докладно — `DEPLOY.md`.

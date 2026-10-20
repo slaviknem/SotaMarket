@@ -1,5 +1,5 @@
 /**
- * SEO-зліпок сайту для перевірок «до/після» — PLAN-SCALING.md §2.
+ * SEO-зліпок сайту для перевірок «до/після» — NOTES/plans/PLAN-SCALING.md §2.
  * Запуск (портативний Node 22 з .node/, без залежностей — лише fetch):
  *
  *   node scripts/seo-snapshot.mjs <ім'я> [база]           зняти (база — http://localhost:3000)

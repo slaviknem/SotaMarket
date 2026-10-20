@@ -12,7 +12,7 @@
 
 Ніякої таблиці й міграції. **Ідентифікатор макета вже існує** — це число з
 `orders_items.printcase` (`…/orders/source_{id}.jpg`), яке адмінка вже витягує регуляркою
-([ItemProduct.vue:183](../FLOY-ADMIN/resources/js/views/Order/FormOrder/ItemProduct.vue#L183)).
+([ItemProduct.vue:183](../../../FLOY-ADMIN/resources/js/views/Order/FormOrder/ItemProduct.vue#L183)).
 Достатньо покласти поруч із результатом папку з «сирцями» під тим самим id — і все зв'язується
 саме собою. Чернетки живуть у браузері (IndexedDB) і не створюють на сервері нічого.
 
