@@ -47,7 +47,7 @@
 					<div v-for="(brand, bi) in brands" :key="brand.url" class="model-tree__brand">
 						<button class="model-tree__brand-btn" :class="{ 'is-open': openBrand === bi }" @click="toggleBrand(bi)">
 							{{ brand.title }}
-							<svg width="11" height="11" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l5 5 5-5"/></svg>
+							<AppIcon name="caret-down" :size="11" />
 						</button>
 
 						<div v-if="openBrand === bi" class="model-tree__series">

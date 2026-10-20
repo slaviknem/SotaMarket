@@ -14,7 +14,7 @@
 			aria-current-value="false"
 			@click="scrollTop"
 		>
-			<svg width="12" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1L2 6l5 5"/></svg>
+			<AppIcon name="chevron-left-sm" :size="12" />
 			<span class="pagination__btn-text">{{ t('category.prev') }}</span>
 		</NuxtLink>
 		<button
@@ -24,11 +24,11 @@
 			:aria-label="t('category.prev')"
 			@click="emit('change', current - 1)"
 		>
-			<svg width="12" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1L2 6l5 5"/></svg>
+			<AppIcon name="chevron-left-sm" :size="12" />
 			<span class="pagination__btn-text">{{ t('category.prev') }}</span>
 		</button>
 		<span v-else class="pagination__btn is-disabled" aria-disabled="true">
-			<svg width="12" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1L2 6l5 5"/></svg>
+			<AppIcon name="chevron-left-sm" :size="12" />
 			<span class="pagination__btn-text">{{ t('category.prev') }}</span>
 		</span>
 
@@ -52,7 +52,7 @@
 			@click="scrollTop"
 		>
 			<span class="pagination__btn-text">{{ t('category.next') }}</span>
-			<svg width="12" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l5 5-5 5"/></svg>
+			<AppIcon name="chevron-right-sm" :size="12" />
 		</NuxtLink>
 		<button
 			v-else-if="current < totalPages"
@@ -62,11 +62,11 @@
 			@click="emit('change', current + 1)"
 		>
 			<span class="pagination__btn-text">{{ t('category.next') }}</span>
-			<svg width="12" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l5 5-5 5"/></svg>
+			<AppIcon name="chevron-right-sm" :size="12" />
 		</button>
 		<span v-else class="pagination__btn is-disabled" aria-disabled="true">
 			<span class="pagination__btn-text">{{ t('category.next') }}</span>
-			<svg width="12" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l5 5-5 5"/></svg>
+			<AppIcon name="chevron-right-sm" :size="12" />
 		</span>
 	</nav>
 </template>

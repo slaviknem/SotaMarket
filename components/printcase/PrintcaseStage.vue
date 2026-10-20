@@ -49,7 +49,7 @@
 
 			<!-- Модель не вибрана -->
 			<div v-if="!hasModel" class="stage__placeholder" @pointerdown.stop="$emit('requestModel')">
-				<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4"/></svg>
+				<AppIcon name="smartphone" :size="44" :stroke-width="1.4" />
 				<span>{{ t('printcase.msgSelectModel') }}</span>
 			</div>
 

@@ -57,25 +57,25 @@
 				<div class="pc-controls-col">
 					<div class="ctrl-group" :class="{ 'is-disabled': activeIndex === null }">
 						<button class="ctrl-btn" :title="t('printcase.control.plus')" @click="zoomIn">
-							<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5M8 11h6M11 8v6"/></svg>
+							<AppIcon name="zoom-in" :size="17" />
 						</button>
 						<button class="ctrl-btn" :title="t('printcase.control.minus')" @click="zoomOut">
-							<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5M8 11h6"/></svg>
+							<AppIcon name="zoom-out" :size="17" />
 						</button>
 						<button class="ctrl-btn" :title="t('printcase.control.rotateLeft')" @click="rotate(-10)">
-							<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/></svg>
+							<AppIcon name="rotate-left" :size="17" />
 						</button>
 						<button class="ctrl-btn" :title="t('printcase.control.rotateRight')" @click="rotate(10)">
-							<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+							<AppIcon name="rotate-right" :size="17" />
 						</button>
 						<button class="ctrl-btn" :title="t('printcase.control.layerUp')" @click="layerUp">
-							<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+							<AppIcon name="layer-up" :size="17" />
 						</button>
 						<button class="ctrl-btn" :title="t('printcase.control.layerDown')" @click="layerDown">
-							<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+							<AppIcon name="layer-down" :size="17" />
 						</button>
 						<button class="ctrl-btn ctrl-btn--danger" :title="t('printcase.control.delete')" @click="removeElement(activeIndex)">
-							<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg>
+							<AppIcon name="trash" :size="17" />
 						</button>
 					</div>
 
@@ -200,7 +200,7 @@
 					@click="withModel(() => fileInput?.click())"
 				>
 					<span class="pc-action__icon">
-						<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+						<AppIcon name="upload" :size="21" :stroke-width="1.8" />
 					</span>
 					{{ t('printcase.addImage') }}
 				</button>
@@ -209,7 +209,7 @@
 				<div v-if="isActiveText" class="pc-action pc-action--split" @pointerdown.stop>
 					<button class="pc-action__add" :title="t('printcase.addText')" @click="openTextAdd">
 						<span class="pc-action__icon">
-							<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7V5h16v2M12 5v14M9 19h6"/></svg>
+							<AppIcon name="text" :size="21" :stroke-width="1.8" />
 							<span class="pc-action__plus">+</span>
 						</span>
 					</button>
@@ -221,14 +221,14 @@
 
 				<button v-else class="pc-action" :class="{ 'is-locked': !model }" :aria-disabled="!model" @click="withModel(openTextAdd)">
 					<span class="pc-action__icon">
-						<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7V5h16v2M12 5v14M9 19h6"/></svg>
+						<AppIcon name="text" :size="21" :stroke-width="1.8" />
 					</span>
 					{{ t('printcase.addText') }}
 				</button>
 
 				<button class="pc-action" :class="{ 'is-locked': !model }" :aria-disabled="!model" @click="withModel(() => (libraryOpen = true))">
 					<span class="pc-action__icon">
-						<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+						<AppIcon name="image" :size="21" :stroke-width="1.8" />
 					</span>
 					{{ t('printcase.fromLibraryImage') }}
 				</button>
@@ -236,7 +236,7 @@
 				<!-- Шари -->
 				<div v-if="elements.length" class="pc-layers card" @pointerdown.stop>
 					<div class="pc-panel-title">
-						<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+						<AppIcon name="layers" :size="15" />
 						{{ t('printcase.layers') }}
 
 						<!-- Очищення всього макета: другий клік підтверджує (намальоване не повернеш) -->
@@ -295,10 +295,10 @@
 								<AppIcon :name="el.hidden ? 'eye-off' : 'eye'" :size="14" />
 							</button>
 							<button class="pc-layer__btn" :disabled="revIdx === 0" :title="t('printcase.control.layerUp')" @click.stop="moveLayerUp(elements.length - 1 - revIdx)">
-								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+								<AppIcon name="layer-up" :size="14" :stroke-width="2.2" />
 							</button>
 							<button class="pc-layer__btn" :disabled="revIdx === elements.length - 1" :title="t('printcase.control.layerDown')" @click.stop="moveLayerDown(elements.length - 1 - revIdx)">
-								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+								<AppIcon name="layer-down" :size="14" :stroke-width="2.2" />
 							</button>
 							<button class="pc-layer__btn pc-layer__btn--del" :title="t('printcase.control.delete')" @click.stop="removeElement(elements.length - 1 - revIdx)">
 								<AppIcon name="close" :size="13" :stroke-width="2.4" />

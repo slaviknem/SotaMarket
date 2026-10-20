@@ -40,7 +40,7 @@
 						<div v-for="(brand, i) in menu?.brends || []" :key="brand.url">
 							<button class="mobile-menu__link mobile-menu__link--btn" @click="toggleBrand(i)">
 								{{ brand.title }}
-								<svg v-if="brand.children?.length || brand.hasChildren" width="11" height="11" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2" :style="{ transform: openedBrand === i ? 'rotate(180deg)' : '' }"><path d="M1 1l5 5 5-5"/></svg>
+								<AppIcon v-if="brand.children?.length || brand.hasChildren" name="caret-down" :size="11" :style="{ transform: openedBrand === i ? 'rotate(180deg)' : '' }" />
 							</button>
 
 							<div v-if="openedBrand === i && brand.children?.length" class="mobile-menu__sub">

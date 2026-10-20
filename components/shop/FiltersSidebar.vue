@@ -18,7 +18,7 @@
 					@click="toggleGroup(group.alias)"
 				>
 					<span class="filter-group__title" :class="{ 'is-active': !group.synthetic && group.alias === activeAlias }">{{ group.title }}</span>
-					<svg width="11" height="11" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2" :style="{ transform: isOpen(group) ? 'rotate(180deg)' : '' }"><path d="M1 1l5 5 5-5" /></svg>
+					<AppIcon name="caret-down" :size="11" :style="{ transform: isOpen(group) ? 'rotate(180deg)' : '' }" />
 				</button>
 
 				<div v-if="isOpen(group)" class="filter-group__body">
@@ -49,7 +49,7 @@
 							:aria-label="item.title"
 							@click="$emit('toggle', { group: group.alias, alias: item.alias })"
 						>
-							<svg width="10" height="8" viewBox="0 0 12 9" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4.5l3.5 3.5L11 1"/></svg>
+							<AppIcon name="check-sm" :width="10" :height="8" :stroke-width="2.5" />
 						</button>
 						<!-- Назва: посилання на окрему SEO-сторінку фільтра (crawlable для індексації) -->
 						<NuxtLink
@@ -67,7 +67,7 @@
 
 		<div class="filters__foot">
 			<button class="filters__foot-reset" :disabled="!hasSelected" @click="$emit('reset')">
-				<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+				<AppIcon name="reset" :size="14" />
 				{{ t('filters.rezetFilters') }}
 			</button>
 		</div>

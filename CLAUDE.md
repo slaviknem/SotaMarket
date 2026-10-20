@@ -59,7 +59,9 @@ Nuxt 3 + Vue 3 (SSR) фронтенд floy.com.ua. Працюй **завжди**
   у i18n — параметри `{brand}` / `{domain}`. Лого — лише `<AppLogo />`. Як копіювати — `brand/README.md`.
 
 - **Іконки — лише через `<AppIcon name="…" />`** (реєстр SVG у `components/AppIcon.vue`).
-  Нова іконка = один запис у `ICONS`, не інлайн-`<svg>`. Підтримує `size`, `filled`, `stroke-width`, `solid`.
+  Нова іконка = один запис у `ICONS`, не інлайн-`<svg>`. Підтримує `size`, `filled`, `stroke-width`, `solid`;
+  неквадратна — `width`/`height`, `round` перевизначає заокруглення з реєстру, свій `viewBox` — полем запису
+  (за замовчуванням `0 0 24 24`). Поза AppIcon лише лого (`AppLogo`) і `CarrierLogo` (фірмові кольори).
 - **Зображення — лише через `<AppImage>`** (`components/AppImage.vue`, обгортка над `@nuxt/image`/IPX):
   WebP + адаптивний `srcset` + retina, з обходом IPX для SVG-плейсхолдерів. Не став «голий» `<img>` для фото товарів/категорій/статей.
 - **Логіку — у composables** (`composables/`): API → `useShopApi`, URL/зображення/ціна → `useUrl`,

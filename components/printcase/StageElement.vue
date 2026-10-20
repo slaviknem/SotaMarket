@@ -45,7 +45,7 @@
 			</template>
 
 			<button class="stage-el__rotate" title="↻" @pointerdown.stop="startRotate">
-				<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+				<AppIcon name="rotate-right" :size="15" :stroke-width="2.4" />
 			</button>
 
 			<button class="stage-el__delete" title="✕" @pointerdown.stop @click.stop="$emit('remove')">

@@ -389,7 +389,7 @@
 							<label class="checkbox">
 								<input v-model="isComment" type="checkbox" />
 								<span class="checkbox__box">
-									<svg width="10" height="8" viewBox="0 0 12 9" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4.5l3.5 3.5L11 1"/></svg>
+									<AppIcon name="check-sm" :width="10" :height="8" :stroke-width="2.5" />
 								</span>
 								{{ t('cart.isComment') }}
 							</label>

@@ -11,7 +11,7 @@
 
 					<ul class="footer__contacts">
 						<li>
-							<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+							<AppIcon name="map-pin-solid" :size="15" />
 							{{ contacts.address }}
 						</li>
 						<li v-for="phone in phones" :key="phone">
@@ -19,7 +19,7 @@
 							<a :href="telHref(phone)">{{ phone }}</a>
 						</li>
 						<li>
-							<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+							<AppIcon name="mail-solid" :size="15" />
 							<a :href="`mailto:${contacts.email}`">{{ contacts.email }}</a>
 						</li>
 					</ul>

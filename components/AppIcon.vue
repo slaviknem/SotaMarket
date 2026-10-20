@@ -1,13 +1,13 @@
 <template>
 	<svg
-		:width="size"
-		:height="size"
-		viewBox="0 0 24 24"
+		:width="width ?? size"
+		:height="height ?? size"
+		:viewBox="icon.viewBox || '0 0 24 24'"
 		:fill="fill"
 		:stroke="icon.solid ? undefined : 'currentColor'"
 		:stroke-width="icon.solid ? undefined : strokeWidth"
-		:stroke-linecap="icon.round ? 'round' : undefined"
-		:stroke-linejoin="icon.round ? 'round' : undefined"
+		:stroke-linecap="isRound ? 'round' : undefined"
+		:stroke-linejoin="isRound ? 'round' : undefined"
 		aria-hidden="true"
 		focusable="false"
 		v-html="icon.path"
@@ -23,6 +23,7 @@ interface IconDef {
 	round?: boolean // stroke-linecap/linejoin: round
 	fillable?: boolean // заливка вмикається пропом :filled (напр. сердечко у вішлисті)
 	solid?: boolean // суцільна іконка (fill, без обведення) — напр. телефон
+	viewBox?: string // для іконок не на сітці 24×24 (за замовчуванням '0 0 24 24')
 }
 
 const ICONS: Record<string, IconDef> = {
@@ -135,6 +136,85 @@ const ICONS: Record<string, IconDef> = {
 		path: '<circle cx="12" cy="12" r="9"/><path d="M3.2 9h17.6M3.2 15h17.6"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18z"/>',
 		round: true,
 	},
+	menu: {
+		path: '<path d="M3 6h18M3 12h18M3 18h18"/>',
+	},
+	'caret-down': {
+		path: '<path d="M1 1l5 5 5-5"/>',
+		viewBox: '0 0 12 8',
+	},
+	spark: {
+		path: '<path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/>',
+		solid: true,
+	},
+	'map-pin-solid': {
+		path: '<path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/>',
+		solid: true,
+	},
+	'mail-solid': {
+		path: '<path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>',
+		solid: true,
+	},
+	'chevron-left-sm': {
+		path: '<path d="M7 1L2 6l5 5"/>',
+		viewBox: '0 0 8 12',
+	},
+	'chevron-right-sm': {
+		path: '<path d="M1 1l5 5-5 5"/>',
+		viewBox: '0 0 8 12',
+	},
+	'check-sm': {
+		path: '<path d="M1 4.5l3.5 3.5L11 1"/>',
+		viewBox: '0 0 12 9',
+	},
+	reset: {
+		path: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>',
+		round: true,
+	},
+	// Переваги на головній
+	card: {
+		path: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+	},
+	gift: {
+		path: '<path d="M20 12v8H4v-8M2 7h20v5H2zM12 7v13M12 7s-1.5-4-5-4c-2 0-3 1.3-3 2.5C4 7 7 7 12 7zM12 7s1.5-4 5-4c2 0 3 1.3 3 2.5C20 7 17 7 12 7z"/>',
+	},
+	// Конструктор чохлів
+	'zoom-in': {
+		path: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5M8 11h6M11 8v6"/>',
+	},
+	'zoom-out': {
+		path: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5M8 11h6"/>',
+	},
+	'rotate-left': {
+		path: '<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/>',
+	},
+	'rotate-right': {
+		path: '<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/>',
+	},
+	'layer-up': {
+		path: '<path d="M12 19V5M5 12l7-7 7 7"/>',
+	},
+	'layer-down': {
+		path: '<path d="M12 5v14M19 12l-7 7-7-7"/>',
+	},
+	trash: {
+		path: '<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/>',
+	},
+	upload: {
+		path: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>',
+	},
+	text: {
+		path: '<path d="M4 7V5h16v2M12 5v14M9 19h6"/>',
+	},
+	image: {
+		path: '<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>',
+	},
+	layers: {
+		path: '<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>',
+	},
+	smartphone: {
+		path: '<rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4"/>',
+	},
 	// Соцмережі (суцільні брендові гліфи)
 	instagram: {
 		path: '<path d="M12 2.16c3.2 0 3.58.01 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.27.07 1.64.07 4.85s-.01 3.58-.07 4.85c-.15 3.23-1.66 4.77-4.92 4.92-1.27.06-1.64.07-4.85.07s-3.58-.01-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85C2.38 3.92 3.9 2.38 7.15 2.23 8.42 2.17 8.8 2.16 12 2.16Zm0-2.16C8.74 0 8.33.01 7.05.07 2.7.27.28 2.69.08 7.05.01 8.33 0 8.74 0 12s.01 3.67.08 4.95c.2 4.36 2.62 6.78 6.97 6.98C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07c4.35-.2 6.78-2.62 6.97-6.98.07-1.28.08-1.69.08-4.95s-.01-3.67-.08-4.95c-.2-4.35-2.62-6.78-6.97-6.98C15.67.01 15.26 0 12 0Zm0 5.84A6.16 6.16 0 1 0 12 18.16 6.16 6.16 0 0 0 12 5.84Zm0 10.16A4 4 0 1 1 12 8a4 4 0 0 1 0 8Zm6.41-11.85a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88Z"/>',
@@ -195,13 +275,18 @@ const props = withDefaults(
 	defineProps<{
 		name: string
 		size?: number | string
+		width?: number | string // для неквадратних (інакше — size)
+		height?: number | string
 		filled?: boolean
 		strokeWidth?: number | string
+		round?: boolean // перевизначає round з реєстру
 	}>(),
-	{ size: 22, filled: false, strokeWidth: 2 }
+	// round: undefined — явно, інакше Vue перетворить відсутній boolean-проп на false
+	{ size: 22, filled: false, strokeWidth: 2, round: undefined }
 )
 
 const icon = computed<IconDef>(() => ICONS[props.name] ?? { path: '' })
+const isRound = computed(() => props.round ?? icon.value.round)
 const fill = computed(() => {
 	if (icon.value.solid) return 'currentColor'
 	return icon.value.fillable && props.filled ? 'currentColor' : 'none'

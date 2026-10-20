@@ -66,9 +66,9 @@
 				<!-- Категорії (departments) -->
 				<div class="departments" @mouseleave="closeDeps">
 					<button class="departments__toggle" :class="{ 'is-open': depsOpen }" @mouseenter="openDepsDelayed" @click="toggleDeps">
-						<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+						<AppIcon name="menu" :size="17" />
 						{{ t('other.catalog') }}
-						<svg class="departments__caret" width="10" height="10" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l5 5 5-5"/></svg>
+						<AppIcon name="caret-down" :size="10" class="departments__caret" />
 					</button>
 
 					<!-- v-show, а не v-if: список розділів (аксесуари, конструктор) має бути в HTML
@@ -80,7 +80,7 @@
 								<NuxtLink :to="catLink(cat)" class="departments__item" @click="depsOpen = false">
 									<span class="departments__dot" aria-hidden="true" />
 									<span class="departments__label">{{ cat.title }}</span>
-									<svg v-if="cat.url === '/printcase'" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" class="departments__spark"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/></svg>
+									<AppIcon v-if="cat.url === '/printcase'" name="spark" :size="13" class="departments__spark" />
 								</NuxtLink>
 							</li>
 						</ul>
@@ -104,7 +104,7 @@
 							@click="closeBrand"
 						>
 							<span class="brands-nav__title">{{ brand.title }}</span>
-							<svg v-if="brand.children?.length || brand.hasChildren" width="9" height="9" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l5 5 5-5"/></svg>
+							<AppIcon v-if="brand.children?.length || brand.hasChildren" name="caret-down" :size="9" />
 						</NuxtLink>
 					</div>
 				</div>
