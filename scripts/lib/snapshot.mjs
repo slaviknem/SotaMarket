@@ -106,6 +106,16 @@ export const STATES = [
 			['click', '.app-modal .btn-primary.btn-lg'],
 		],
 	},
+	// Вибір моделі в конструкторі: дерево брендів (шеврони) і серії першого бренду
+	{
+		name: 'model-select',
+		path: '/printcase/iphone-15',
+		width: 1440,
+		actions: [
+			['click', 'button.pc-model-btn'],
+			['click', '.model-tree__brand-btn'],
+		],
+	},
 	// 404 українською → «На головну» має вести на /uk, а не на російську (url кадру — після кліку)
 	{ name: 'home-button', path: '/uk/neisnuyucha-storinka-xyz', width: 390, actions: [['click', '.error-page .btn']] },
 	// Палітра фону й «прозорий» фон (шахівниця на кнопці, в палітрі й на сцені)
