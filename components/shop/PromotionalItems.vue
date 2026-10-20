@@ -67,43 +67,16 @@ const storage = config.public.urlStorage
 const isCase = computed(() => props.product?.type === 'chekhly')
 const modelName = computed(() => props.product?.categories?.[0]?.name_full || props.product?.categories?.[0]?.name || '')
 
-// Каталог акційних аксесуарів (title_uk/title_ru, ціна, знижка, чи обраний за замовчуванням)
-const ACCESSORIES = computed(() => [
-	{
-		id: 102,
-		alias: 'steklo',
-		alias_cat: 'zashchitnye-stekla',
-		title_uk: `Скло на ${modelName.value}`,
-		title_ru: `Стекло на ${modelName.value}`,
-		image: storage + 'temp/promotional/steklo.jpg',
-		price: 249,
-		discount: 50,
-		default: true,
-		onlyCase: true,
-	},
-	{
-		id: 516219,
-		alias: 'accessories_106456',
-		alias_cat: 'aksessuary',
-		title_uk: 'Дата кабель Baseus Cafule Type-C 3A (1m)',
-		title_ru: 'Дата кабель Baseus Cafule Type-C 3A (1m)',
-		image: storage + 'images/products/big/kabelya/2471033.jpg',
-		price: 269,
-		discount: 30,
-		default: true,
-	},
-	{
-		id: 537181,
-		alias: 'accessories_398159',
-		alias_cat: 'aksessuary',
-		title_uk: 'МЗП Hoco CS22A Value PD30W + кабель Type-C',
-		title_ru: 'СЗУ Hoco CS22A Value PD30W + кабель Type-C',
-		image: storage + 'images/products/big/zaryadnye-ustroystva/4528473.jpg',
-		price: 279,
-		discount: 50,
-		default: false,
-	},
-])
+// Каталог акційних аксесуарів — з конфігу бренду (brand/site.config.ts → promoAccessories):
+// ціна, знижка, чи обраний за замовчуванням. {model} у назві — модель з картки товару
+const ACCESSORIES = computed(() =>
+	useBrand().promoAccessories.map((a) => ({
+		...a,
+		title_uk: a.title.uk.replace('{model}', modelName.value),
+		title_ru: a.title.ru.replace('{model}', modelName.value),
+		image: storage + a.image,
+	}))
+)
 
 // Видимі аксесуари (скло — лише для чохлів)
 const accessories = computed(() => ACCESSORIES.value.filter((a: any) => !a.onlyCase || isCase.value))

@@ -13,6 +13,7 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const url = useUrl()
+const brand = useBrand()
 
 // Три форми назви: повна — у заголовку й ключових питаннях, кирилиця — у питаннях
 // «де купити / скільки коштує» (так формулюють запит), коротка — у повторних згадках
@@ -32,7 +33,13 @@ const priceRange = computed(() => {
 })
 
 const items = computed(() => {
-	const p = { category_title: catTitle.value, category_alt: names.value.alt_, category_short: names.value.short_ }
+	const p = {
+		category_title: catTitle.value,
+		category_alt: names.value.alt_,
+		category_short: names.value.short_,
+		brand: brand.name,
+		domain: brand.domain,
+	}
 	const list: { q: string; a: string; links?: { title: string; to: string; price?: number }[] }[] = [
 		{ q: t('faq.model.faq_1.question', p), a: t('faq.model.faq_1.answer', p) },
 	]

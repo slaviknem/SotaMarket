@@ -1798,7 +1798,9 @@ const shareImage = computed(() => url.absolute('/images/printcase/printcase_prod
 usePageSeo({
 	title: () =>
 		data.value?.metaTitle ||
-		(isModelPage.value ? t('printcase.seo.metaTitle', { model: names.value.full }) : t('printcase.seo.hubH1')),
+		(isModelPage.value
+			? t('printcase.seo.metaTitle', { model: names.value.full, brand: useBrand().name })
+			: t('printcase.seo.hubH1')),
 	description: () =>
 		data.value?.metaDescription ||
 		(isModelPage.value

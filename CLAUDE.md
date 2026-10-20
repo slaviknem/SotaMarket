@@ -27,14 +27,15 @@ Nuxt 3 + Vue 3 (SSR) фронтенд floy.com.ua. Працюй **завжди**
 
 ## 1. Стилі — тільки централізовано
 
-- **Кольори, скруглення, відступи-константи, тіні, шрифт — лише через CSS-змінні** з `assets/css/main.css` (`:root`).
+- **Кольори, скруглення, відступи-константи, тіні, шрифт — лише через CSS-змінні**: палітра бренду (усі
+  кольори) — `brand/theme.css`, структура (розміри, шари, шрифт) — `assets/css/main.css` (`:root`).
   Жодних літералів типу `#ff7a00`, `#14100b`, `99px`, `#fff` у компонентах.
-  Потрібен новий колір/розмір → **додай токен** у `main.css`, не хардкодь.
+  Потрібен новий колір → **додай токен** у `brand/theme.css`, розмір — у `main.css`; не хардкодь.
   Чинні токени: `--bg*`, `--text*`, `--accent*`, `--on-accent`, `--bg-deep`, `--img-bg`,
   `--radius-sm|--radius|--radius-lg|--radius-pill`, `--shadow-*`, `--success/--danger/--warning`,
   `--on-success/--on-danger/--on-overlay`, `--logo-color`, `--overlay`, `--select-arrow`, `--sidebar-w`,
   шари `--z-*` (`--z-dropdown` … `--z-chat-lightbox`).
-  `:root` поділено на «Палітру бренду» (усі кольори) і «Структуру» (розміри, шари, шрифт).
+  «Палітра бренду» — `brand/theme.css` (підключається після `main.css`), «Структура» — `main.css`.
   **Колір з прозорістю** — через канал: `rgba(var(--shade-rgb), 0.45)`; канали: `--bg-rgb`, `--accent-rgb`,
   `--success-rgb`, `--danger-rgb`, `--warning-rgb`, `--on-overlay-rgb` (світле поверх затемнень і фото),
   `--tint-rgb` (світлі підсвітки на поверхнях), `--shade-rgb` (тіні, затемнення), `--on-photo-rgb`
@@ -48,6 +49,13 @@ Nuxt 3 + Vue 3 (SSR) фронтенд floy.com.ua. Працюй **завжди**
   `ProductCard.vue` / `ProductCardPrintcase.vue`).
 
 ## 2. Без дублювання, масштабованість
+
+- **Усе, чим магазин відрізняється від копій рушія, — у теці `brand/`** (аліас `#brand`): назва, домен,
+  ключ API, графік, політики, вкладки головної, промотовари — `brand/site.config.ts` (тип — `types/brand.ts`,
+  у коді — `useBrand()`); палітра — `brand/theme.css`; лого, фавікони, og — `brand/public/`;
+  `robots.txt` — шаблон `brand/robots.txt`; тексти про сам магазин — `brand/i18n/*.json`.
+  **Назву й домен не писати в код і тексти**: у компонентах — `useBrand().name` / `.domain`,
+  у i18n — параметри `{brand}` / `{domain}`. Лого — лише `<AppLogo />`. Як копіювати — `brand/README.md`.
 
 - **Іконки — лише через `<AppIcon name="…" />`** (реєстр SVG у `components/AppIcon.vue`).
   Нова іконка = один запис у `ICONS`, не інлайн-`<svg>`. Підтримує `size`, `filled`, `stroke-width`, `solid`.
@@ -83,6 +91,7 @@ Nuxt 3 + Vue 3 (SSR) фронтенд floy.com.ua. Працюй **завжди**
 
 ---
 
-**Мапа примітивів:** токени та глобальні класи → `assets/css/main.css` · іконки → `AppIcon.vue` ·
+**Мапа примітивів:** бренд → `brand/` (`useBrand()`, лого — `AppLogo.vue`) · палітра → `brand/theme.css` ·
+токени структури та глобальні класи → `assets/css/main.css` · іконки → `AppIcon.vue` ·
 зображення → `AppImage.vue` · SEO → `composables/useSeo.ts` · URL/зображення/ціна → `composables/useUrl.ts` ·
 API → `composables/useShopApi.ts`.

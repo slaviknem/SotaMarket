@@ -31,6 +31,7 @@
 
 <script setup lang="ts">
 const { t, locale } = useI18n()
+const brand = useBrand()
 // canonicalQueries — білий список query, які лишаються в hreflang/og:url. Тримаємо його
 // однаковим із canonical у usePageSeo: сторінки пагінації самопосилальні (?page збережено),
 // а комбінації фільтрів (?filter_*, ?sort) канонізуються на базову адресу.
@@ -48,7 +49,7 @@ useHead(() => ({
 	// Бренд-суфікс у title не додаємо: домен Google і так показує окремим рядком над заголовком,
 	// а назва магазину є в og:site_name та Organization — весь бюджет довжини йде на ключі.
 	// Запасний title — лише для сторінок, які не викликали usePageSeo.
-	titleTemplate: (chunk?: string) => chunk || `FLOY — ${t('metaTitle.index')}`,
+	titleTemplate: (chunk?: string) => chunk || `${brand.name} — ${t('metaTitle.index')}`,
 }))
 
 // Магазин як сутність — на КОЖНІЙ сторінці (а не лише на головній): за @id на цей вузол
@@ -68,7 +69,12 @@ const npConditions = (orderValue: object, rate: number) => ({
 	shippingRate: { '@type': 'MonetaryAmount', value: rate, currency: 'UAH' },
 	transitTime: {
 		'@type': 'ServicePeriod',
-		duration: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 2, unitCode: 'DAY' },
+		duration: {
+			'@type': 'QuantitativeValue',
+			minValue: brand.policies.shippingDays[0],
+			maxValue: brand.policies.shippingDays[1],
+			unitCode: 'DAY',
+		},
 	},
 })
 
@@ -109,7 +115,7 @@ useJsonLd(() => [
 			applicableCountry: 'UA',
 			returnPolicyCountry: 'UA',
 			returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
-			merchantReturnDays: 14,
+			merchantReturnDays: brand.policies.returnDays,
 			returnMethod: 'https://schema.org/ReturnByMail',
 			returnFees: 'https://schema.org/ReturnFeesCustomerResponsibility',
 			itemDefectReturnFees: 'https://schema.org/FreeReturn',

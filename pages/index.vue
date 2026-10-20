@@ -51,12 +51,10 @@ const config = useRuntimeConfig()
 const localePath = useLocalePath()
 const url = useUrl()
 
-const productTabs = computed(() => [
-	{ name: t('product.type.all'), categoryAlias: 'all' },
-	{ name: t('product.type.case'), categoryAlias: 'chekhly' },
-	{ name: t('product.type.glass'), categoryAlias: 'plenki' },
-	{ name: t('product.type.accessories'), categoryAlias: 'accessories' },
-])
+// Вкладки каруселі новинок — з конфігу бренду (категорії в кожного магазину свої)
+const productTabs = computed(() =>
+	useBrand().home.productTabs.map((tab) => ({ name: t(tab.title), categoryAlias: tab.category }))
+)
 
 // Дані головної (SSR, паралельно)
 const [{ data: banners }, { data: popularModels }, { data: latestProducts }, { data: popularCategories }, { data: posts }, { data: latestReviews }, { data: article }] =

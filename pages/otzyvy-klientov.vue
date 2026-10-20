@@ -65,7 +65,7 @@ usePageSeo({
 	description: () =>
 		article.value?.meta_description ||
 		(stats.value.ratedCount
-			? t('reviews.metaDescription', { count: stats.value.ratedCount, avg: stats.value.avg })
+			? t('reviews.metaDescription', { count: stats.value.ratedCount, avg: stats.value.avg, brand: useBrand().name })
 			: ''),
 })
 

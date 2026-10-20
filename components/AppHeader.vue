@@ -29,8 +29,8 @@
 					<span /><span /><span />
 				</button>
 
-				<NuxtLink :to="localePath('/')" class="logo" aria-label="FLOY">
-					<LogoFloy />
+				<NuxtLink :to="localePath('/')" class="logo" :aria-label="siteBrand.name">
+					<AppLogo />
 				</NuxtLink>
 
 				<SearchBar class="header__search" />
@@ -163,6 +163,7 @@ const emit = defineEmits<{ needMenu: [] }>()
 
 const { t } = useI18n()
 const localePath = useLocalePath()
+const siteBrand = useBrand()
 const { phone, phoneDigits } = useSiteSettings()
 
 const cart = useCart()
@@ -979,7 +980,7 @@ onMounted(() => {
 		margin-left: 6px; /* трохи відсуваємо від кнопки-бургера */
 	}
 
-	.logo :deep(.logo-floy) {
+	.logo :deep(.app-logo) {
 		height: 26px;
 	}
 }
@@ -1004,7 +1005,7 @@ onMounted(() => {
 		min-width: 0;
 	}
 
-	.logo :deep(.logo-floy) {
+	.logo :deep(.app-logo) {
 		max-width: 100%;
 	}
 }

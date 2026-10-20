@@ -52,7 +52,7 @@
 					:style="{ fontFamily: `'${font}', sans-serif` }"
 					@click="form.font = font"
 				>
-					{{ form.text || 'FLOY' }}
+					{{ form.text || brand.name }}
 					<span class="font-item__name">{{ font }}</span>
 				</button>
 			</div>
@@ -93,6 +93,8 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+// Зразок тексту в плитках шрифтів, поки поле порожнє — назва магазину
+const brand = useBrand()
 
 const form = reactive<TextForm>({ ...props.initial })
 

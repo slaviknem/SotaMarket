@@ -4,8 +4,8 @@
 			<div class="footer__grid">
 				<!-- Про магазин -->
 				<div class="footer__col footer__col--about">
-					<NuxtLink :to="localePath('/')" class="footer__logo" aria-label="FLOY">
-						<LogoFloy />
+					<NuxtLink :to="localePath('/')" class="footer__logo" :aria-label="brand.name">
+						<AppLogo />
 					</NuxtLink>
 					<p class="footer__about-text">{{ t('footer.weAre') }}</p>
 
@@ -54,8 +54,7 @@
 					<div class="footer__schedule-block">
 						<div class="footer__title">{{ t('footer.schedule') }}</div>
 						<ul class="footer__schedule">
-							<li><span>{{ t('footer.monSat') }}:</span> 9:00 – 18:00</li>
-							<li><span>{{ t('footer.sunday') }}:</span> {{ t('footer.dayOff') }}</li>
+							<li v-for="row in brand.schedule" :key="row.days"><span>{{ t(`footer.${row.days}`) }}:</span> {{ row.time ?? t('footer.dayOff') }}</li>
 						</ul>
 					</div>
 
@@ -67,7 +66,7 @@
 			</div>
 
 			<div class="footer__bottom">
-				<span>© {{ new Date().getFullYear() }} floy.com.ua — {{ t('footer.allRights') }}</span>
+				<span>© {{ new Date().getFullYear() }} {{ brand.domain }} — {{ t('footer.allRights') }}</span>
 			</div>
 		</div>
 	</footer>
@@ -76,6 +75,7 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const localePath = useLocalePath()
+const brand = useBrand()
 const { contacts, phones } = useSiteSettings()
 </script>
 
@@ -97,7 +97,7 @@ const { contacts, phones } = useSiteSettings()
 	display: inline-block;
 }
 
-.footer__logo :deep(.logo-floy) {
+.footer__logo :deep(.app-logo) {
 	height: 32px;
 }
 

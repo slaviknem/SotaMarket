@@ -31,7 +31,7 @@
 								     розміри блоку тримає .banner-hero__main, тож CLS не з'являється. -->
 								<AppImage
 									:src="url.bannerImg(banner.image_file)"
-									:alt="banner.title || 'FLOY'"
+									:alt="banner.title || brand.name"
 									class="banner-slide__img"
 									:width="1300"
 									sizes="sm:100vw md:100vw lg:66vw 2xl:1116px"
@@ -94,6 +94,7 @@ const CARRIERS = [
 const url = useUrl()
 const { t } = useI18n()
 const localePath = useLocalePath()
+const brand = useBrand()
 const modules = [Autoplay, Pagination]
 </script>
 

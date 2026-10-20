@@ -443,9 +443,12 @@ find /var/cache/nginx-floy -type f -delete
 
 ### robots.txt — лише з репозиторію
 
-Джерело — `public/robots.txt` у цьому репозиторії. На сайт він потрапляє з кожною викладкою:
-Nitro віддає його зі збірки, а `deploy.sh` чистить кеш nginx. Правка = commit → push → `bash deploy.sh`.
+Джерело — шаблон `brand/robots.txt` у цьому репозиторії (до 20.10.2026 — `public/robots.txt`).
+Віддає його маршрут `server/routes/robots.txt.ts`: `{siteUrl}` у рядках Host і Sitemap → `SITE_URL`
+процесу, тож на іншому домені вони правильні самі. На сайт правка потрапляє з кожною викладкою
+(шаблон вбудовано в збірку, `deploy.sh` чистить кеш nginx). Правка = commit → push → `bash deploy.sh`.
 Правити файл на сервері марно: до Node доходить лише те, що в збірці.
+Тестовий стенд: `NUXT_NOINDEX=1` в оточенні процесу → `Disallow: /` (розділ «Що зробити після запуску»).
 
 **Перехід виконано 19.10.2026:** `nginx.ssl.conf_robots` перенесено в `/root/nginx-disabled/`, домен
 віддає robots із Node (у відповіді є `x-frame-options`), вміст побайтно той самий. Перевірка одразу
@@ -486,7 +489,10 @@ diff <(curl -s https://floy.com.ua/robots.txt) /var/www/floy/robots.txt && echo 
 - [ ] **`APP_DEBUG=false`** в `.env` адмінки (`admin.floy.com.ua`): зараз будь-яка 500-ка
       віддає повний стек Laravel зі шляхами `/home/wm/web/...`.
 - [ ] Тестовий стенд, коли знадобиться, підняти на іншому порту (не 3000) і закрити від
-      індексації — його `SITE_URL` мусить лишитись `https://test.floy.com.ua`.
+      індексації — його `SITE_URL` мусить лишитись `https://test.floy.com.ua`. Закрити — змінна
+      `NUXT_NOINDEX=1` в оточенні процесу (без перезбірки): `robots.txt` → `Disallow: /`, усі сторінки —
+      `X-Robots-Tag: noindex, nofollow` (`server/middleware/noindex.ts`). Перевірка:
+      `curl -s http://127.0.0.1:<порт>/robots.txt` і `curl -sI … | grep -i x-robots`.
 - [ ] Перші дні тримати око на `pm2 logs floy-prod --lines 100` і `pm2 describe floy-prod`
       (перезапуски, пам'ять).
 
@@ -498,7 +504,7 @@ diff <(curl -s https://floy.com.ua/robots.txt) /var/www/floy/robots.txt && echo 
       ще один API-пароль. 19.10 їх прибрано з git (локальні копії лишились, `.gitignore`), але в
       **історії комітів вони є**. Репозиторій приватний; якщо доступ до нього колись мав хтось сторонній —
       змінити ці паролі й токени.
-- [ ] Тестовий стенд закрити від індексації (Password Protection або `noindex`).
+- [ ] Тестовий стенд закрити від індексації: `NUXT_NOINDEX=1` в оточенні процесу (або Password Protection).
 - [ ] `SITE_URL` на кожному стенді свій (canonical/OG/sitemap).
 - [ ] `pm2 save` після кожної зміни складу процесів (інакше після ребуту не підніметься).
 - [ ] **Не** ставити другий pm2 і **не** міняти nvm default з v16.

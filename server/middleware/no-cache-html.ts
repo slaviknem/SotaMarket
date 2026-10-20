@@ -15,8 +15,8 @@ export default defineEventHandler((event) => {
 	const path = event.path
 
 	if (SKIP.some((prefix) => path.startsWith(prefix))) return
-	// Файли з розширенням (robots.txt, favicon, sitemap) — не документи
-	if (/\.[a-z0-9]{2,5}($|\?)/i.test(path)) return
+	// Файли з розширенням (robots.txt, favicon, sitemap, site.webmanifest) — не документи
+	if (/\.([a-z0-9]{2,5}|webmanifest)($|\?)/i.test(path)) return
 
 	// no-cache, а не no-store: копію тримати можна, але перед показом треба спитати сервер.
 	// no-store вимкнув би ще й bfcache, тобто зіпсував би кнопку «назад».

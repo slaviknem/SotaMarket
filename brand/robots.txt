@@ -47,8 +47,8 @@ Disallow: /uk/shop/wishlist
 Disallow: /uk/shop/track-order
 Disallow: /uk/search
 
-Host: https://floy.com.ua
-Sitemap: https://floy.com.ua/sitemap.xml
+Host: {siteUrl}
+Sitemap: {siteUrl}/sitemap.xml
 
 # --- Службові краулери без цінності для магазину ---
 # GoogleOther не бере участі в індексації Пошуку; Google-Extended вище лишається дозволеним.

@@ -19,6 +19,7 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const url = useUrl()
+const brand = useBrand()
 
 // Три форми назви моделі: повна — заголовок і перші питання, кирилиця — «де купити /
 // скільки коштує», коротка — повторні згадки в довгих відповідях
@@ -59,6 +60,8 @@ const items = computed(() => {
 		category_title: catTitle.value,
 		category_alt: names.value.alt_,
 		category_short: names.value.short_,
+		brand: brand.name,
+		domain: brand.domain,
 	}
 	const key = isTheme.value ? 'faq.theme' : 'faq.filter'
 	const list: { q: string; a: string; links?: { title: string; to: string; price?: number }[] }[] = []

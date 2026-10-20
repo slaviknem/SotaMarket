@@ -1,19 +1,22 @@
 /**
- * Генерація всіх растрових іконок із єдиного джерела — public/favicon.svg.
+ * Генерація всіх растрових іконок із єдиного джерела — brand/public/favicon.svg.
  * Запуск: node scripts/gen-icons.mjs (портативний Node 22 з .node/)
+ *         OUT=<тека> node scripts/gen-icons.mjs — записати в іншу теку (для порівняння)
  *
  * Варіанти:
  *   favicon-96 / icon-192 / icon-512 — зі скругленням і прозорими кутами;
  *   apple-touch-icon / icon-maskable-512 — full-bleed квадрат (маску накладає ОС),
  *   у maskable літера ще й зменшена, щоб уся вміщалась у safe zone (коло 80%).
+ * Колір підкладки full-bleed — акцент бренду (--accent-rgb у brand/theme.css).
  */
-import { readFileSync, writeFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
-import { dirname, join } from 'node:path'
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
+import { join } from 'node:path'
 import sharp from 'sharp'
+import { BRAND_DIR, readTheme } from './lib/brand.mjs'
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
-const PUBLIC = join(ROOT, 'public')
+const PUBLIC = join(BRAND_DIR, 'public')
+const OUT = process.env.OUT || PUBLIC
+const { accent } = readTheme()
 
 const SRC = readFileSync(join(PUBLIC, 'favicon.svg'), 'utf8')
 /** full-bleed: без скруглення, фон заповнює весь квадрат */
@@ -27,7 +30,7 @@ const MASKABLE = SQUARE.replace(
 
 const png = (svg, size, flatten = false) => {
 	let p = sharp(Buffer.from(svg), { density: 384 }).resize(size, size)
-	if (flatten) p = p.flatten({ background: '#ff7a00' })
+	if (flatten) p = p.flatten({ background: accent })
 	return p.png({ compressionLevel: 9, palette: false }).toBuffer()
 }
 
@@ -46,8 +49,9 @@ const ico = images => {
 	return Buffer.concat([head, ...images.map(i => i.data)])
 }
 
+mkdirSync(OUT, { recursive: true })
 const out = (name, data) => {
-	writeFileSync(join(PUBLIC, name), data)
+	writeFileSync(join(OUT, name), data)
 	console.log(`✓ ${name} (${(data.length / 1024).toFixed(1)} KB)`)
 }
 

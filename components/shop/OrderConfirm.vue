@@ -861,7 +861,7 @@ function startPhoneEdit() {
 
 function savePhone() {
 	if (!isValidPhone(phoneDraft.value)) {
-		phoneError.value = t('confirm.phoneError')
+		phoneError.value = t('confirm.phoneError', { example: useBrand().phoneExample })
 		return
 	}
 	const digits = phoneDigits(phoneDraft.value)

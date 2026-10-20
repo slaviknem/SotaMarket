@@ -6,8 +6,8 @@
 
 				<div class="mobile-menu__panel">
 					<div class="mobile-menu__head">
-						<NuxtLink :to="localePath('/')" class="mobile-menu__logo" aria-label="FLOY" @click="open = false">
-							<LogoFloy />
+						<NuxtLink :to="localePath('/')" class="mobile-menu__logo" :aria-label="siteBrand.name" @click="open = false">
+							<AppLogo />
 						</NuxtLink>
 						<LangSwitcher />
 						<button class="mobile-menu__close" :aria-label="t('other.close')" @click="open = false">
@@ -80,6 +80,7 @@ defineProps<{ menu: any }>()
 
 const { t } = useI18n()
 const localePath = useLocalePath()
+const siteBrand = useBrand()
 const { phone, phoneDigits } = useSiteSettings()
 
 const open = useState('mobileMenuOpen', () => false)
@@ -150,7 +151,7 @@ watch(open, (v: boolean) => {
 	margin-right: auto;
 }
 
-.mobile-menu__logo :deep(.logo-floy) {
+.mobile-menu__logo :deep(.app-logo) {
 	height: 26px;
 }
 

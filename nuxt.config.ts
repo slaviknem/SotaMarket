@@ -1,4 +1,17 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
+import brand from './brand/site.config'
+import { readTheme } from './scripts/lib/brand.mjs'
+
+// Тека бренду: назва, домен, лого, палітра, тексти про магазин (brand/README.md).
+// Код бере її лише через аліас #brand, тож теку можна підмінити одним рядком
+const BRAND_DIR = fileURLToPath(new URL('./brand', import.meta.url))
+// Кольори теми як hex — для theme-color і site.webmanifest (джерело — brand/theme.css)
+const theme = readTheme(BRAND_DIR)
+// Сховище адмінки — спільне для всіх сайтів; хост для IPX і preconnect береться звідси ж
+const URL_STORAGE = process.env.URL_STORAGE || 'https://admin.floy.com.ua/storage/'
+
 export default defineNuxtConfig({
 	compatibilityDate: '2025-07-15',
 
@@ -8,22 +21,32 @@ export default defineNuxtConfig({
 
 	modules: ['@nuxtjs/i18n', '@nuxt/image'],
 
+	alias: {
+		'#brand': BRAND_DIR,
+	},
+
 	image: {
 		// IPX оптимізує зображення зі сховища адмінки (WebP + точні розміри + кеш)
-		domains: ['admin.floy.com.ua'],
+		domains: [new URL(URL_STORAGE).hostname],
 		format: ['webp'],
 		quality: 80,
 	},
 
 	runtimeConfig: {
+		// Сторож тестових стендів: NUXT_NOINDEX=1 в оточенні процесу → noindex на всі відповіді
+		// й Disallow: / у robots.txt (server/middleware/noindex.ts, server/routes/robots.txt.ts)
+		noindex: false,
+		// Колір теми для site.webmanifest (сервер; у payload сторінок не потрапляє)
+		brandTheme: { bg: theme.bg },
 		public: {
 			urlApi: process.env.URL_API || 'https://admin.floy.com.ua/apisite/',
-			urlStorage: process.env.URL_STORAGE || 'https://admin.floy.com.ua/storage/',
-			siteUrl: process.env.SITE_URL || 'https://floy.com.ua',
+			urlStorage: URL_STORAGE,
+			siteUrl: process.env.SITE_URL || brand.url,
 			// Ключ сайту: з ним ідуть усі запити до apisite і за ним же беруться
-			// налаштування цього сайту (composables/useSiteSettings.ts)
-			site: 'floy',
-			siteName: 'FLOY',
+			// налаштування цього сайту (composables/useSiteSettings.ts). Ключ і назва —
+			// з brand/site.config.ts; у новому коді — useBrand()
+			site: brand.key,
+			siteName: brand.name,
 			// Ціни, доставка, телефони, адреса та соцмережі сюди НЕ повертати — вони
 			// редагуються в адмінці (вузол public.floy) і приїжджають через useSiteSettings.
 			// Тут лишається тільки те, що залежить від оточення, а не від бізнесу.
@@ -44,7 +67,7 @@ export default defineNuxtConfig({
 		head: {
 			meta: [
 				{ name: 'viewport', content: 'width=device-width, initial-scale=1' },
-				{ name: 'theme-color', content: '#0d0d10' },
+				{ name: 'theme-color', content: theme.bg },
 			],
 			link: [
 				// SVG — основний (усі сучасні браузери), .ico — фолбек для старих і для
@@ -54,8 +77,8 @@ export default defineNuxtConfig({
 				{ rel: 'icon', href: '/favicon.ico', sizes: '48x48' },
 				{ rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
 				{ rel: 'manifest', href: '/site.webmanifest' },
-				{ rel: 'preconnect', href: 'https://admin.floy.com.ua' },
-				{ rel: 'dns-prefetch', href: 'https://admin.floy.com.ua' },
+				{ rel: 'preconnect', href: new URL(URL_STORAGE).origin },
+				{ rel: 'dns-prefetch', href: new URL(URL_STORAGE).origin },
 				// Шрифт самохоститься (@font-face — у main.css). Два набори, потрібні на кожній
 				// сторінці, стартують одразу з HTML, не чекаючи розбору CSS.
 				{
@@ -83,13 +106,16 @@ export default defineNuxtConfig({
 	// стовпчиком і схлопувалися при ініціалізації, зсуваючи весь перший екран (CLS ~0.4).
 	// Модульні стилі (pagination/navigation/thumbs/zoom) лишаються в компонентах — вони
 	// позиціонують лише absolute-елементи й на розкладку не впливають.
-	css: ['swiper/css', '~/assets/css/main.css'],
+	// Палітра бренду — після main.css: тема може перевизначити й структурні токени
+	css: ['swiper/css', '~/assets/css/main.css', '#brand/theme.css'],
 
 	i18n: {
-		baseUrl: process.env.SITE_URL || 'https://floy.com.ua',
+		baseUrl: process.env.SITE_URL || brand.url,
+		// Тексти, що описують сам магазин (title головної, «про нас» у футері…), — у brand/i18n:
+		// пізніший файл перекриває ключі спільного. Шляхи — від i18n/locales
 		locales: [
-			{ code: 'uk', language: 'uk', file: 'uk.json', name: 'Укр' },
-			{ code: 'ru', language: 'ru', file: 'ru.json', name: 'Рус' },
+			{ code: 'uk', language: 'uk', files: ['uk.json', '../../brand/i18n/uk.json'], name: 'Укр' },
+			{ code: 'ru', language: 'ru', files: ['ru.json', '../../brand/i18n/ru.json'], name: 'Рус' },
 		],
 		defaultLocale: 'ru',
 		strategy: 'prefix_except_default',
@@ -172,6 +198,10 @@ export default defineNuxtConfig({
 
 	nitro: {
 		compressPublicAssets: true,
+
+		// Статика бренду (фавікони, лого, og, верифікація Google) — з кореня сайту, як і public/.
+		// Шлях абсолютний: відносні Nitro рахує від server/. Один файл не може лежати в обох теках
+		publicAssets: [{ dir: join(BRAND_DIR, 'public') }],
 
 		// Кеш зібраних композицій «принт + модель» (server/utils/caseImage.ts) — sharp відпрацьовує
 		// один раз на пару, далі віддаємо з диска. Окремі теки: неопрінти (/img/neoprint) і

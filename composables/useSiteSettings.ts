@@ -6,7 +6,9 @@
 //
 // DEFAULTS — не «значення за замовчуванням для нового сайту», а страховка: якщо адмінка
 // недоступна або вузол ще не заведений, сайт працює на них замість того, щоб показати
-// порожні ціни. Тому вони мають збігатися з тим, що зараз у БД.
+// порожні ціни. Тому вони мають збігатися з тим, що зараз у БД. Самі значення — у конфігу
+// бренду (brand/site.config.ts → settingsFallback): у кожного магазину свої.
+import brand from '#brand/site.config'
 
 export interface DeliveryTariff {
 	delivery: number
@@ -58,45 +60,7 @@ export interface SiteSettings {
 	alphaprint_on_fly: boolean
 }
 
-const DEFAULTS: SiteSettings = {
-	prices: {
-		printcase: 289,
-		printcase_old: 299,
-		neoprint: 259,
-		neoprint_old: 299,
-		prepay_printcase: 50,
-	},
-	delivery: {
-		n_pochta: { delivery: 60, nal_plateg: 20 },
-		// 140 грн — реальна ціна НП за адресну доставку (Полтава → Київ, «Документи»),
-		// поки вузол n_pochta_kur не заведено в налаштуваннях адмінки
-		n_pochta_kur: { delivery: 140, nal_plateg: 20 },
-		ukrpochta: { delivery: 60, nal_plateg: 15 },
-		samovuvoz: { delivery: 0, nal_plateg: 0 },
-		free_delivery_from: 1000,
-	},
-	contacts: {
-		phones: [
-			{ operator: 'vodafone', phone: '099 072 14 12' },
-			{ operator: 'kievstar', phone: '098 072 14 12' },
-			{ operator: 'life', phone: '093 072 14 12' },
-		],
-		email: 'info@floy.com.ua',
-		address: 'м. Полтава, проспект Віталія Грицаєнка, 15А',
-		address_city: 'Полтава',
-		address_street: 'проспект Віталія Грицаєнка, 15А',
-	},
-	social: {
-		instagram: 'https://www.instagram.com/floy.com.ua/',
-		facebook: 'https://www.facebook.com/floy.com.ua',
-		youtube: 'https://www.youtube.com/channel/UCmxlccT0fGh6hF79LSKYIPQ',
-		telegram: 'https://t.me/floyshop',
-		viber: 'viber://chat?number=%2B380990721412',
-		whatsapp: 'https://wa.me/380990721412',
-	},
-	np_local_db: false,
-	alphaprint_on_fly: true,
-}
+const DEFAULTS: SiteSettings = brand.settingsFallback
 
 // Глибоке злиття «дефолти ← дані з адмінки»: часткова відповідь (наприклад, лише prices)
 // не має обнуляти решту. Масиви замінюються цілком — список телефонів редагують як список.

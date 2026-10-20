@@ -49,7 +49,7 @@ export function usePageSeo(opts: {
 				...(noindex ? [{ name: 'robots', content: 'noindex, follow' }] : []),
 				// Open Graph
 				{ property: 'og:type', content: toValue(opts.ogType) || 'website' },
-				{ property: 'og:site_name', content: 'FLOY' },
+				{ property: 'og:site_name', content: config.public.siteName as string },
 				{ property: 'og:title', content: title },
 				{ property: 'og:description', content: description },
 				{ property: 'og:url', content: canonical.value },
