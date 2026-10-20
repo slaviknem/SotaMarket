@@ -106,6 +106,19 @@ export const STATES = [
 			['click', '.app-modal .btn-primary.btn-lg'],
 		],
 	},
+	// 404 українською → «На головну» має вести на /uk, а не на російську (url кадру — після кліку)
+	{ name: 'home-button', path: '/uk/neisnuyucha-storinka-xyz', width: 390, actions: [['click', '.error-page .btn']] },
+	// Палітра фону й «прозорий» фон (шахівниця на кнопці, в палітрі й на сцені)
+	{ name: 'bg-picker', path: '/printcase/iphone-15', width: 1440, actions: [['click', 'button.ctrl-bg']] },
+	{
+		name: 'bg-transparent',
+		path: '/printcase/iphone-15',
+		width: 1440,
+		actions: [
+			['click', 'button.ctrl-bg'],
+			['click', '.bg-sw--transparent'],
+		],
+	},
 ]
 
 /** Товари, якими наповнюємо кошик, обране й порівняння у зліпку стилів */

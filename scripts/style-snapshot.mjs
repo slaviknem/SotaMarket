@@ -46,6 +46,7 @@ const PROPS = [
 	'max-height', 'min-width', 'grid-template-columns',
 	'font-family', 'font-size', 'font-weight', 'line-height', 'letter-spacing', 'padding', 'margin',
 	'width', 'height', // лише для кореневого <svg> (іконки), в інших порожні
+	'href', 'text', // лише для <a>: куди веде посилання і його підпис (перевірка злиття меню — етап 3)
 ]
 
 // ───────────────────────────── Chrome і DevTools Protocol ─────────────────────────────
@@ -385,9 +386,14 @@ const DUMP = `(() => {
 	const PROPS = ${JSON.stringify(PROPS)}
 	const SKIP = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE', 'LINK', 'META', 'HEAD', 'TITLE', 'BASE'])
 	const out = []
-	const read = (cs, svg) => PROPS.map((p) => (p === 'width' || p === 'height') && !svg ? '' : cs.getPropertyValue(p)).join(${JSON.stringify(SEP)})
+	const read = (cs, el) => PROPS.map((p) => {
+		if (p === 'width' || p === 'height') return el instanceof SVGSVGElement ? cs.getPropertyValue(p) : ''
+		if (p === 'href') return el?.tagName === 'A' ? el.getAttribute('href') ?? '' : ''
+		if (p === 'text') return el?.tagName === 'A' ? el.textContent.replace(/\\s+/g, ' ').trim().slice(0, 80) : ''
+		return cs.getPropertyValue(p)
+	}).join(${JSON.stringify(SEP)})
 	const walk = (el, path) => {
-		out.push([path, read(getComputedStyle(el), el instanceof SVGSVGElement)])
+		out.push([path, read(getComputedStyle(el), el)])
 		for (const pseudo of ['::before', '::after']) {
 			const cs = getComputedStyle(el, pseudo)
 			if (cs.content && cs.content !== 'none' && cs.content !== 'normal') out.push([path + pseudo, read(cs)])
