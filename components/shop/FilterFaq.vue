@@ -80,8 +80,9 @@ const items = computed(() => {
 
 	if (isTheme.value) {
 		list.push({ q: t('faq.theme.faq_4.question', p), a: t('faq.theme.faq_4.answer', p) })
-		// «Свій принт/фото» — лише якщо для моделі увімкнено конструктор
-		if (props.category?.printcase) {
+		// «Свій принт/фото» — лише якщо для моделі увімкнено конструктор (на бренді чи розділі
+		// посилання вело б на /printcase/{бренд}, а там 404)
+		if (canPrintOn(props.category)) {
 			list.push({
 				q: t('faq.theme.faq_5.question', p),
 				a: t('faq.theme.faq_5.answer', p),

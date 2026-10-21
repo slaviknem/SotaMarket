@@ -2,6 +2,7 @@
 // Всі методи дзеркалять старий src/api/shop.ts, але на $fetch (SSR-friendly)
 
 import type { OcBlock } from '~/composables/useOrderConfirm'
+import type { IThemeDesign } from '~/composables/useThemeDesigns'
 
 export interface IListOptions {
 	page?: number
@@ -388,6 +389,15 @@ export function useShopApi() {
 			const res = await api<INeoPrint[]>('attributes/neo_prints', filterId ? { filter_id: filterId } : {})
 			return Array.isArray(res) ? res : []
 		},
+
+		// Усі дизайни сайту сторінками — сітка моделі без товарів (CategoryPage). Не apisite, а свій
+		// маршрут рушія: повний список адмінки кешує й перемежовує за темами Nitro
+		// (server/utils/siteDesigns.ts). Форма відповіді — як у списку товарів ({ data, meta })
+		getDesignsPage: (page: number, limit: number) =>
+			$fetch<{ data: IThemeDesign[]; meta: { total: number; current_page: number; last_page: number } }>(
+				'/api/neoprints',
+				{ params: { lang: locale.value, page, limit } }
+			),
 
 		// Один дизайн за alias (alias == id). Цей ендпоінт віддає сиру модель Attribute —
 		// без локалізованого title, який є в списку neo_prints. Доводимо до того ж вигляду.

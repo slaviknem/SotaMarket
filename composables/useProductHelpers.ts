@@ -85,6 +85,14 @@ export function printStockState(cat: any): StockState {
 	return modelPrintState(cat) ?? 'in'
 }
 
+// Чи друкуємо готові дизайни (NeoPrint) на цю категорію: лише модель телефону з увімкненим друком.
+// printcase = 1 стоїть у БД і на частині брендів та розділів аксесуарів — без перевірки типу
+// з'являлись «чохли з принтом Аніме на Power Bank» і /neoprint/apple/… Дзеркало на бекенді —
+// FilterAction::printableCategoryIds (лічильники тем рахують дизайни лише в таких моделях)
+export function canPrintOn(cat: any): boolean {
+	return cat?.type === 'model' && !!cat?.printcase
+}
+
 // Реальний залишок атрибута в таблиці стоків (AttributeResource.available)
 const hasStock = (attr: any) => !!attr?.available
 

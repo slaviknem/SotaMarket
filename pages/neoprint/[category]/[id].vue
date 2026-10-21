@@ -180,9 +180,11 @@ const { data, error } = await useAsyncData(
 			shopApi.getFilters(categoryAlias.value),
 		])
 
-		// Дизайн має бути опублікований і належати цьому сайту; модель — підтримувати друк
+		// Дизайн має бути опублікований і належати цьому сайту; категорія — модель, на яку друкуємо
+		// (printcase = 1 стоїть і на брендах та розділах аксесуарів: /neoprint/apple/…,
+		// /neoprint/power-bank/… віддавали 200)
 		if (!neoprint?.publish || neoprint.site !== config.public.site) return false
-		if (!category?.printcase) return false
+		if (!canPrintOn(category)) return false
 
 		// Дерево фільтрів: тема дизайну + її батько (для меню й підбору дизайнів)
 		const flat = flattenFilters(filters)

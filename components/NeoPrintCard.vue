@@ -41,9 +41,13 @@
 </template>
 
 <script setup lang="ts">
-// Картка готового дизайну в сітці товарів (сторінка фільтра-теми).
+import type { IThemeDesign } from '~/composables/useThemeDesigns'
+
+// Картка готового дизайну в сітці: сторінка теми, модель без товарів, конструктор.
 // Веде на /neoprint/{модель}/{дизайн} — повноцінну SSR-сторінку варіанта.
-const props = defineProps<{ neoprint: INeoPrint; category: any }>()
+// Тип — короткий дизайн (id/alias/назва/тема): саме такі об'єкти приходять із кешу дизайнів
+// сайту (server/utils/siteDesigns.ts); повний INeoPrint з apisite теж підходить
+const props = defineProps<{ neoprint: IThemeDesign; category: any }>()
 
 const { t } = useI18n()
 const url = useUrl()

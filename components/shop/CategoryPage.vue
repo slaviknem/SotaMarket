@@ -26,8 +26,9 @@
 			<div class="cat-layout__content">
 				<header class="cat-head">
 					<h1 class="cat-head__title">{{ pageTitle }}</h1>
-					<span v-if="displayTotal || showNeoPrints" class="cat-head__count">
-						<template v-if="showNeoPrints">
+					<span v-if="displayTotal || showNeoPrints || designsTotal" class="cat-head__count">
+						<template v-if="designsMode">{{ designsTotal }} {{ t('neoprint.countWord') }}</template>
+						<template v-else-if="showNeoPrints">
 							<template v-if="productsCount > 0">{{ productsCount }} {{ t('category.products') }} + </template>
 							<a class="cat-head__count-designs" href="#cat-neoprints" @click.prevent="scrollToNeoprints">
 								{{ neoprints.length }} {{ t('neoprint.countWord') }}
@@ -43,7 +44,8 @@
 							{{ t('filters.filters') }}
 						</button>
 
-						<label class="cat-head__sort">
+						<!-- Дизайни (модель без товарів) мають одну ціну — сортувати нічого -->
+						<label v-if="!designsMode" class="cat-head__sort">
 							<span class="cat-head__sort-label text-muted">{{ t('category.sortBy') }}:</span>
 							<!-- aria-label дублює видиму мітку: на мобільному її текст ховається, а ім'я поля має лишатись -->
 							<select
@@ -87,21 +89,35 @@
 				</div>
 
 				<template v-else-if="hasItems">
-					<div v-if="products.length" class="products-grid" :class="gridModifier">
+					<div v-if="products.length || designsMode" class="products-grid" :class="gridModifier">
 						<!-- Конструктор чохлів — перший товар (як на старому сайті) -->
 						<ProductCardPrintcase v-if="showPrintcaseCard" :category="category" eager />
+
+						<!-- Модель без товарів: усі готові дизайни сайту на цій моделі — справжніми
+						     сторінками ?page=N, як товари. Картка веде на /neoprint/{модель}/{дизайн} -->
+						<template v-if="designsMode">
+							<NeoPrintCard
+								v-for="np in displayDesigns"
+								:key="np.id"
+								:neoprint="np"
+								:category="category"
+							/>
+						</template>
+
 						<!-- Перші картки — це перший екран (на телефоні два ряди по два), і LCP — будь-яка
 						     з них: фото на всю площу (alphaprint) більше за сусідні. Лениве фото тут
 						     чекало розкладки й затримувало LCP на ~2 с, тож перші чотири вантажимо одразу.
 						     Пріоритет і preload — лише першій, щоб не ділити канал порівну -->
-						<ProductCard
-							v-for="(item, i) in displayItems"
-							:key="item.product.id + '-' + (item.attribute?.id || 0)"
-							:product="item.product"
-							:attribute="item.attribute || undefined"
-							:eager="i < 4"
-							:priority="i === 0 && !showPrintcaseCard"
-						/>
+						<template v-else>
+							<ProductCard
+								v-for="(item, i) in displayItems"
+								:key="item.product.id + '-' + (item.attribute?.id || 0)"
+								:product="item.product"
+								:attribute="item.attribute || undefined"
+								:eager="i < 4"
+								:priority="i === 0 && !showPrintcaseCard"
+							/>
+						</template>
 
 						<!-- Місток у порожній «хвіст» останнього ряду: заповнює пустку і веде вниз
 						     до готових дизайнів. Лише на одній сторінці (у flow це місце — контроли). -->
@@ -194,6 +210,7 @@
 					<ShopCategoryFaq v-else :category="category" :products="products" />
 					<ShopPriceTable :title="pricesTitle" :rows="priceRows" />
 				</template>
+				<ShopPriceTable v-else-if="showDesignsSeo" :title="pricesTitle" :rows="priceRows" />
 
 				<!-- Відгуки: на сторінці моделі — відгуки моделі + усіх її товарів;
 				     на сторінці фільтра — відгуки товарів, що підпадають під фільтр (агрегує бекенд). -->
@@ -217,6 +234,8 @@
 </template>
 
 <script setup lang="ts">
+import type { IThemeDesign } from '~/composables/useThemeDesigns'
+
 const props = defineProps<{
 	categoryAlias: string
 	filterAlias?: string
@@ -231,7 +250,7 @@ const url = useUrl()
 const localePath = useLocalePath()
 const shopApi = useShopApi()
 const { buildFilterTree, findGroupAlias, isParentTheme, expandAliasForApi, filterChildIds } = useFilters()
-const { title: neoPrintTitle } = useNeoPrint()
+const { title: neoPrintTitle, price: neoPrintPrice } = useNeoPrint()
 
 const mobileFiltersOpen = ref(false)
 
@@ -314,11 +333,11 @@ if (props.filterAlias) {
 		const filter = await shopApi.getFilterByAlias(props.categoryAlias, props.filterAlias!)
 		if (!filter) return false
 
-		// Дизайни живуть на темах і лише там, де модель підтримує друк (є маска).
-		// Тема-батько (напр. «Машини») власних дизайнів не має — збираємо їх з усіх підтем
-		// (BMW, Mercedes…), перемежовуючи, щоб перша сторінка показувала різні бренди.
+		// Дизайни живуть на темах і лише на моделях, на які друкуємо (canPrintOn: не бренд,
+		// не павербанк). Тема-батько (напр. «Машини») власних дизайнів не має — збираємо їх з усіх
+		// підтем (BMW, Mercedes…), перемежовуючи, щоб перша сторінка показувала різні бренди.
 		let neoprints: INeoPrint[] = []
-		if (category.value?.printcase) {
+		if (canPrintOn(category.value)) {
 			const childIds = filterChildIds(filtersTree.value || [], props.filterAlias!)
 			if (childIds.length) {
 				const batches = await Promise.all(childIds.map((cid) => shopApi.getNeoPrints(cid)))
@@ -455,34 +474,83 @@ const hasFilterQuery = computed(() =>
 	Object.keys(route.query).some((k) => k.startsWith('filter_'))
 )
 
-const { data: productsData, pending } = await useAsyncData(
+const { data: productsData, pending: productsPending } = await useAsyncData(
 	'cat-products-' + keySuffix.value,
 	() => shopApi.getProductsList(options.value, apiFilters.value),
 	{ watch: [() => route.query] }
 )
 
+const products = computed(() => productsData.value?.data || [])
+const total = computed(() => productsData.value?.meta?.total || 0)
+
+// ---------- Режим «дизайни»: модель без товарів ----------
+// Модель, на яку друкуємо, але товарів у неї немає (нова модель; на сайті лише з дизайнами —
+// завжди): замість порожнього стану — усі готові дизайни сайту з такою самою пагінацією ?page=N,
+// як у товарів. Лише сторінка самої моделі: на /filter/ і з ?filter_* дизайни теми показує секція
+// нижче. Модель, зняту з друку (not_available), не показуємо — там нічого замовити.
+// Лише коли API товарів відповів (є meta): збій не повинен підміняти товари дизайнами
+const designsMode = computed(
+	() =>
+		canPrintOn(category.value) &&
+		printStockState(category.value) !== 'out' &&
+		!props.filterAlias &&
+		!hasFilterQuery.value &&
+		!!productsData.value?.meta &&
+		total.value === 0
+)
+
+const { data: designsData, pending: designsPending, error: designsError } = await useAsyncData(
+	'cat-designs-' + keySuffix.value,
+	async () => (designsMode.value ? await shopApi.getDesignsPage(options.value.page, options.value.limit) : false),
+	{ watch: [() => route.query] }
+)
+
+// Список дизайнів не віддався — 503, а не порожня модель (див. throwIfApiDown)
+throwIfApiDown(designsError.value, 'Designs')
+
+const designs = computed<IThemeDesign[]>(() => (designsMode.value && designsData.value ? designsData.value.data : []))
+const designsTotal = computed(() => (designsMode.value && designsData.value ? designsData.value.meta.total : 0))
+
+const pending = computed(() => productsPending.value || designsPending.value)
+
+// Пагінація — того списку, що на сторінці (товари або дизайни)
+const listMeta = computed(() => (designsMode.value ? designsData.value?.meta : productsData.value?.meta))
+
 // Сторінка за межами списку (?page=999) віддавала 200 з порожньою сіткою й власним canonical —
 // soft-404, який Google індексує як окрему порожню сторінку. Лише коли API відповів (є meta):
 // збій API тут не повинен ставати 404
 {
-	const apiLastPage = Number(productsData.value?.meta?.last_page)
+	const apiLastPage = Number(listMeta.value?.last_page)
 	if (apiLastPage > 0 && options.value.page > apiLastPage) {
 		throw createError({ statusCode: 404, statusMessage: 'Page not found', fatal: true })
 	}
 }
 
-const products = computed(() => productsData.value?.data || [])
-const total = computed(() => productsData.value?.meta?.total || 0)
-const currentPage = computed(() => productsData.value?.meta?.current_page || 1)
-const lastPage = computed(() => productsData.value?.meta?.last_page || 1)
+const currentPage = computed(() => listMeta.value?.current_page || 1)
+const lastPage = computed(() => listMeta.value?.last_page || 1)
 
-// Картка конструктора: тільки для моделей з увімкненим printcase, на першій сторінці
-// і не на сторінці фільтра. Модель, зняту з друку (not_available), у конструктор не ведемо —
-// там нічого замовити (на pre_order лишаємо: чохол зроблять під передзамовлення).
+// Сторінка фільтра без жодного товару й дизайну — порожня сторінка 200 (soft-404). Такими
+// стали теми на брендах і розділах аксесуарів, коли дизайни почали показуватись лише на
+// моделях (canPrintOn) — а Google їх уже знає. Ведемо на саму категорію. Лише 1-ша сторінка
+// без ?filter_* і лише коли API товарів відповів (є meta): збій не повинен ставати постійним 301
+if (
+	props.filterAlias &&
+	filterPage.value &&
+	!hasFilterQuery.value &&
+	options.value.page === 1 &&
+	productsData.value?.meta &&
+	total.value === 0 &&
+	!filterPage.value.neoprints?.length
+) {
+	await navigateTo(url.category(props.categoryAlias), { redirectCode: 301 })
+}
+
+// Картка конструктора: тільки для моделей, на які друкуємо, на першій сторінці і не на сторінці
+// фільтра. Модель, зняту з друку (not_available), у конструктор не ведемо — там нічого
+// замовити (на pre_order лишаємо: чохол зроблять під передзамовлення).
 const showPrintcaseCard = computed(
 	() =>
-		category.value?.type === 'model' &&
-		!!category.value?.printcase &&
+		canPrintOn(category.value) &&
 		printStockState(category.value) !== 'out' &&
 		currentPage.value === 1 &&
 		!props.filterAlias
@@ -505,7 +573,7 @@ const fromSelectedThemes = computed(() => {
 const { data: selectedThemeNeoprints } = await useAsyncData(
 	'cat-theme-neoprints-' + keySuffix.value,
 	async () => {
-		if (!fromSelectedThemes.value || !category.value?.printcase) return []
+		if (!fromSelectedThemes.value || !canPrintOn(category.value)) return []
 		const batches = await Promise.all(selectedThemes.value.map((n) => shopApi.getNeoPrints(n.id!)))
 		return interleave(batches).slice(0, NEOPRINT_MAX)
 	},
@@ -570,7 +638,7 @@ const productsCount = computed(() =>
 )
 
 // Порожньо — лише коли немає ні товарів, ні дизайнів
-const hasItems = computed(() => products.value.length > 0 || showNeoPrints.value)
+const hasItems = computed(() => products.value.length > 0 || showNeoPrints.value || designs.value.length > 0)
 
 // SEO-блоки FAQ/цін: модельні сторінки та сторінки /filter/, лише 1-ша сторінка і без
 // мультивибору ?filter_* — інакше той самий текст дублювався б на URL пагінації/комбінацій
@@ -581,6 +649,10 @@ const showSeoBlocks = computed(
 		currentPage.value === 1 &&
 		products.value.length > 0
 )
+
+// Модель без товарів (режим «дизайни»): на 1-й сторінці — лід і таблиця цін із дизайнів.
+// FAQ моделі будується з товарів (матеріали, діапазон цін) — тут його немає
+const showDesignsSeo = computed(() => designsMode.value && currentPage.value === 1 && designs.value.length > 0)
 
 // Відгуки: сторінки моделі та її фільтрів (відгуки прив'язані до категорії).
 // Лише 1-ша сторінка без ?filter_* — щоб той самий текст не дублювався на URL пагінації/комбінацій.
@@ -614,8 +686,16 @@ const pricesTitle = computed(() => {
 })
 
 // Рядки таблиці цін: на сторінці фільтра — варіанти «Товар (Атрибут)» з URL /attr/
-// (довгохвостові анкори), на сторінці моделі — топ-10 товарів
+// (довгохвостові анкори), на сторінці моделі — топ-10 товарів, у моделі без товарів — дизайни
 const priceRows = computed(() => {
+	if (designsMode.value) {
+		return designs.value.slice(0, 10).map((np) => ({
+			id: np.id,
+			title: neoPrintTitle(np, category.value),
+			to: url.neoprint(props.categoryAlias, np.id),
+			price: neoPrintPrice.value,
+		}))
+	}
 	if (props.filterAlias) {
 		return pageItems.value
 			.filter(({ product }) => product.price)
@@ -635,15 +715,23 @@ const priceRows = computed(() => {
 
 // ---------- Підвантаження «Показати ще» / авто по скролу (логіка — у composable) ----------
 // 1 партія авто по скролу (плавний старт) → далі кнопка/ползунок. Кожна партія = одна сторінка (24).
-const { items: displayProducts, isLoadingMore, autoOn, hasMorePages, loadedPages, showButton, loadMore, scrollSentinel } =
+// Список — той, що на сторінці: товари або (модель без товарів) дизайни
+const listItems = computed<any[]>(() => (designsMode.value ? designs.value : products.value))
+
+const { items: displayList, isLoadingMore, autoOn, hasMorePages, loadedPages, showButton, loadMore, scrollSentinel } =
 	useLoadMore({
-		baseItems: products,
+		baseItems: listItems,
 		currentPage,
 		lastPage,
 		fetchPage: (page: number) =>
-			shopApi.getProductsList({ ...options.value, page }, apiFilters.value).then((r) => r?.data || []),
+			designsMode.value
+				? shopApi.getDesignsPage(page, options.value.limit).then((r) => r?.data || [])
+				: shopApi.getProductsList({ ...options.value, page }, apiFilters.value).then((r) => r?.data || []),
 		autoBatches: 1,
 	})
+
+const displayProducts = computed(() => (designsMode.value ? [] : displayList.value))
+const displayDesigns = computed(() => (designsMode.value ? displayList.value : []))
 
 // Активний фільтр (/filter/ або вибір у сайдбарі ?filter_*): розбиваємо товар на окрему
 // картку під кожен атрибут — колір/принт/дизайн (як на старому сайті). Кожна картка має
@@ -741,6 +829,16 @@ const minPrice = computed(() => {
 // кириличною назвою — унікальний текст для кожної моделі + фолбек meta description,
 // коли опис у адмінці не заповнений.
 const modelLeadText = computed(() => {
+	// Модель без товарів — лід про готові дизайни (кількість і ціна друку)
+	if (designsMode.value) {
+		return designsTotal.value
+			? t('modelLead.designs', {
+					model: catName.value,
+					count: designsTotal.value,
+					price: formatPrice(neoPrintPrice.value),
+				})
+			: ''
+	}
 	// Без цін фраза «ціни від» була б порожньою — тоді ліду просто немає
 	if (category.value?.type !== 'model' || props.filterAlias || !minPrice.value) return ''
 	return t(catAlt.value ? 'modelLead.alt' : 'modelLead.main', {
@@ -753,7 +851,9 @@ const modelLeadText = computed(() => {
 
 // Видимий лід сторінки: фільтр → лід фільтра, модель → лід моделі (там само, де решта
 // SEO-блоків: 1-ша сторінка без ?filter_*, щоб не дублювати текст на пагінації)
-const pageLead = computed(() => (props.filterAlias ? filterLead.value : showSeoBlocks.value ? modelLeadText.value : ''))
+const pageLead = computed(() =>
+	props.filterAlias ? filterLead.value : showSeoBlocks.value || showDesignsSeo.value ? modelLeadText.value : ''
+)
 
 const breadcrumbs = computed(() => {
 	const crumbs: { title: string; url?: string }[] = []
@@ -787,7 +887,7 @@ const shareImage = computed(() => {
 	const first = products.value[0]
 	if (first) return url.productSeoImage(getImageByAttribute(first, 0) ?? first.image_file, 'og', first)
 
-	const np = neoprints.value[0]
+	const np = neoprints.value[0] ?? designs.value[0]
 	return np ? url.absolute(url.neoprintImage(props.categoryAlias, np.alias)) : undefined
 })
 
@@ -805,6 +905,11 @@ usePageSeo({
 	// категорію. Саме canonical, БЕЗ noindex: пара «noindex + canonical на іншу адресу»
 	// небезпечна — Google може перенести noindex на канонічну сторінку і викинути з
 	// індексу саму категорію.
+	//
+	// Модель без товарів, сторінки 2+: список дизайнів на всіх таких моделях той самий, різниться
+	// лише назва моделі — сотні майже однакових сторінок. Індексуємо 1-шу, решту — noindex, follow:
+	// посилання на дизайни бот обходить, а canonical тут свій (?page=N), тож пастки вище немає
+	noindex: () => designsMode.value && currentPage.value > 1,
 })
 
 // Друга назва списку кирилицею («Чохли для Айфон 17») — підказка пошуковикам/AI, що
@@ -825,9 +930,12 @@ const listAltName = computed(() =>
 const LIST_MAX = 24
 
 const listedItems = computed<{ name: string; url: string }[]>(() => {
-	const cards: { product: any; attribute: any | null }[] = splitByAttributes.value
-		? expandProductsByAttributes(products.value)
-		: products.value.map((p: any) => ({ product: p, attribute: null }))
+	// У моделі без товарів (режим «дизайни») список — лише дизайни сторінки
+	const cards: { product: any; attribute: any | null }[] = designsMode.value
+		? []
+		: splitByAttributes.value
+			? expandProductsByAttributes(products.value)
+			: products.value.map((p: any) => ({ product: p, attribute: null }))
 
 	const fromProducts = cards.slice(0, LIST_MAX).map(({ product: p, attribute: a }) => ({
 		name: a ? `${p.title} (${a.title})` : p.title,
@@ -837,12 +945,13 @@ const listedItems = computed<{ name: string; url: string }[]>(() => {
 	// Скільки дизайнів ще влізе у стелю списку — решту навіть не обходимо
 	const neoprintsRoom = Math.max(0, LIST_MAX - fromProducts.length)
 
-	const fromNeoprints = showNeoPrints.value
-		? neoprints.value.slice(0, neoprintsRoom).map((np: INeoPrint) => ({
-				name: neoPrintTitle(np, category.value),
-				url: url.absolute(url.neoprint(props.categoryAlias, np.id)),
-			}))
-		: []
+	// Дизайни теми (секція під товарами) або, у моделі без товарів, дизайни поточної сторінки
+	const shownDesigns: IThemeDesign[] = showNeoPrints.value ? neoprints.value : designs.value
+
+	const fromNeoprints = shownDesigns.slice(0, neoprintsRoom).map((np) => ({
+		name: neoPrintTitle(np, category.value),
+		url: url.absolute(url.neoprint(props.categoryAlias, np.id)),
+	}))
 
 	return [...fromProducts, ...fromNeoprints]
 })
