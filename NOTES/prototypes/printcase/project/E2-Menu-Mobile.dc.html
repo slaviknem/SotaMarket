@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Print-Case — мобільне меню, варіант E2 «Темна вітрина+»</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;background:#0a0a0b}
+a{color:inherit;text-decoration:none}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; font-family: Rubik, system-ui, sans-serif; color: #ffffff; background: #0a0a0b; font-size: 15px; line-height: 1.4; display: flex; flex-direction: column; overflow: hidden">
+<div style="height: 60px; padding: 0 6px 0 16px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0">
+<span style="font-weight: 800; font-size: 23px; letter-spacing: -.7px">Print<span style="color: #f7941d">Case</span></span>
+<a href="E2-Home-Mobile.dc.html" aria-label="Закрити меню" style="width: 44px; height: 44px; border-radius: 50%; background: #161618; border: 1px solid #2a2a2e; box-sizing: border-box; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></a>
+</div>
+<div style="flex: 1; overflow: hidden; padding: 6px 12px 0; display: flex; flex-direction: column; gap: 18px">
+<a href="#" style="height: 56px; border-radius: 16px; background: #161618; border: 1px solid #2a2a2e; display: flex; align-items: center; gap: 12px; padding: 0 14px; flex-shrink: 0"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#f7941d" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5"></rect></svg><span style="flex: 1; display: flex; flex-direction: column; line-height: 1.15"><span style="font-size: 11.5px; color: #a1a1aa">Мій телефон</span><strong style="font-weight: 700">Apple iPhone 16e</strong></span><span style="color: #f7941d; font-weight: 700; font-size: 14px">змінити</span></a>
+<nav aria-label="Розділи" style="display: flex; flex-direction: column; padding: 0 4px">
+<sc-for list="{{ main }}" as="m" hint-placeholder-count="4"><a href="#" style="min-height: 54px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1d1d20; font-size: 23px; font-weight: 800; letter-spacing: -.5px">{{ m }}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f7941d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg></a></sc-for>
+</nav>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<span style="padding: 0 4px; font-size: 11.5px; font-weight: 800; letter-spacing: 1.3px; text-transform: uppercase; color: #f7941d">Теми</span>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px 8px">
+<sc-for list="{{ themes }}" as="t" hint-placeholder-count="8"><a href="#" style="display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 13px; text-align: center"><span style="display: block; aspect-ratio: 1 / 1; border-radius: 16px; overflow: hidden; background: #161618"><img src="{{ t.img }}" alt="" width="80" height="80" style="width: 100%; height: 100%; object-fit: cover; display: block"></span>{{ t.t }}</a></sc-for>
+</div>
+</div>
+</div>
+<div style="flex-shrink: 0; padding: 12px 12px 16px; display: flex; flex-direction: column; gap: 10px">
+<a href="#" style="height: 56px; border-radius: 999px; background: #f7941d; color: #0a0a0b; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0-4 4m4-4 4 4"></path><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"></path></svg>Своє фото в конструкторі</a>
+<span style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px; color: #a1a1aa; font-size: 14px"><a href="#" style="padding: 8px 0">Доставка й оплата</a><span style="display: flex; gap: 3px; background: #161618; border: 1px solid #2a2a2e; border-radius: 999px; padding: 3px"><a href="#" aria-current="true" style="min-width: 44px; height: 34px; border-radius: 999px; background: #ffffff; color: #0a0a0b; display: grid; place-items: center; font-weight: 800">UA</a><a href="#" style="min-width: 44px; height: 34px; border-radius: 999px; display: grid; place-items: center; color: #ffffff; font-weight: 600">RU</a></span></span>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+const b = '/_blob/';
+return {
+main: ['Усі дизайни', 'Хіти', 'Новинки', 'Відстежити замовлення'],
+themes: [
+{ t: 'Квіти', img: b + 'a23b4563e5ec04bd00d0dbfa0570c66f' },
+{ t: 'Тварини', img: b + '7f45ca79736022e33fde763298d6e7a4' },
+{ t: 'Аніме', img: b + '70b306ff143f051a1c069f53581dcdfd' },
+{ t: 'Кіно', img: b + 'e2d719dd3eddf4b8c0defe406035f701' },
+{ t: 'Дитячі', img: b + '9b53ac965e42990f083a6dc628b5e213' },
+{ t: 'Ігри', img: b + 'fb9e3dd5c97f8975f9798d6dd7f47870' },
+{ t: 'Авто', img: b + 'd415008d0c7ad6d5c1bb7df4e87f2fe7' },
+{ t: 'Різне', img: b + '55de327f68c895ff0d9abe9d3ec4aef8' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

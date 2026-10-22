@@ -1,0 +1,50 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-21T11:05:00Z" },
+  "title": "Прототипи SMARKET",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 1440, "h": 3400, "title": "A · Класика — головна 1440", "expand": "fill" },
+    "A-Model.dc.html": { "x": 1520, "y": 0, "w": 1440, "h": 2800, "title": "A · Класика — модель iPhone 16e", "expand": "fill" },
+    "A-Home-Mobile.dc.html": { "x": 3040, "y": 0, "w": 390, "h": 3400, "title": "A · Класика — головна 390" },
+    "A-Menu-Mobile.dc.html": { "x": 3510, "y": 0, "w": 390, "h": 844, "title": "A · Класика — мобільне меню" },
+    "B-Home.dc.html": { "x": 0, "y": 3900, "w": 1440, "h": 3500, "title": "B · Галерея — головна 1440", "expand": "fill" },
+    "B-Model.dc.html": { "x": 1520, "y": 3900, "w": 1440, "h": 2900, "title": "B · Галерея — модель iPhone 16e", "expand": "fill" },
+    "B-Home-Mobile.dc.html": { "x": 3040, "y": 3900, "w": 390, "h": 3500, "title": "B · Галерея — головна 390" },
+    "B-Menu-Mobile.dc.html": { "x": 3510, "y": 3900, "w": 390, "h": 844, "title": "B · Галерея — мобільне меню" },
+    "C-Home.dc.html": { "x": 0, "y": 7900, "w": 1440, "h": 3300, "title": "C · Техно — головна 1440", "expand": "fill" },
+    "C-Model.dc.html": { "x": 1520, "y": 7900, "w": 1440, "h": 2800, "title": "C · Техно — модель iPhone 16e", "expand": "fill" },
+    "C-Home-Mobile.dc.html": { "x": 3040, "y": 7900, "w": 390, "h": 3300, "title": "C · Техно — головна 390" },
+    "C-Menu-Mobile.dc.html": { "x": 3510, "y": 7900, "w": 390, "h": 844, "title": "C · Техно — мобільне меню" },
+    "A2-Home.dc.html": { "x": 0, "y": 11800, "w": 1440, "h": 3500, "title": "A2 · Класика+ — головна 1440", "expand": "fill" },
+    "A2-Model.dc.html": { "x": 1520, "y": 11800, "w": 1440, "h": 2900, "title": "A2 · Класика+ — модель iPhone 16e", "expand": "fill" },
+    "A2-Home-Mobile.dc.html": { "x": 3040, "y": 11800, "w": 390, "h": 3500, "title": "A2 · Класика+ — головна 390" },
+    "A2-Menu-Mobile.dc.html": { "x": 3510, "y": 11800, "w": 390, "h": 844, "title": "A2 · Класика+ — мобільне меню" }
+  },
+  "order": [
+    "Main.dc.html",
+    "A-Model.dc.html",
+    "A-Home-Mobile.dc.html",
+    "A-Menu-Mobile.dc.html",
+    "B-Home.dc.html",
+    "B-Model.dc.html",
+    "B-Home-Mobile.dc.html",
+    "B-Menu-Mobile.dc.html",
+    "C-Home.dc.html",
+    "C-Model.dc.html",
+    "C-Home-Mobile.dc.html",
+    "C-Menu-Mobile.dc.html",
+    "A2-Home.dc.html",
+    "A2-Model.dc.html",
+    "A2-Home-Mobile.dc.html",
+    "A2-Menu-Mobile.dc.html"
+  ],
+  "notes": {
+    "rowA": { "x": 0, "y": -300, "text": "A · «Класика» — графітова смуга, бічний каталог, Manrope", "kind": "title1", "maxW": 3900 },
+    "rowB": { "x": 0, "y": 3600, "text": "B · «Галерея» — білий простір, бенто-плитки категорій, Onest", "kind": "title1", "maxW": 3900 },
+    "rowC": { "x": 0, "y": 7600, "text": "C · «Техно» — довідник: підбір, індекс категорій, IBM Plex", "kind": "title1", "maxW": 3900 },
+    "rowA2": { "x": 0, "y": 11500, "text": "A2 · «Класика+» — теплий фон і графіт, перемикач «Палітра» у Tweaks", "kind": "title1", "maxW": 3900 }
+  },
+  "designSystems": []
+}

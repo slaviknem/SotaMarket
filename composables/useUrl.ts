@@ -167,6 +167,23 @@ export function useUrl() {
 		bannerImg: (imageFile?: string | null) =>
 			imageFile ? config.public.urlStorage + 'images/banners/' + imageFile : '',
 
+		// Посилання банера з адмінки — шлях без мови (/power-bank), мовний префікс додаємо тут.
+		// Повна адреса свого домену — теж внутрішнє посилання (так записані старі банери); чужий
+		// домен — як є. Порожнє — банер без посилання (PLAN-MULTISITE §5.4)
+		bannerLink: (link?: string | null) => {
+			if (!link) return undefined
+
+			const absolute = link.match(/^https?:\/\/(?:www\.)?([^/?#]+)(.*)$/i)
+			if (absolute) {
+				if (absolute[1].toLowerCase() !== useBrand().domain) return link
+				link = absolute[2] || '/'
+			}
+
+			// Запит і якір — повз localePath, щоб він їх не загубив
+			const [, path, rest] = link.match(/^([^?#]*)(.*)$/)!
+			return localePath(path.replace(/^\/uk(?=\/|$)/, '') || '/') + rest
+		},
+
 		// Роути магазину (з мовним префіксом)
 		category: (alias: string, filterAlias?: string) =>
 			localePath(filterAlias ? `/${alias}/filter/${filterAlias}` : `/${alias}`),

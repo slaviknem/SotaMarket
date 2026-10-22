@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>SMARKET — головна на телефоні, варіант B «Галерея»</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;background:#ffffff}
+a{color:inherit;text-decoration:none}
+</style>
+</helmet>
+<div style="width: 390px; font-family: Onest, system-ui, sans-serif; color: #16181b; background: #ffffff; font-size: 15px; line-height: 1.5; overflow: hidden">
+
+<header style="height: 64px; padding: 0 8px 0 18px; display: flex; align-items: center; gap: 4px">
+<a href="#" aria-label="SMARKET — на головну" style="flex: 1; font-weight: 800; font-size: 25px; letter-spacing: -1px; line-height: 1">smarket<span style="color: #d0313d">.</span></a>
+<a href="#" aria-label="Пошук" style="width: 44px; height: 44px; display: grid; place-items: center"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg></a>
+<a href="#" aria-label="Кошик, 2 товари" style="height: 44px; padding: 0 14px 0 12px; border-radius: 999px; background: #16181b; color: #ffffff; display: flex; align-items: center; gap: 6px; font-weight: 700"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7L6 7z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg>2</a>
+<a href="B-Menu-Mobile.dc.html" aria-label="Меню" style="width: 44px; height: 44px; display: grid; place-items: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true"><path d="M4 9h16M4 15h16"></path></svg></a>
+</header>
+
+<section style="margin: 0 12px; background: #f3f2ef; border-radius: 28px; padding: 28px 20px 0; display: flex; flex-direction: column; gap: 14px; overflow: hidden">
+<h1 style="margin: 0; font-size: 33px; line-height: 1.04; font-weight: 700; letter-spacing: -1.2px">Чохли й аксесуари, що пасують вашому телефону</h1>
+<p style="margin: 0; color: #4f5358">Фірмові чохли, друк вашого фото, зарядні й навушники.</p>
+<form role="search" style="display: flex; gap: 6px; background: #ffffff; border-radius: 999px; padding: 5px 5px 5px 18px; align-items: center">
+<label for="qbmob" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Ваша модель</label>
+<input id="qbmob" type="search" placeholder="Ваша модель" style="flex: 1; min-width: 0; border: 0; font: inherit; color: #16181b; outline: none; height: 44px">
+<button type="submit" style="height: 46px; padding: 0 18px; border: 0; border-radius: 999px; background: #d0313d; color: #ffffff; font: inherit; font-weight: 700">Підібрати</button>
+</form>
+<div style="position: relative; height: 190px">
+<img src="/_blob/c07cedece9a71cd27a14d3db21e4a186" alt="" width="140" height="140" style="position: absolute; left: 0; top: 40px; width: 140px; border-radius: 18px; transform: rotate(-8deg); mix-blend-mode: multiply">
+<img src="/_blob/73d2bb07a46c9f31a6f8570ce54cc02e" alt="" width="150" height="150" style="position: absolute; left: 50%; top: 4px; margin-left: -75px; width: 150px; border-radius: 18px; mix-blend-mode: multiply">
+<img src="/_blob/bfd48653e3ab0cc7ec76ddebd4a92f86" alt="" width="140" height="140" style="position: absolute; right: 0; top: 46px; width: 140px; border-radius: 18px; transform: rotate(8deg); mix-blend-mode: multiply">
+</div>
+</section>
+
+<div style="margin: 10px 12px 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<a href="#" style="background: #e9eef2; border-radius: 24px; padding: 16px; display: flex; flex-direction: column; gap: 6px; overflow: hidden"><strong style="font-size: 19px; font-weight: 700; letter-spacing: -.5px">Навушники</strong><span style="color: #4f5358; font-size: 13.5px">від 559 ₴</span><img src="/_blob/4a43357544c8be198d0526c0dc5b6987" alt="" width="120" height="120" style="width: 120px; height: 120px; object-fit: contain; mix-blend-mode: multiply; align-self: flex-end"></a>
+<a href="#" style="background: #f6ece6; border-radius: 24px; padding: 16px; display: flex; flex-direction: column; gap: 6px; overflow: hidden"><strong style="font-size: 19px; font-weight: 700; letter-spacing: -.5px">Зарядні</strong><span style="color: #4f5358; font-size: 13.5px">від 209 ₴</span><img src="/_blob/5a4a2495d25c26c33b5fb88af524475e" alt="" width="120" height="120" style="width: 120px; height: 120px; object-fit: contain; mix-blend-mode: multiply; align-self: flex-end"></a>
+</div>
+
+<nav aria-label="Бренди" style="display: flex; gap: 22px; overflow-x: auto; padding: 26px 18px 6px">
+<sc-for list="{{ brands }}" as="b" hint-placeholder-count="8"><a href="#" style="font-size: 20px; font-weight: 700; letter-spacing: -.5px; color: #8a8d91; white-space: nowrap; padding: 8px 0">{{ b }}</a></sc-for>
+</nav>
+
+<section aria-labelledby="cm-h" style="padding: 24px 12px 0">
+<h2 id="cm-h" style="margin: 0 0 14px 6px; font-size: 28px; font-weight: 700; letter-spacing: -1px">Каталог</h2>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<sc-for list="{{ cats }}" as="c" hint-placeholder-count="6"><a href="#" style="background: #f3f2ef; border-radius: 22px; padding: 14px; height: 168px; box-sizing: border-box; display: flex; flex-direction: column; position: relative; overflow: hidden"><strong style="font-size: 16px; font-weight: 700; position: relative; z-index: 1">{{ c.t }}</strong><span style="color: #4f5358; font-size: 13px; position: relative; z-index: 1">{{ c.n }}</span><img src="{{ c.img }}" alt="" width="110" height="110" style="position: absolute; right: 6px; bottom: 4px; width: 110px; height: 110px; object-fit: contain; mix-blend-mode: multiply"></a></sc-for>
+</div>
+</section>
+
+<section aria-labelledby="nm-h" style="padding: 34px 12px 0">
+<h2 id="nm-h" style="margin: 0 0 14px 6px; font-size: 28px; font-weight: 700; letter-spacing: -1px">Нове на складі</h2>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 10px">
+<sc-for list="{{ fresh }}" as="p" hint-placeholder-count="4"><article style="display: flex; flex-direction: column; gap: 8px">
+<a href="#" style="display: block; background: #f3f2ef; border-radius: 20px; overflow: hidden; position: relative"><img src="{{ p.img }}" alt="{{ p.t }}" width="600" height="600" style="width: 100%; height: auto; display: block; mix-blend-mode: multiply"><sc-if value="{{ p.disc }}" hint-placeholder-val="{{ true }}"><span style="position: absolute; left: 10px; top: 10px; background: #ffffff; color: #b0242f; font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 999px">{{ p.disc }}</span></sc-if></a>
+<a href="#" style="font-size: 13.5px; line-height: 1.35; color: #2b2e32">{{ p.t }}</a>
+<strong style="font-size: 17px; font-weight: 700">{{ p.price }} ₴</strong>
+</article></sc-for>
+</div>
+</section>
+
+<a href="#" style="margin: 34px 12px 0; background: #16181b; color: #ffffff; border-radius: 28px; padding: 24px 20px; display: flex; flex-direction: column; gap: 10px">
+<span style="color: #ff8f96; font-weight: 700; font-size: 12.5px; letter-spacing: 1px; text-transform: uppercase">Друк на чохлі</span>
+<strong style="font-size: 26px; font-weight: 700; letter-spacing: -.8px; line-height: 1.1">Ваше фото на чохлі — від 269 ₴</strong>
+<span style="display: flex; justify-content: center; gap: 8px; padding: 10px 0"><img src="/_blob/98b62b38a41be75c3a0fac66d1e1c74c" alt="" width="100" height="100" style="width: 100px; border-radius: 14px; transform: rotate(-6deg)"><img src="/_blob/6efcc1b46fc055b84cb5888db430f688" alt="" width="100" height="100" style="width: 100px; border-radius: 14px"><img src="/_blob/03d7dbc7306cff6ef5f1812ef0bd0d5c" alt="" width="100" height="100" style="width: 100px; border-radius: 14px; transform: rotate(6deg)"></span>
+<span style="height: 50px; border-radius: 999px; background: #ffffff; color: #16181b; font-weight: 700; display: flex; align-items: center; justify-content: center">Створити дизайн</span>
+</a>
+
+<section aria-labelledby="jm-h" style="padding: 34px 12px 0">
+<h2 id="jm-h" style="margin: 0 0 14px 6px; font-size: 28px; font-weight: 700; letter-spacing: -1px">Журнал</h2>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{ posts }}" as="a" hint-placeholder-count="3"><a href="#" style="background: #f3f2ef; border-radius: 20px; overflow: hidden; display: flex; align-items: center; gap: 12px"><img src="{{ a.img }}" alt="" width="120" height="80" style="width: 120px; height: 86px; object-fit: cover; mix-blend-mode: multiply; flex-shrink: 0"><strong style="padding: 10px 12px 10px 0; font-size: 15px; font-weight: 700; line-height: 1.3; letter-spacing: -.2px">{{ a.t }}</strong></a></sc-for>
+</div>
+</section>
+
+<section aria-label="Умови" style="padding: 34px 18px 0; display: flex; flex-direction: column; gap: 16px">
+<sc-for list="{{ perks }}" as="k" hint-placeholder-count="3"><div style="display: flex; flex-direction: column; gap: 2px; border-top: 1px solid #e8e6e1; padding-top: 14px"><strong style="font-size: 20px; font-weight: 700; letter-spacing: -.5px">{{ k.t }}</strong><span style="color: #4f5358; font-size: 14px">{{ k.d }}</span></div></sc-for>
+</section>
+
+<footer style="margin-top: 34px; border-top: 1px solid #e8e6e1; padding: 22px 18px 0; display: flex; flex-direction: column; gap: 10px; font-size: 14.5px; color: #3e4246">
+<a href="#" style="font-size: 20px; font-weight: 700; color: #16181b">099 419 03 90</a>
+<nav aria-label="Покупцям" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px"><a href="#" style="padding: 10px 0">Доставка й оплата</a><a href="#" style="padding: 10px 0">Повернення</a><a href="#" style="padding: 10px 0">Відстежити замовлення</a><a href="#" style="padding: 10px 0">Про нас</a></nav>
+<span><strong style="color: #16181b">UA</strong> · RU</span>
+<span aria-hidden="true" style="display: block; font-weight: 800; font-size: 96px; letter-spacing: -5px; line-height: .8; color: #f3f2ef; margin-top: 8px">smarket<span style="color: #f6d9db">.</span></span>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":3500}}'>
+class Component extends DCLogic {
+renderVals() {
+const b = '/_blob/';
+const mk = (t, price, old, img) => {
+const d = old > price;
+return { t: t, price: price, disc: d ? '−' + Math.round((old - price) / old * 100) + '%' : '', img: b + img };
+};
+return {
+brands: ['Apple', 'Samsung', 'Xiaomi', 'Motorola', 'Google', 'Realme', 'OPPO', 'Усі 22'],
+cats: [
+{ t: 'Чохли', n: '1 500+ моделей', img: b + 'c0bc77f3c71543f0cf57a25836b9bd28' },
+{ t: 'Зарядні', n: '222 товари', img: b + '7329a4154f202d2972451af12d97b2a3' },
+{ t: 'Кабелі', n: '282 товари', img: b + 'f79260337f61099adb3b078482201366' },
+{ t: 'Навушники', n: '89 товарів', img: b + '3061ed26c9f4fe20c65630e618c14048' },
+{ t: 'Колонки', n: '34 товари', img: b + '5da22e4aaa5c04a8093765caec5168d6' },
+{ t: 'Автотримачі', n: '93 товари', img: b + 'a4168285c2856c46a426b1494bf0d42e' }
+],
+fresh: [
+mk('Чохол Ummi Colorful with Magnetic Fit для iPhone 16e / 17e', 559, 579, 'c0bc77f3c71543f0cf57a25836b9bd28'),
+mk('TWS-навушники Amaya ATW-07', 799, 829, '7bf1e1edbec2f8bc9e3449d53a9776c1'),
+mk('Чохол з малюнком Стіч для iPhone 16e', 269, 289, 'c07cedece9a71cd27a14d3db21e4a186'),
+mk('Bluetooth-колонка Amaya ASP-30 30W', 2169, 2199, '457bad66e6bb40c0b239a12bf4a60869')
+],
+posts: [
+{ t: 'Як вибрати чохол на телефон — покрокова інструкція', img: b + '9f069747649b0b0a77f659d6867b766a' },
+{ t: 'Що краще поклеїти на екран для захисту смартфона?', img: b + 'c726c83b687f0ed6a8b1dc33626884d6' },
+{ t: 'Гаманець у телефоні — Google Pay та Apple Pay', img: b + '0df55c05c2fabdf6dce43ddf9642865e' }
+],
+perks: [
+{ t: 'Доставка безкоштовно', d: 'Для замовлень від 1000 ₴' },
+{ t: 'Оплата при отриманні', d: 'Платите, коли переконалися' },
+{ t: '−10 % на наступні', d: 'Для тих, хто вже купував у SMARKET' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

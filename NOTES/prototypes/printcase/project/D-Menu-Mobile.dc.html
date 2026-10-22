@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Print-Case — мобільне меню, варіант D «Каталог тем»</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&amp;display=swap">
+<style>
+body{margin:0;background:#f5f5f6}
+a{color:inherit;text-decoration:none}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; font-family: Montserrat, system-ui, sans-serif; color: #1d1e21; background: #f5f5f6; font-size: 15px; line-height: 1.4; display: flex; flex-direction: column; overflow: hidden">
+<div style="height: 60px; padding: 0 6px 0 16px; display: flex; align-items: center; justify-content: space-between; background: #ffffff; border-bottom: 1px solid #e4e5e8; flex-shrink: 0">
+<span style="display: flex; align-items: center; gap: 8px"><span style="width: 30px; height: 30px; border-radius: 8px; background: #f7941d; display: grid; place-items: center; font-weight: 900; font-size: 16px">P</span><span style="font-weight: 800; font-size: 19px">Print-Case</span></span>
+<a href="D-Home-Mobile.dc.html" aria-label="Закрити меню" style="width: 44px; height: 44px; display: grid; place-items: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></a>
+</div>
+<div style="flex: 1; overflow: hidden; padding: 12px; display: flex; flex-direction: column; gap: 12px">
+<a href="#" style="height: 56px; border-radius: 14px; border: 1.5px solid #f7941d; background: #ffffff; display: flex; align-items: center; gap: 12px; padding: 0 16px; font-weight: 700; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5"></rect></svg><span style="flex: 1; display: flex; flex-direction: column; line-height: 1.15"><span style="font-size: 11px; color: #5d6066; font-weight: 600">Твоя модель</span>iPhone 16e</span><span style="color: #a85a00; font-weight: 800; font-size: 13.5px">Змінити</span></a>
+<div style="background: #ffffff; border: 1px solid #e4e5e8; border-radius: 16px; overflow: hidden">
+<strong style="display: block; padding: 12px 16px 6px; font-size: 12.5px; font-weight: 800; color: #5d6066; letter-spacing: .6px; text-transform: uppercase">Теми</strong>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr))">
+<sc-for list="{{ themes }}" as="t" hint-placeholder-count="10"><a href="#" style="min-height: 48px; display: flex; align-items: center; padding: 0 16px; border-top: 1px solid #eeeff1; font-weight: 700">{{ t }}</a></sc-for>
+</div>
+</div>
+<nav aria-label="Покупцям" style="background: #ffffff; border: 1px solid #e4e5e8; border-radius: 16px; display: flex; flex-direction: column">
+<sc-for list="{{ info }}" as="i" hint-placeholder-count="4"><a href="#" style="min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #eeeff1; font-weight: 600">{{ i }}<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a3a5aa" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg></a></sc-for>
+</nav>
+</div>
+<div style="flex-shrink: 0; background: #232427; padding: 12px 16px 14px; display: flex; flex-direction: column; gap: 10px">
+<a href="#" style="height: 52px; border-radius: 12px; background: #f7941d; display: flex; align-items: center; justify-content: center; font-weight: 800">Свій дизайн у конструкторі</a>
+<span style="display: flex; justify-content: space-between; align-items: center; color: #c3c4c8; font-size: 13.5px"><span>[ТЕЛЕФОН]</span><span style="display: flex; gap: 4px"><a href="#" aria-current="true" style="min-width: 40px; height: 36px; border-radius: 8px; background: #ffffff; color: #1d1e21; display: grid; place-items: center; font-weight: 800">UA</a><a href="#" style="min-width: 40px; height: 36px; border-radius: 8px; display: grid; place-items: center; color: #ffffff; font-weight: 600">RU</a></span></span>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+themes: ['Квіти', 'Тварини', 'Аніме', 'Кіно', 'Дитячі', 'Ігри', 'Авто', 'Космос', 'Різне', 'Усі теми →'],
+info: ['Хіти', 'Доставка й оплата', 'Відстежити замовлення', 'Про нас']
+};
+}
+}
+</script>
+</body>
+</html>

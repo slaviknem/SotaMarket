@@ -15,7 +15,7 @@
 						<SwiperSlide v-for="(banner, i) in banners" :key="banner.id">
 							<component
 								:is="banner.url ? 'a' : 'div'"
-								:href="banner.url || undefined"
+								:href="url.bannerLink(banner.url)"
 								class="banner-slide"
 							>
 								<!-- Перший банер — LCP головної: eager + preload з високим пріоритетом.

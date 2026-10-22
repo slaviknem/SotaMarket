@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Print-Case — головна на телефоні, варіант D «Каталог тем»</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&amp;display=swap">
+<style>
+body{margin:0;background:#f5f5f6}
+a{color:inherit;text-decoration:none}
+</style>
+</helmet>
+<div style="width: 390px; font-family: Montserrat, system-ui, sans-serif; color: #1d1e21; background: #f5f5f6; font-size: 14.5px; line-height: 1.5; overflow: hidden">
+
+<header style="background: #ffffff; border-bottom: 1px solid #e4e5e8">
+<div style="height: 60px; padding: 0 6px 0 8px; display: flex; align-items: center; gap: 2px">
+<a href="D-Menu-Mobile.dc.html" aria-label="Меню" style="width: 44px; height: 44px; display: grid; place-items: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"></path></svg></a>
+<a href="#" aria-label="Print-Case — на головну" style="flex: 1; display: flex; align-items: center; gap: 8px"><span style="width: 30px; height: 30px; border-radius: 8px; background: #f7941d; display: grid; place-items: center; font-weight: 900; font-size: 16px">P</span><span style="font-weight: 800; font-size: 19px; letter-spacing: -.3px">Print-Case</span></a>
+<a href="#" aria-label="Пошук" style="width: 44px; height: 44px; display: grid; place-items: center"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg></a>
+<a href="#" aria-label="Кошик, 1 товар" style="position: relative; width: 44px; height: 44px; display: grid; place-items: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7L6 7z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg><span style="position: absolute; top: 5px; right: 3px; min-width: 16px; height: 16px; border-radius: 8px; background: #f7941d; font-size: 10px; font-weight: 800; display: grid; place-items: center">1</span></a>
+</div>
+<nav aria-label="Теми" style="display: flex; gap: 20px; overflow-x: auto; padding: 0 16px; height: 44px; align-items: center; border-top: 1px solid #eeeff1; font-weight: 700; font-size: 14px">
+<sc-for list="{{ themeNames }}" as="t" hint-placeholder-count="7"><a href="#" style="white-space: nowrap; padding: 10px 0">{{ t }}</a></sc-for>
+</nav>
+</header>
+
+<section style="margin: 12px; background: #ffffff; border: 1px solid #e4e5e8; border-radius: 18px; padding: 22px 18px; display: flex; flex-direction: column; gap: 12px">
+<span style="align-self: flex-start; background: #fff1df; color: #a85a00; font-weight: 700; font-size: 12.5px; padding: 4px 11px; border-radius: 999px">Твоя модель — iPhone 16e</span>
+<h1 style="margin: 0; font-size: 27px; line-height: 1.12; font-weight: 800; letter-spacing: -.5px">Чохли з принтом для твого телефона</h1>
+<p style="margin: 0; color: #5d6066">Понад 2 000 дизайнів — кожен друкуємо під твою модель.</p>
+<div style="display: flex; gap: 8px">
+<label style="flex: 1; display: flex; flex-direction: column; gap: 1px; border: 1px solid #e4e5e8; border-radius: 12px; padding: 6px 12px; font-size: 11px; font-weight: 700; color: #5d6066">Бренд<select style="border: 0; background: transparent; font: inherit; font-size: 15px; font-weight: 700; color: #1d1e21; padding: 0; outline: none"><option>Apple</option></select></label>
+<label style="flex: 1.3; display: flex; flex-direction: column; gap: 1px; border: 1px solid #e4e5e8; border-radius: 12px; padding: 6px 12px; font-size: 11px; font-weight: 700; color: #5d6066">Модель<select style="border: 0; background: transparent; font: inherit; font-size: 15px; font-weight: 700; color: #1d1e21; padding: 0; outline: none"><option>iPhone 16e</option></select></label>
+</div>
+<button type="submit" style="height: 52px; border: 0; border-radius: 12px; background: #f7941d; color: #1d1e21; font: inherit; font-weight: 800; font-size: 15.5px">Показати дизайни</button>
+<div style="display: flex; gap: 6px; align-items: center">
+<sc-for list="{{ strip }}" as="s" hint-placeholder-count="4"><img src="{{ s }}" alt="" width="504" height="630" style="width: 58px; height: 72px; object-fit: cover; border-radius: 9px; background: #f5f5f6"></sc-for>
+<span style="height: 72px; flex: 1; border-radius: 9px; background: #f5f5f6; display: grid; place-items: center; font-weight: 800; color: #a85a00">+2 000</span>
+</div>
+</section>
+
+<a href="#" style="margin: 0 12px; background: #232427; color: #ffffff; border-radius: 18px; padding: 18px; display: flex; align-items: center; gap: 14px">
+<span style="width: 70px; height: 130px; border-radius: 16px; background: #ffffff; padding: 5px; box-sizing: border-box; flex-shrink: 0"><span style="height: 100%; border: 2px dashed #f7941d; border-radius: 12px; display: block"></span></span>
+<span style="display: flex; flex-direction: column; gap: 6px"><strong style="font-size: 18px; font-weight: 800; line-height: 1.2">Свій дизайн у конструкторі</strong><span style="color: #c3c4c8; font-size: 13.5px">Фото, напис чи колаж</span><span style="align-self: flex-start; background: #f7941d; color: #1d1e21; font-weight: 800; font-size: 13.5px; border-radius: 10px; padding: 8px 14px">Створити чохол</span></span>
+</a>
+
+<section aria-labelledby="tm-h" style="padding: 28px 12px 0">
+<h2 id="tm-h" style="margin: 0 4px 12px; font-size: 20px; font-weight: 800">Популярні теми</h2>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{ themes }}" as="t" hint-placeholder-count="6"><a href="#" style="background: #ffffff; border: 1px solid #e4e5e8; border-radius: 14px; padding: 8px; display: flex; align-items: center; gap: 10px; min-height: 44px"><img src="{{ t.img }}" alt="" width="264" height="504" style="width: 44px; height: 58px; object-fit: cover; border-radius: 8px"><strong style="font-size: 14px">{{ t.t }}</strong></a></sc-for>
+</div>
+</section>
+
+<section aria-labelledby="hm-h" style="padding: 28px 12px 0">
+<h2 id="hm-h" style="margin: 0 4px 12px; font-size: 20px; font-weight: 800">Хіти для iPhone 16e</h2>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{ designs }}" as="d" hint-placeholder-count="4"><article style="background: #ffffff; border: 1px solid #e4e5e8; border-radius: 14px; padding: 8px; display: flex; flex-direction: column; gap: 6px">
+<a href="#" style="display: block; background: #f5f5f6; border-radius: 10px; overflow: hidden"><img src="{{ d.img }}" alt="{{ d.t }}" width="504" height="630" style="width: 100%; height: auto; display: block; mix-blend-mode: multiply"></a>
+<a href="#" style="padding: 0 2px; font-weight: 600; font-size: 13px; line-height: 1.3; min-height: 34px">{{ d.t }}</a>
+<div style="padding: 0 2px; display: flex; justify-content: space-between; align-items: center"><strong style="font-size: 16px; font-weight: 800">249 ₴</strong><button type="button" aria-label="Додати в кошик" style="width: 44px; height: 44px; border-radius: 10px; border: 0; background: #f7941d; display: grid; place-items: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1d1e21" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7L6 7z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg></button></div>
+</article></sc-for>
+</div>
+<a href="#" style="display: flex; justify-content: center; align-items: center; height: 50px; margin-top: 12px; border-radius: 12px; background: #ffffff; border: 1px solid #e4e5e8; font-weight: 800">Усі дизайни для 16e</a>
+</section>
+
+<ul aria-label="Як ми працюємо" style="list-style: none; margin: 28px 12px 0; padding: 0; display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{ perks }}" as="k" hint-placeholder-count="3"><li style="background: #ffffff; border: 1px solid #e4e5e8; border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; line-height: 1.35"><strong>{{ k.t }}</strong><span style="color: #5d6066; font-size: 13px">{{ k.d }}</span></li></sc-for>
+</ul>
+
+<footer style="margin-top: 28px; background: #232427; color: #c3c4c8; padding: 22px 16px; display: flex; flex-direction: column; gap: 10px; font-size: 14px">
+<span style="display: flex; align-items: center; gap: 8px"><span style="width: 28px; height: 28px; border-radius: 8px; background: #f7941d; color: #1d1e21; display: grid; place-items: center; font-weight: 900">P</span><span style="font-weight: 800; font-size: 18px; color: #ffffff">Print-Case</span></span>
+<nav aria-label="Покупцям" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px"><a href="#" style="padding: 10px 0">Доставка й оплата</a><a href="#" style="padding: 10px 0">Повернення</a><a href="#" style="padding: 10px 0">Відстежити замовлення</a><a href="#" style="padding: 10px 0">Про нас</a></nav>
+<span><strong style="color: #ffffff">UA</strong> · RU</span>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":3200}}'>
+class Component extends DCLogic {
+renderVals() {
+const b = '/_blob/';
+return {
+themeNames: ['Усі теми', 'Квіти', 'Тварини', 'Аніме', 'Кіно', 'Дитячі', 'Ігри', 'Авто'],
+strip: [b + 'e22df3218ba0f2148c3c570266b5428c', b + '61a0f1674acbfb68f6dbf086d661aed5', b + '79f18329782334325a0868bbef294bc4', b + '46e7d1f1be265e77580e2a9eb4d83451'],
+themes: [
+{ t: 'Квіти', img: b + 'a23b4563e5ec04bd00d0dbfa0570c66f' },
+{ t: 'Тварини', img: b + '7f45ca79736022e33fde763298d6e7a4' },
+{ t: 'Аніме', img: b + '70b306ff143f051a1c069f53581dcdfd' },
+{ t: 'Кіно', img: b + 'e2d719dd3eddf4b8c0defe406035f701' },
+{ t: 'Дитячі', img: b + '9b53ac965e42990f083a6dc628b5e213' },
+{ t: 'Авто', img: b + 'd415008d0c7ad6d5c1bb7df4e87f2fe7' }
+],
+designs: [
+{ t: 'Капібари з апельсинами', img: b + 'e22df3218ba0f2148c3c570266b5428c' },
+{ t: 'Фіолетові квіти з росою', img: b + '61a0f1674acbfb68f6dbf086d661aed5' },
+{ t: 'Стіч з укулеле', img: b + 'f45b7dd1392fd7bbacaab6b8718ce96f' },
+{ t: 'Kuromi — ніжний фіолетовий', img: b + '79f18329782334325a0868bbef294bc4' }
+],
+perks: [
+{ t: 'Під твою модель', d: 'Вирізи камер і кнопок — на своїх місцях' },
+{ t: 'Видно до замовлення', d: 'Дизайн уже на чохлі саме твого телефона' },
+{ t: 'Свій дизайн', d: 'Фото, напис чи колаж у конструкторі' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

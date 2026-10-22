@@ -1,0 +1,188 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "A-Home-Mobile.dc.html": {
+      "h": 3300,
+      "title": "A · Соти — головна 390",
+      "w": 390,
+      "x": 3040,
+      "y": 0
+    },
+    "A-Menu-Mobile.dc.html": {
+      "h": 844,
+      "title": "A · Соти — мобільне меню",
+      "w": 390,
+      "x": 3510,
+      "y": 0
+    },
+    "A-Model.dc.html": {
+      "expand": "fill",
+      "h": 2500,
+      "title": "A · Соти — модель iPhone 16e",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "B-Home-Mobile.dc.html": {
+      "h": 3400,
+      "title": "B · Майстерня — головна 390",
+      "w": 390,
+      "x": 3040,
+      "y": 3800
+    },
+    "B-Home.dc.html": {
+      "expand": "fill",
+      "h": 3300,
+      "title": "B · Майстерня — головна 1440",
+      "w": 1440,
+      "x": 0,
+      "y": 3800
+    },
+    "B-Menu-Mobile.dc.html": {
+      "h": 844,
+      "title": "B · Майстерня — мобільне меню",
+      "w": 390,
+      "x": 3510,
+      "y": 3800
+    },
+    "B-Model.dc.html": {
+      "expand": "fill",
+      "h": 2600,
+      "title": "B · Майстерня — модель iPhone 16e",
+      "w": 1440,
+      "x": 1520,
+      "y": 3800
+    },
+    "C-Home-Mobile.dc.html": {
+      "h": 3100,
+      "title": "C · Вітрина — головна 390",
+      "w": 390,
+      "x": 3040,
+      "y": 7700
+    },
+    "C-Home.dc.html": {
+      "expand": "fill",
+      "h": 2900,
+      "title": "C · Вітрина — головна 1440",
+      "w": 1440,
+      "x": 0,
+      "y": 7700
+    },
+    "C-Menu-Mobile.dc.html": {
+      "h": 844,
+      "title": "C · Вітрина — мобільне меню",
+      "w": 390,
+      "x": 3510,
+      "y": 7700
+    },
+    "C-Model.dc.html": {
+      "expand": "fill",
+      "h": 2300,
+      "title": "C · Вітрина — модель iPhone 16e",
+      "w": 1440,
+      "x": 1520,
+      "y": 7702
+    },
+    "C2-Home-Mobile.dc.html": {
+      "h": 3300,
+      "title": "C2 · Вітрина+ — головна 390",
+      "w": 390,
+      "x": 3040,
+      "y": 11400
+    },
+    "C2-Home.dc.html": {
+      "expand": "fill",
+      "h": 3200,
+      "title": "C2 · Вітрина+ — головна 1440",
+      "w": 1440,
+      "x": 0,
+      "y": 11400
+    },
+    "C2-Menu-Mobile.dc.html": {
+      "h": 844,
+      "title": "C2 · Вітрина+ — мобільне меню",
+      "w": 390,
+      "x": 3510,
+      "y": 11400
+    },
+    "C2-Model.dc.html": {
+      "expand": "fill",
+      "h": 3000,
+      "title": "C2 · Вітрина+ — модель iPhone 16e",
+      "w": 1440,
+      "x": 1520,
+      "y": 11400
+    },
+    "Main.dc.html": {
+      "expand": "fill",
+      "h": 3150,
+      "title": "A · Соти — головна 1440",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-21T09:39:55.889Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "rowA": {
+      "kind": "title1",
+      "maxW": 3900,
+      "text": "A · «Соти» — синя смуга брендів, моделі-шестикутники, Rubik",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "rowB": {
+      "kind": "title1",
+      "maxW": 3900,
+      "text": "B · «Майстерня» — конструктор першим, плакатна типографіка",
+      "w": 240,
+      "x": 0,
+      "y": 3500
+    },
+    "rowC": {
+      "kind": "title1",
+      "maxW": 3900,
+      "text": "C · «Вітрина» — щільний каталог: модель і дизайни одразу",
+      "w": 240,
+      "x": 0,
+      "y": 7400
+    },
+    "rowC2": {
+      "kind": "title1",
+      "maxW": 3900,
+      "text": "C2 · «Вітрина+» — темніша палітра, перемикач «Палітра» у Tweaks",
+      "w": 240,
+      "x": 0,
+      "y": 11100
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "A-Model.dc.html",
+    "A-Home-Mobile.dc.html",
+    "A-Menu-Mobile.dc.html",
+    "B-Home.dc.html",
+    "B-Model.dc.html",
+    "B-Home-Mobile.dc.html",
+    "B-Menu-Mobile.dc.html",
+    "C-Home.dc.html",
+    "C-Model.dc.html",
+    "C-Home-Mobile.dc.html",
+    "C-Menu-Mobile.dc.html",
+    "C2-Home.dc.html",
+    "C2-Model.dc.html",
+    "C2-Home-Mobile.dc.html",
+    "C2-Menu-Mobile.dc.html"
+  ],
+  "pages": [],
+  "title": "Прототипи SotaMARKET"
+}

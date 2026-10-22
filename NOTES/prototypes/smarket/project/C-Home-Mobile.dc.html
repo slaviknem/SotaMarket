@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>SMARKET — головна на телефоні, варіант C «Техно»</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#f5f6f7}
+a{color:inherit;text-decoration:none}
+input[type=checkbox]{width:16px;height:16px;margin:0;accent-color:#d0313d}
+</style>
+</helmet>
+<div style="width: 390px; font-family: 'IBM Plex Sans', system-ui, sans-serif; color: #121417; background: #f5f6f7; font-size: 15px; line-height: 1.5; overflow: hidden">
+
+<header style="background: #1d2126; color: #ffffff; padding: 0 8px 12px">
+<div style="height: 58px; display: flex; align-items: center; gap: 2px">
+<a href="C-Menu-Mobile.dc.html" aria-label="Каталог і меню" style="width: 44px; height: 44px; display: grid; place-items: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="4" width="7" height="7"></rect><rect x="13" y="4" width="7" height="7"></rect><rect x="4" y="13" width="7" height="7"></rect><rect x="13" y="13" width="7" height="7"></rect></svg></a>
+<a href="#" aria-label="SMARKET — на головну" style="flex: 1; display: flex; align-items: center; gap: 8px; font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 19px; letter-spacing: 2.5px"><span style="width: 11px; height: 11px; background: #d0313d"></span>SMARKET</a>
+<a href="#" aria-label="Подзвонити 099 419 03 90" style="width: 44px; height: 44px; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"></path></svg></a>
+<a href="#" aria-label="Кошик, 2 товари" style="height: 44px; padding: 0 8px; display: flex; align-items: center; gap: 6px; font-family: 'IBM Plex Mono', monospace; font-weight: 600"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7L6 7z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg><span style="background: #d0313d; padding: 0 6px; border-radius: 2px; font-size: 12.5px">2</span></a>
+</div>
+<form role="search" style="height: 44px; margin: 0 8px; display: flex; align-items: center; gap: 10px; background: #2a2f35; border-radius: 4px; padding: 0 12px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a7aeb5" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+<label for="qcmob" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Пошук</label>
+<input id="qcmob" type="search" placeholder="Модель, товар, характеристика" style="flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; color: #ffffff; outline: none">
+</form>
+</header>
+
+<section style="margin: 12px; background: #ffffff; border: 1px solid #dcdfe3; border-radius: 4px; padding: 22px 18px; display: flex; flex-direction: column; gap: 14px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 1.4px; color: #b0242f; font-weight: 600">01 / ПІДБІР</span>
+<h1 style="margin: 0; font-size: 28px; line-height: 1.1; font-weight: 600; letter-spacing: -.6px">Аксесуари під ваш смартфон</h1>
+<label style="display: flex; flex-direction: column; gap: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 1px; color: #596068">МОДЕЛЬ<select style="height: 48px; border: 1px solid #c9cdd2; border-radius: 4px; padding: 0 12px; font-family: 'IBM Plex Sans', sans-serif; font-size: 16px; font-weight: 600; letter-spacing: 0; color: #121417; background: #ffffff"><option>Apple iPhone 16e</option></select></label>
+<fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px">
+<legend style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 1px; color: #596068; margin-bottom: 6px">ЩО ПОТРІБНО</legend>
+<sc-for list="{{ need }}" as="n" hint-placeholder-count="5"><label style="height: 44px; padding: 0 12px; border: 1px solid {{ n.bd }}; background: {{ n.bg }}; color: {{ n.fg }}; border-radius: 4px; display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14.5px"><input type="checkbox">{{ n.t }}</label></sc-for>
+</fieldset>
+<button type="submit" style="height: 50px; border: 0; border-radius: 4px; background: #d0313d; color: #ffffff; font: inherit; font-weight: 600; font-size: 16px">Показати 171 товар</button>
+<dl style="margin: 4px 0 0; display: flex; flex-direction: column">
+<sc-for list="{{ terms }}" as="k" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid #e6e8eb; font-size: 14px"><dt style="color: #596068">{{ k.t }}</dt><dd style="margin: 0; font-family: 'IBM Plex Mono', monospace; font-weight: 600">{{ k.v }}</dd></div></sc-for>
+</dl>
+</section>
+
+<section aria-labelledby="ix-h" style="padding: 18px 12px 0">
+<div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #b0242f; font-weight: 600">02 /</span><h2 id="ix-h" style="margin: 0; font-size: 22px; font-weight: 600">Каталог</h2></div>
+<div style="background: #ffffff; border: 1px solid #dcdfe3; border-radius: 4px">
+<sc-for list="{{ index }}" as="c" hint-placeholder-count="7"><a href="#" style="display: grid; grid-template-columns: 30px 48px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid #eceef0; min-height: 44px"><span style="font-family: 'IBM Plex Mono', monospace; color: #596068; font-size: 13px">{{ c.no }}</span><img src="{{ c.img }}" alt="" width="44" height="44" style="width: 44px; height: 44px; object-fit: contain"><strong style="font-weight: 600; font-size: 15px">{{ c.t }}</strong><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600">{{ c.n }}</span></a></sc-for>
+</div>
+</section>
+
+<section aria-labelledby="nw-h" style="padding: 26px 12px 0">
+<div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #b0242f; font-weight: 600">03 /</span><h2 id="nw-h" style="margin: 0; font-size: 22px; font-weight: 600">Нове на складі</h2></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); background: #ffffff; border: 1px solid #dcdfe3; border-radius: 4px">
+<sc-for list="{{ fresh }}" as="p" hint-placeholder-count="4"><article style="padding: 12px; display: flex; flex-direction: column; gap: 6px; border-right: 1px solid #eceef0; border-bottom: 1px solid #eceef0">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: .8px; color: #596068">{{ p.cat }}</span>
+<a href="#" style="display: block"><img src="{{ p.img }}" alt="{{ p.t }}" width="600" height="600" style="width: 100%; height: auto; display: block"></a>
+<a href="#" style="font-weight: 600; font-size: 13.5px; line-height: 1.3; min-height: 35px">{{ p.t }}</a>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #3d434a; background: #f2f3f5; padding: 3px 6px; border-radius: 2px">{{ p.spec }}</span>
+<strong style="font-family: 'IBM Plex Mono', monospace; font-size: 16px; font-weight: 600">{{ p.price }} ₴</strong>
+<button type="button" style="height: 44px; border: 1px solid #121417; border-radius: 4px; background: #ffffff; color: #121417; font: inherit; font-weight: 600">В кошик</button>
+</article></sc-for>
+</div>
+</section>
+
+<section aria-labelledby="pr-h" style="margin: 26px 12px 0; background: #1d2126; color: #ffffff; border-radius: 4px; padding: 22px 18px; display: flex; flex-direction: column; gap: 14px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 1.4px; color: #ff8f96; font-weight: 600">04 / ДРУК НА ЧОХЛІ</span>
+<h2 id="pr-h" style="margin: 0; font-size: 24px; font-weight: 600; line-height: 1.15">Ваше фото на чохлі — від 269 ₴</h2>
+<span style="display: flex; gap: 8px"><img src="/_blob/bfd48653e3ab0cc7ec76ddebd4a92f86" alt="" width="104" height="104" style="width: 33%; border-radius: 4px"><img src="/_blob/03d7dbc7306cff6ef5f1812ef0bd0d5c" alt="" width="104" height="104" style="width: 33%; border-radius: 4px"><img src="/_blob/6efcc1b46fc055b84cb5888db430f688" alt="" width="104" height="104" style="width: 33%; border-radius: 4px"></span>
+<ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column">
+<sc-for list="{{ steps }}" as="s" hint-placeholder-count="3"><li style="display: flex; gap: 12px; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.18)"><span style="font-family: 'IBM Plex Mono', monospace; color: #ff8f96">{{ s.n }}</span><span><strong style="font-weight: 600">{{ s.t }}</strong> <span style="color: #b4bac0">— {{ s.d }}</span></span></li></sc-for>
+</ol>
+<a href="#" style="height: 48px; border-radius: 4px; background: #d0313d; font-weight: 600; display: flex; align-items: center; justify-content: center">Відкрити конструктор</a>
+</section>
+
+<section aria-labelledby="gd-h" style="padding: 26px 12px 0">
+<div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #b0242f; font-weight: 600">05 /</span><h2 id="gd-h" style="margin: 0; font-size: 22px; font-weight: 600">Довідник</h2></div>
+<div style="display: flex; flex-direction: column; background: #ffffff; border: 1px solid #dcdfe3; border-radius: 4px">
+<sc-for list="{{ posts }}" as="a" hint-placeholder-count="3"><a href="#" style="display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-bottom: 1px solid #eceef0"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .8px; color: #596068">{{ a.tag }}</span><strong style="font-weight: 600; font-size: 15px; line-height: 1.35">{{ a.t }}</strong></a></sc-for>
+</div>
+</section>
+
+<footer style="margin-top: 28px; background: #1d2126; color: #b4bac0; padding: 22px 16px; display: flex; flex-direction: column; gap: 10px; font-size: 14px">
+<a href="#" style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 19px; color: #ffffff">099 419 03 90</a>
+<nav aria-label="Покупцям" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px"><a href="#" style="padding: 10px 0">Доставка й оплата</a><a href="#" style="padding: 10px 0">Повернення</a><a href="#" style="padding: 10px 0">Відстежити замовлення</a><a href="#" style="padding: 10px 0">Довідник</a></nav>
+<span style="display: flex; justify-content: space-between; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px"><span>© SMARKET</span><span><strong style="color: #ffffff">UA</strong> / RU</span></span>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":3300}}'>
+class Component extends DCLogic {
+renderVals() {
+const b = '/_blob/';
+const on = { bd: '#121417', bg: '#121417', fg: '#ffffff' };
+const off = { bd: '#c9cdd2', bg: '#ffffff', fg: '#121417' };
+return {
+need: [Object.assign({ t: 'Чохол' }, on), Object.assign({ t: 'Зарядка' }, off), Object.assign({ t: 'Кабель' }, off), Object.assign({ t: 'Навушники' }, off), Object.assign({ t: 'Автотримач' }, off)],
+terms: [{ t: 'Доставка', v: '0 ₴ від 1000 ₴' }, { t: 'Оплата', v: 'при отриманні' }, { t: 'Повторне замовлення', v: '−10 %' }],
+index: [
+{ no: '01', t: 'Чохли', n: '1 510 мод.', img: b + '73d2bb07a46c9f31a6f8570ce54cc02e' },
+{ no: '02', t: 'Друк на чохлі', n: 'від 269 ₴', img: b + 'bfd48653e3ab0cc7ec76ddebd4a92f86' },
+{ no: '03', t: 'Зарядні пристрої', n: '222', img: b + '5a4a2495d25c26c33b5fb88af524475e' },
+{ no: '04', t: 'Кабелі', n: '282', img: b + 'f79260337f61099adb3b078482201366' },
+{ no: '05', t: 'Навушники', n: '89', img: b + '4a43357544c8be198d0526c0dc5b6987' },
+{ no: '06', t: 'Автотримачі', n: '93', img: b + 'a4168285c2856c46a426b1494bf0d42e' },
+{ no: '07', t: 'Колонки', n: '34', img: b + '5da22e4aaa5c04a8093765caec5168d6' }
+],
+fresh: [
+{ cat: 'ЗАРЯДНИЙ ПРИСТРІЙ', t: 'МЗП Acefast A69', spec: 'PD 30 Вт · GaN', price: 469, img: b + '5a4a2495d25c26c33b5fb88af524475e' },
+{ cat: 'ЧОХОЛ', t: 'Silk with Magnetic Fit — 16e', spec: 'MagSafe · 16e / 17e', price: 239, img: b + '73d2bb07a46c9f31a6f8570ce54cc02e' },
+{ cat: 'КАБЕЛЬ', t: 'Acefast C22-02 2в1', spec: '100 Вт · 1,2 м', price: 399, img: b + 'f79260337f61099adb3b078482201366' },
+{ cat: 'НАВУШНИКИ', t: 'Amaya ATW-09', spec: 'TWS · метал', price: 1409, img: b + '4a43357544c8be198d0526c0dc5b6987' }
+],
+steps: [{ n: '1', t: 'Модель', d: 'будь-яка з 1 510' }, { n: '2', t: 'Макет', d: 'фото, напис, шари' }, { n: '3', t: 'Друк', d: 'перевіримо й надрукуємо' }],
+posts: [
+{ tag: 'ПОРАДИ', t: 'Як вибрати чохол на телефон — покрокова інструкція' },
+{ tag: 'ЗАХИСТ', t: 'Що краще поклеїти на екран для захисту смартфона?' },
+{ tag: 'ТЕХНОЛОГІЇ', t: 'Гаманець у телефоні — Google Pay та Apple Pay' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

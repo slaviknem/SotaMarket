@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>SotaMARKET — мобільне меню-каталог, варіант C «Вітрина»</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&amp;display=swap">
+<style>
+body{margin:0;background:#ffffff}
+a{color:#1e2b38;text-decoration:none}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; font-family: Nunito, system-ui, sans-serif; color: #1e2b38; background: #ffffff; font-size: 15px; line-height: 1.4; display: flex; flex-direction: column; overflow: hidden">
+<div style="height: 58px; background: #1e3a52; color: #ffffff; padding: 0 8px 0 16px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0">
+<strong style="font-size: 19px; font-weight: 900">Каталог</strong>
+<a href="C-Home-Mobile.dc.html" aria-label="Закрити меню" style="width: 44px; height: 44px; display: grid; place-items: center; color: #ffffff"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></a>
+</div>
+<div style="flex: 1; display: flex; min-height: 0">
+<nav aria-label="Бренди" style="width: 128px; background: #eef2f6; display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0">
+<a href="#" aria-current="true" style="min-height: 48px; padding: 0 14px; display: flex; align-items: center; background: #ffffff; font-weight: 900; box-shadow: inset 4px 0 0 #f7931e">Apple</a>
+<sc-for list="{{ brands }}" as="b" hint-placeholder-count="12"><a href="#" style="min-height: 46px; padding: 0 14px; display: flex; align-items: center; font-weight: 700; color: #3b4a59; border-bottom: 1px solid #e2e8ef">{{ b }}</a></sc-for>
+</nav>
+<div style="flex: 1; min-width: 0; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; overflow: hidden">
+<a href="#" style="font-weight: 800; color: #2e5577; min-height: 40px; display: flex; align-items: center">Усі чохли Apple</a>
+<span style="font-size: 12.5px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; color: #5a6878; margin-top: 4px">iPhone</span>
+<sc-for list="{{ iphones }}" as="m" hint-placeholder-count="14"><a href="#" style="min-height: 40px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eef2f6; font-weight: 600">{{ m }}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#93a3b3" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg></a></sc-for>
+</div>
+</div>
+<div style="flex-shrink: 0; border-top: 1px solid #dde4ec; padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 10px">
+<a href="#" style="height: 50px; border-radius: 10px; background: #f7931e; color: #1e2b38; font-weight: 800; font-size: 16px; display: flex; align-items: center; justify-content: center">Створити свій чохол</a>
+<nav aria-label="Покупцям" style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 700"><a href="#" style="color: #2e5577; padding: 8px 0">Доставка</a><a href="#" style="color: #2e5577; padding: 8px 0">Повернення</a><a href="#" style="color: #2e5577; padding: 8px 0">Відстежити</a><a href="#" style="color: #2e5577; padding: 8px 0"><strong>UA</strong> · RU</a></nav>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+brands: ['Samsung', 'Xiaomi', 'Motorola', 'Google', 'Realme', 'OPPO', 'Huawei', 'TECNO', 'Nokia', 'ZTE', 'OnePlus', 'Інші'],
+iphones: ['iPhone 17 Pro Max', 'iPhone 17 Pro', 'iPhone 17 Air', 'iPhone 17', 'iPhone 16e', 'iPhone 16 Pro Max', 'iPhone 16 Pro', 'iPhone 16 Plus', 'iPhone 16', 'iPhone 15 Pro Max', 'iPhone 15 Pro', 'iPhone 15', 'iPhone 14 Pro', 'iPhone 13']
+};
+}
+}
+</script>
+</body>
+</html>

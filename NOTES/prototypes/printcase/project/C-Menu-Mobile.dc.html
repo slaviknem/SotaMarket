@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Print-Case — мобільне меню, варіант C «Подарунок»</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&amp;family=Montserrat:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;background:#fbf6ef}
+a{color:inherit;text-decoration:none}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; font-family: Montserrat, system-ui, sans-serif; color: #241f1c; background: #fbf6ef; font-size: 15px; line-height: 1.4; display: flex; flex-direction: column; overflow: hidden">
+<div style="height: 62px; padding: 0 6px 0 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eadfd2; flex-shrink: 0">
+<span style="font-family: 'Playfair Display', Georgia, serif; font-size: 25px; font-weight: 600"><span style="font-style: italic; color: #6b2737">Print</span>-Case</span>
+<a href="C-Home-Mobile.dc.html" aria-label="Закрити меню" style="width: 44px; height: 44px; display: grid; place-items: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></a>
+</div>
+<div style="flex: 1; overflow: hidden; padding: 20px 18px 0; display: flex; flex-direction: column; gap: 20px">
+<a href="#" style="height: 52px; border-radius: 999px; border: 1px solid #d9cbbb; background: #ffffff; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; font-weight: 600; flex-shrink: 0">Мій телефон: iPhone 16e<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></a>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12.5px; font-weight: 700; letter-spacing: 2px; color: #6b2737">ПОДАРУНОК</span>
+<sc-for list="{{ who }}" as="w" hint-placeholder-count="6"><a href="#" style="min-height: 48px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eadfd2; font-family: 'Playfair Display', Georgia, serif; font-weight: 600; font-size: 22px">{{ w }}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg></a></sc-for>
+</div>
+<nav aria-label="Покупцям" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; font-weight: 600; font-size: 14.5px">
+<sc-for list="{{ info }}" as="i" hint-placeholder-count="4"><a href="#" style="padding: 11px 0">{{ i }}</a></sc-for>
+</nav>
+</div>
+<div style="flex-shrink: 0; padding: 12px 18px 16px; display: flex; flex-direction: column; gap: 10px">
+<a href="#" style="height: 54px; border-radius: 999px; background: #f28c28; font-weight: 700; display: flex; align-items: center; justify-content: center">Чохол зі спільного фото</a>
+<span style="display: flex; justify-content: center; gap: 6px"><a href="#" aria-current="true" style="min-width: 48px; height: 40px; border-radius: 999px; background: #241f1c; color: #ffffff; display: grid; place-items: center; font-weight: 600">UA</a><a href="#" style="min-width: 48px; height: 40px; border-radius: 999px; display: grid; place-items: center; font-weight: 600">RU</a></span>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+who: ['Для неї', 'Для нього', 'Дітям', 'Фанатам аніме', 'Любителям тварин', 'Мрійникам'],
+info: ['Усі теми', 'Бренди', 'Доставка й оплата', 'Відстежити замовлення']
+};
+}
+}
+</script>
+</body>
+</html>

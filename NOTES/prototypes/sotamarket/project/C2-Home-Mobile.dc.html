@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>SotaMARKET — головна на телефоні, варіант C2 «Вітрина+»</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}
+</style>
+</helmet>
+<div style="width: 390px; font-family: Nunito, system-ui, sans-serif; color: #13202d; background: {{ c.bg }}; font-size: 15px; line-height: 1.5; overflow: hidden; font-variant-numeric: tabular-nums">
+
+<header style="background: {{ c.i8 }}; color: #ffffff; padding: 0 8px 12px">
+<div style="height: 60px; display: flex; align-items: center; gap: 2px">
+<a href="C2-Menu-Mobile.dc.html" aria-label="Каталог і меню" style="width: 44px; height: 44px; display: grid; place-items: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"></path></svg></a>
+<a href="#" aria-label="SotaMARKET — на головну" style="flex: 1; display: flex; flex-direction: column; line-height: 1; gap: 4px"><span style="font-weight: 900; font-size: 21px; letter-spacing: .3px"><span style="color: #f7931e">СОТА</span>МАРКЕТ</span><span style="font-size: 9.5px; font-weight: 800; letter-spacing: 1.8px; text-transform: uppercase; color: {{ c.mu }}">чохли з картинками</span></a>
+<a href="#" aria-label="Обране" style="width: 44px; height: 44px; display: grid; place-items: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></a>
+<a href="#" aria-label="Кошик, 2 товари" style="position: relative; width: 44px; height: 44px; display: grid; place-items: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7L6 7z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg><span style="position: absolute; top: 5px; right: 3px; min-width: 17px; height: 17px; border-radius: 9px; background: #f7931e; color: #13202d; font-size: 10.5px; font-weight: 900; display: grid; place-items: center">2</span></a>
+</div>
+<form role="search" style="height: 48px; margin: 0 8px; display: flex; align-items: center; gap: 10px; background: #ffffff; border-radius: 14px; padding: 0 14px">
+<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#5b6977" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+<label for="q2mob" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Пошук</label>
+<input id="q2mob" type="search" placeholder="Модель або дизайн" style="flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; color: #13202d; outline: none">
+</form>
+</header>
+<nav aria-label="Бренди" style="background: {{ c.i7 }}; color: #ffffff; display: flex; overflow-x: auto; height: 46px; padding: 0 8px">
+<sc-for list="{{ brands }}" as="b" hint-placeholder-count="8"><a href="#" style="padding: 0 12px; display: flex; align-items: center; font-weight: 800; white-space: nowrap">{{ b }}</a></sc-for>
+</nav>
+
+<section style="background: {{ c.i8 }}; color: #ffffff; position: relative; overflow: hidden; padding: 22px 12px 22px">
+<svg aria-hidden="true" width="100%" height="100%" style="position: absolute; inset: 0"><defs><pattern id="sotam" width="56" height="100" patternUnits="userSpaceOnUse"><path d="M28 66L0 50L0 16L28 0L56 16L56 50L28 66L28 100" fill="none" stroke="#ffffff" stroke-opacity=".05" stroke-width="1.5"></path><path d="M28 0L28 34L0 50L0 84L28 100L56 84L56 50L28 34" fill="none" stroke="#ffffff" stroke-opacity=".05" stroke-width="1.5"></path></pattern></defs><rect width="100%" height="100%" fill="url(#sotam)"></rect></svg>
+<div style="position: relative; display: flex; flex-direction: column; gap: 14px">
+<div style="padding: 0 4px; display: flex; flex-direction: column; gap: 4px"><span style="color: #f7931e; font-size: 11.5px; font-weight: 900; letter-spacing: 1.3px; text-transform: uppercase">Каталог · 1 100+ моделей</span>
+<h1 style="margin: 0; font-size: 26px; line-height: 1.1; font-weight: 900; letter-spacing: -.4px">Чохли з картинками для твого телефона</h1></div>
+<div style="position: relative; height: 200px; border-radius: 18px; overflow: hidden; background: {{ c.i7 }}">
+<a href="#" style="position: absolute; inset: 0; display: block">
+<img src="{{ slide.img }}" alt="{{ slide.title }}" width="1600" height="752" style="width: 100%; height: 100%; object-fit: cover; object-position: 60% center; display: block">
+<span aria-hidden="true" style="position: absolute; inset: 0; background: linear-gradient(0deg, rgba(0,0,0,.8) 0%, rgba(0,0,0,.2) 55%, rgba(0,0,0,0) 78%)"></span>
+<div style="position: absolute; left: 16px; right: 16px; bottom: 28px; display: flex; flex-direction: column; gap: 2px">
+<h2 style="margin: 0; font-size: 22px; line-height: 1.1; font-weight: 900">{{ slide.title }}</h2>
+<span style="font-size: 13.5px; color: #e3ebf3">{{ slide.descShort }}</span>
+</div>
+</a>
+<div aria-label="Слайди" style="position: absolute; left: 16px; bottom: 13px; display: flex; gap: 5px"><span style="width: 24px; height: 5px; border-radius: 3px; background: #f7931e"></span><span style="width: 8px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.55)"></span><span style="width: 8px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.55)"></span></div>
+</div>
+<form style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; gap: 8px">
+<label style="flex: 1; display: flex; flex-direction: column; gap: 1px; background: #ffffff; border-radius: 12px; padding: 7px 12px; color: #5b6977; font-size: 11px; font-weight: 900; letter-spacing: .7px; text-transform: uppercase">Бренд<select style="border: 0; background: transparent; font: inherit; font-size: 15.5px; font-weight: 800; letter-spacing: 0; text-transform: none; color: #13202d; padding: 0; outline: none"><option>Apple</option></select></label>
+<label style="flex: 1.3; display: flex; flex-direction: column; gap: 1px; background: #ffffff; border-radius: 12px; padding: 7px 12px; color: #5b6977; font-size: 11px; font-weight: 900; letter-spacing: .7px; text-transform: uppercase">Модель<select style="border: 0; background: transparent; font: inherit; font-size: 15.5px; font-weight: 800; letter-spacing: 0; text-transform: none; color: #13202d; padding: 0; outline: none"><option>iPhone 16e</option></select></label>
+</div>
+<button type="submit" style="height: 54px; border: 0; border-radius: 12px; background: #f7931e; color: #13202d; font: inherit; font-weight: 900; font-size: 16px">Показати дизайни</button>
+</form>
+<div style="display: flex; gap: 8px; overflow-x: auto; margin: 0 -12px; padding: 0 12px">
+<sc-for list="{{ quick }}" as="m" hint-placeholder-count="5"><a href="#" style="height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.22); display: flex; align-items: center; font-size: 14px; font-weight: 700; white-space: nowrap; flex-shrink: 0">{{ m }}</a></sc-for>
+</div>
+</div>
+</section>
+
+<a href="#" style="margin: 16px 12px 0; background: {{ c.st }}; color: #ffffff; border-radius: 20px; padding: 16px 16px 16px 18px; display: flex; align-items: center; gap: 14px">
+<span style="flex: 1; display: flex; flex-direction: column; line-height: 1.25"><strong style="font-size: 19px; font-weight: 900">Своє фото на чохол</strong><span style="color: #dbe6f0; font-size: 14px">Від 259 ₴, друк за 2–3 дні</span></span>
+<span style="width: 48px; height: 48px; border-radius: 50%; background: #f7931e; color: #13202d; display: grid; place-items: center; flex-shrink: 0"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"></path></svg></span>
+</a>
+
+<section aria-labelledby="pmm-h" style="padding: 30px 12px 0">
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px"><div style="display: flex; flex-direction: column; gap: 2px"><span style="color: #9a4f00; font-size: 11.5px; font-weight: 900; letter-spacing: 1.3px; text-transform: uppercase">Моделі</span><h2 id="pmm-h" style="margin: 0; font-size: 22px; font-weight: 900">Популярні зараз</h2></div><a href="#" style="color: {{ c.st }}; font-weight: 900; font-size: 14.5px; padding: 10px 0">Усі</a></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{ models }}" as="m" hint-placeholder-count="6"><a href="#" style="background: #ffffff; border: 1px solid #e1e6ec; border-radius: 14px; padding: 8px; display: flex; align-items: center; gap: 10px; min-height: 44px"><span style="width: 46px; height: 46px; border-radius: 10px; background: #f2f4f7; display: grid; place-items: center; flex-shrink: 0"><img src="{{ m.img }}" alt="" width="38" height="38" style="width: 38px; height: 38px; object-fit: contain; mix-blend-mode: multiply"></span><strong style="font-size: 13.5px; font-weight: 900; line-height: 1.25">{{ m.t }}</strong></a></sc-for>
+</div>
+</section>
+
+<section aria-labelledby="hmm-h" style="padding: 30px 12px 0">
+<div style="display: flex; flex-direction: column; gap: 2px; margin-bottom: 12px"><span style="color: #9a4f00; font-size: 11.5px; font-weight: 900; letter-spacing: 1.3px; text-transform: uppercase">Хіти</span><h2 id="hmm-h" style="margin: 0; font-size: 22px; font-weight: 900">Для iPhone 16e</h2></div>
+<div style="display: flex; gap: 6px; overflow-x: auto; margin: 0 -12px 14px; padding: 0 12px">
+<span style="height: 44px; padding: 0 16px; border-radius: 12px; background: {{ c.i8 }}; color: #ffffff; font-weight: 900; display: flex; align-items: center; flex-shrink: 0">Усі</span>
+<sc-for list="{{ themesShort }}" as="t" hint-placeholder-count="5"><span style="height: 44px; padding: 0 14px; border-radius: 12px; background: #ffffff; border: 1px solid #e1e6ec; font-weight: 800; display: flex; align-items: center; flex-shrink: 0">{{ t }}</span></sc-for>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{ products }}" as="p" hint-placeholder-count="4"><article style="background: #ffffff; border: 1px solid #e1e6ec; border-radius: 16px; padding: 8px; display: flex; flex-direction: column; gap: 8px">
+<div style="position: relative; background: #f2f4f7; border-radius: 11px; overflow: hidden">
+<a href="#" style="display: block"><img src="{{ p.img }}" alt="{{ p.t }}" width="600" height="600" style="width: 100%; height: auto; display: block; mix-blend-mode: multiply"></a>
+<span style="position: absolute; left: 7px; top: 7px; background: {{ p.c.i8 }}; color: #ffffff; font-size: 11px; font-weight: 900; padding: 3px 8px; border-radius: 999px">{{ p.v }} принтів</span>
+</div>
+<a href="#" style="padding: 0 2px; font-weight: 700; font-size: 13.5px; line-height: 1.3; min-height: 35px">{{ p.t }}</a>
+<strong style="padding: 0 2px; font-size: 19px; font-weight: 900">{{ p.price }} ₴</strong>
+<button type="button" style="height: 44px; border: 0; border-radius: 11px; background: {{ p.c.i8 }}; color: #ffffff; font: inherit; font-weight: 900; display: flex; align-items: center; justify-content: center; gap: 7px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7L6 7z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg>В кошик</button>
+</article></sc-for>
+</div>
+<a href="#" style="display: flex; justify-content: center; align-items: center; height: 50px; margin-top: 12px; border-radius: 14px; border: 1px solid #ccd5df; background: #ffffff; font-weight: 900">Усі 25 дизайнів</a>
+</section>
+
+<section aria-labelledby="tmm-h" style="padding: 30px 12px 0">
+<div style="display: flex; flex-direction: column; gap: 2px; margin-bottom: 12px"><span style="color: #9a4f00; font-size: 11.5px; font-weight: 900; letter-spacing: 1.3px; text-transform: uppercase">Теми</span><h2 id="tmm-h" style="margin: 0; font-size: 22px; font-weight: 900">Під настрій</h2></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{ themes }}" as="t" hint-placeholder-count="8"><a href="#" style="background: #ffffff; border: 1px solid #e1e6ec; border-radius: 14px; padding: 6px 10px 6px 6px; display: flex; align-items: center; gap: 10px; min-height: 44px"><span style="width: 44px; height: 44px; border-radius: 10px; background: #f2f4f7; overflow: hidden; flex-shrink: 0"><img src="{{ t.img }}" alt="" width="44" height="44" style="width: 44px; height: 44px; object-fit: cover; mix-blend-mode: multiply"></span><strong style="font-size: 14.5px; font-weight: 900">{{ t.t }}</strong></a></sc-for>
+</div>
+</section>
+
+<section aria-label="Чому SotaMARKET" style="margin: 30px 12px 0; background: {{ c.i8 }}; border-radius: 20px; padding: 20px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 14px">
+<sc-for list="{{ perks }}" as="k" hint-placeholder-count="4"><div style="display: flex; flex-direction: column; gap: 8px"><span style="width: 40px; height: 40px; border-radius: 11px; background: {{ k.c.i7 }}; color: #f7931e; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ k.icon }}"></path></svg></span><strong style="color: #ffffff; font-size: 15px; font-weight: 900; line-height: 1.25">{{ k.t }}</strong><span style="color: {{ k.c.mu }}; font-size: 13px; line-height: 1.35">{{ k.d }}</span></div></sc-for>
+</section>
+
+<section aria-labelledby="smm-h" style="margin: 16px 12px 24px; background: #ffffff; border: 1px solid #e1e6ec; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 8px">
+<h2 id="smm-h" style="margin: 0; font-size: 18px; font-weight: 900">Чохли з картинками в SotaMARKET</h2>
+<p style="margin: 0; color: #3a4856; font-size: 14.5px">Силіконові, Soft Touch і протиударні — для Samsung, Apple, Xiaomi, Motorola й інших. Не знайшов свою картинку — завантаж будь-яке фото.</p>
+<a href="#" style="color: {{ c.st }}; font-weight: 900; font-size: 14.5px">Читати далі</a>
+</section>
+
+<footer style="background: {{ c.i9 }}; color: {{ c.mu }}; padding: 24px 16px; display: flex; flex-direction: column; gap: 10px; font-size: 14.5px">
+<span style="font-weight: 900; font-size: 20px; color: #ffffff; letter-spacing: .3px"><span style="color: #f7931e">СОТА</span>МАРКЕТ</span>
+<nav aria-label="Покупцям" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px"><a href="#" style="padding: 10px 0">Доставка й оплата</a><a href="#" style="padding: 10px 0">Повернення</a><a href="#" style="padding: 10px 0">Відстежити замовлення</a><a href="#" style="padding: 10px 0">Про нас</a></nav>
+<span>м. Львів · Пн–Сб 9:00–18:00 · <a href="#" style="color: #ffffff; font-weight: 800">[ТЕЛЕФОН]</a></span>
+<span style="display: flex; justify-content: space-between"><span>© 2020–2026 SotaMARKET</span><span><strong style="color: #ffffff">UA</strong> · RU</span></span>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"palette":{"editor":"enum","options":["Глибокий синій","Графіт","Світліший синій"],"default":"Глибокий синій"},"$preview":{"width":390,"height":3300}}'>
+class Component extends DCLogic {
+renderVals() {
+const P = {
+'Глибокий синій': { i9: '#0b1826', i8: '#10233a', i7: '#183553', st: '#2b5c88', bg: '#eceff3', mu: '#9fb4c8' },
+'Графіт': { i9: '#0f1114', i8: '#181b20', i7: '#23282f', st: '#3a5f84', bg: '#eeeff1', mu: '#a9b2bd' },
+'Світліший синій': { i9: '#17304a', i8: '#1e3a52', i7: '#2a4b68', st: '#2e5577', bg: '#eef2f6', mu: '#c4d3e1' }
+};
+const c = P[this.props.palette] || P['Глибокий синій'];
+const withC = (xs) => xs.map((x) => Object.assign({}, x, { c: c }));
+const b = '/_blob/';
+return {
+c: c,
+brands: ['Apple', 'Samsung', 'Xiaomi', 'Motorola', 'Google', 'Realme', 'OPPO', 'Huawei', 'Усі бренди'],
+quick: ['iPhone 16e', 'iPhone 17 Pro', 'Galaxy A17', 'Redmi 15C', 'Moto G06'],
+// Банер — запис адмінки (banners); у прикладі — картинка FLOY, у Sota банерів ще немає
+slide: { img: b + '9f6a7bb60af23793dcfe9ba4ba159007', title: 'Чохли з картинками', descShort: 'Готові дизайни або своє фото' },
+models: [
+{ t: 'iPhone 17 Pro Max', img: b + '7472f547524d2d7bd35ce942b2dbe5e6' },
+{ t: 'iPhone 17 Pro', img: b + '699fbf229a29b1f9f35c729e32029c4b' },
+{ t: 'iPhone 15', img: b + '97e3280905cbd7d6069abe906c6e6780' },
+{ t: 'iPhone 13', img: b + '028f1ddbac868d4ae76a1a9ffc48af6d' },
+{ t: 'Redmi 15C', img: b + 'd370d229a4c1c1977fe604c86c7ba385' },
+{ t: 'Moto G06', img: b + '0cb5a9a3db938754575b88fc4bc73d6d' }
+],
+themesShort: ['Футбол', 'Аніме', 'Українські', 'Тварини', 'Ігри'],
+products: withC([
+{ t: 'Чохол з картинками Майнкрафт для Айфон 16е', price: 259, v: 6, img: b + '57e2ea7ae5eb1a77002c6dddb07e4b6b' },
+{ t: 'Чохол з українським воїном на iPhone 16е', price: 259, v: 6, img: b + '886e8fb90f3a281d9c0c6f8d8623b4ee' },
+{ t: 'Чохол із милими котиками на Айфон 16е', price: 259, v: 6, img: b + 'f6487be087bdb21482313a408fd72e2a' },
+{ t: 'Чохол Мессі футболіст для iPhone 16е', price: 259, v: 7, img: b + 'fb1034be1064069be03b46f96f1bbd7a' }
+]),
+themes: [
+{ t: 'Футбол', img: b + 'fb1034be1064069be03b46f96f1bbd7a' },
+{ t: 'Аніме', img: b + '6cc815847a7c8cdd81a58d376e7b547a' },
+{ t: 'Українські', img: b + '886e8fb90f3a281d9c0c6f8d8623b4ee' },
+{ t: 'Брендові', img: b + 'e136ad15dbcaac3ac9e48d1138f9b02b' },
+{ t: 'Тварини', img: b + 'f6487be087bdb21482313a408fd72e2a' },
+{ t: 'Мультики', img: b + 'bcc776d4b010a172d7c6aba4787652aa' },
+{ t: 'Ігри', img: b + '57e2ea7ae5eb1a77002c6dddb07e4b6b' },
+{ t: 'Кіно', img: b + '24cbdf1ee6b774e38ec00cefb6a2c1a6' }
+],
+perks: withC([
+{ t: 'Від 259 ₴', d: 'Ціна без сюрпризів', icon: 'M3 12V4h8l10 10-8 8L3 12zM7.5 6.2a1.3 1.3 0 1 0 0 2.6 1.3 1.3 0 0 0 0-2.6z' },
+{ t: 'Друк 2–3 дні', d: 'УФ-фарба, яскраві кольори', icon: 'M12 3c3 4 6 7 6 10a6 6 0 0 1-12 0c0-3 3-6 6-10z' },
+{ t: 'Звіримо макет', d: 'Менеджер подзвонить перед друком', icon: 'M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z' },
+{ t: 'По всій Україні', d: 'Нова Пошта й Укрпошта', icon: 'M3 6h11v10H3zM14 10h4l3 3v3h-7M7 16.4a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2zM17 16.4a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2z' }
+])
+};
+}
+}
+</script>
+</body>
+</html>

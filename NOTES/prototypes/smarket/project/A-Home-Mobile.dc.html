@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>SMARKET — головна на телефоні, варіант A «Класика»</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;background:#f3f5f7}
+a{color:inherit;text-decoration:none}
+</style>
+</helmet>
+<div style="width: 390px; font-family: Manrope, system-ui, sans-serif; color: #1c2228; background: #f3f5f7; font-size: 14.5px; line-height: 1.5; overflow: hidden">
+
+<header style="background: #ffffff">
+<div style="height: 60px; padding: 0 6px; display: flex; align-items: center; gap: 2px">
+<a href="A-Menu-Mobile.dc.html" aria-label="Меню" style="width: 44px; height: 44px; display: grid; place-items: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></a>
+<a href="#" aria-label="SMARKET — на головну" style="flex: 1; display: flex; align-items: center; gap: 2px; font-weight: 800; font-size: 23px; letter-spacing: -.4px; color: #262c32; line-height: 1"><span style="width: 30px; height: 30px; border-radius: 7px; background: #d0313d; color: #ffffff; display: grid; place-items: center; margin-right: 2px; font-size: 19px">S</span>MARKET</a>
+<a href="#" aria-label="Подзвонити 099 419 03 90" style="width: 44px; height: 44px; display: grid; place-items: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"></path></svg></a>
+<a href="#" aria-label="Кошик, 2 товари" style="position: relative; width: 44px; height: 44px; display: grid; place-items: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7L6 7z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg><span style="position: absolute; top: 5px; right: 3px; min-width: 17px; height: 17px; border-radius: 9px; background: #d0313d; color: #ffffff; font-size: 10.5px; font-weight: 800; display: grid; place-items: center">2</span></a>
+</div>
+<form role="search" style="margin: 0 12px 12px; height: 46px; display: flex; border: 1.5px solid #d6dbe0; border-radius: 8px; overflow: hidden">
+<label for="qamob" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Пошук</label>
+<input id="qamob" type="search" placeholder="Модель, чохол чи аксесуар" style="flex: 1; min-width: 0; border: 0; padding: 0 14px; font: inherit; color: #1c2228; outline: none">
+<button type="submit" aria-label="Шукати" style="width: 50px; border: 0; background: #d0313d; color: #ffffff; display: grid; place-items: center"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg></button>
+</form>
+<nav aria-label="Бренди" style="background: #262c32; color: #ffffff; display: flex; overflow-x: auto; height: 46px">
+<sc-for list="{{ brands }}" as="b" hint-placeholder-count="8"><a href="#" style="padding: 0 13px; display: flex; align-items: center; font-weight: 600; white-space: nowrap">{{ b }}</a></sc-for>
+</nav>
+</header>
+
+<section style="margin: 12px; background: #262c32; color: #ffffff; border-radius: 8px; padding: 22px 18px; display: flex; flex-direction: column; gap: 12px">
+<div style="position: relative; height: 170px">
+<img src="/_blob/c07cedece9a71cd27a14d3db21e4a186" alt="" width="120" height="120" style="position: absolute; left: 6%; top: 24px; width: 120px; border-radius: 10px; transform: rotate(-6deg); box-shadow: 0 12px 24px rgba(0,0,0,.35)">
+<img src="/_blob/bfd48653e3ab0cc7ec76ddebd4a92f86" alt="" width="128" height="128" style="position: absolute; left: 50%; top: 0; margin-left: -64px; width: 128px; border-radius: 10px; box-shadow: 0 14px 28px rgba(0,0,0,.4)">
+<img src="/_blob/4a43357544c8be198d0526c0dc5b6987" alt="" width="104" height="104" style="position: absolute; right: 4%; top: 52px; width: 104px; border-radius: 10px; transform: rotate(5deg); box-shadow: 0 12px 24px rgba(0,0,0,.35)">
+</div>
+<h1 style="margin: 0; font-size: 26px; line-height: 1.15; font-weight: 800; letter-spacing: -.4px">Чохли й аксесуари для смартфонів</h1>
+<p style="margin: 0; color: #c9d0d6">Фірмові чохли, друк вашого фото, зарядні, кабелі й навушники.</p>
+<div style="display: flex; gap: 8px"><a href="#" style="flex: 1; height: 48px; border-radius: 8px; background: #d0313d; font-weight: 700; display: flex; align-items: center; justify-content: center">Друк на чохлі</a><a href="#" style="flex: 1; height: 48px; border-radius: 8px; border: 1.5px solid rgba(255,255,255,.35); font-weight: 700; display: flex; align-items: center; justify-content: center">До каталогу</a></div>
+</section>
+
+<ul aria-label="Переваги" style="list-style: none; margin: 0 12px; padding: 0; background: #ffffff; border: 1px solid #e2e6ea; border-radius: 8px">
+<sc-for list="{{ perks }}" as="k" hint-placeholder-count="3"><li style="display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-bottom: 1px solid #eceff2"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#d0313d" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="{{ k.icon }}"></path></svg><span style="display: flex; flex-direction: column; line-height: 1.3"><strong style="font-size: 14.5px">{{ k.t }}</strong><span style="color: #5d6670; font-size: 13px">{{ k.d }}</span></span></li></sc-for>
+</ul>
+
+<section aria-labelledby="nm-h" style="padding: 28px 12px 0">
+<h2 id="nm-h" style="margin: 0 0 10px; font-size: 20px; font-weight: 800">Нові надходження</h2>
+<div role="tablist" aria-label="Розділ" style="display: flex; gap: 4px; margin-bottom: 12px">
+<button type="button" role="tab" aria-selected="true" style="height: 44px; padding: 0 16px; border-radius: 999px; border: 1.5px solid #d0313d; background: #ffffff; color: #b0242f; font: inherit; font-weight: 700">Усі</button>
+<button type="button" role="tab" aria-selected="false" style="height: 44px; padding: 0 14px; border-radius: 999px; border: 0; background: transparent; color: #1c2228; font: inherit; font-weight: 600">Чохли</button>
+<button type="button" role="tab" aria-selected="false" style="height: 44px; padding: 0 14px; border-radius: 999px; border: 0; background: transparent; color: #1c2228; font: inherit; font-weight: 600">Аксесуари</button>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{ fresh }}" as="p" hint-placeholder-count="4"><article style="background: #ffffff; border: 1px solid #e2e6ea; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 6px; position: relative">
+<sc-if value="{{ p.disc }}" hint-placeholder-val="{{ true }}"><span style="position: absolute; left: 10px; top: 10px; z-index: 1; background: #d0313d; color: #ffffff; font-size: 11.5px; font-weight: 800; padding: 1px 6px; border-radius: 4px">{{ p.disc }}</span></sc-if>
+<a href="#" style="display: block"><img src="{{ p.img }}" alt="{{ p.t }}" width="600" height="600" style="width: 100%; height: auto; display: block"></a>
+<a href="#" style="font-size: 13px; line-height: 1.35; min-height: 53px">{{ p.t }}</a>
+<span style="display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap"><strong style="font-size: 17px; font-weight: 800; color: {{ p.pc }}">{{ p.price }} ₴</strong><sc-if value="{{ p.old }}" hint-placeholder-val="{{ true }}"><s style="font-size: 12.5px; color: #5d6670">{{ p.old }} ₴</s></sc-if></span>
+<button type="button" style="height: 44px; border-radius: 8px; border: 0; background: #262c32; color: #ffffff; font: inherit; font-weight: 700">В кошик</button>
+</article></sc-for>
+</div>
+</section>
+
+<section aria-labelledby="cm-h" style="padding: 28px 12px 0">
+<h2 id="cm-h" style="margin: 0 0 10px; font-size: 20px; font-weight: 800">Популярні категорії</h2>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{ tiles }}" as="c" hint-placeholder-count="6"><a href="#" style="background: #ffffff; border: 1px solid #e2e6ea; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 6px"><img src="{{ c.img }}" alt="" width="64" height="64" style="width: 64px; height: 64px; object-fit: contain"><strong style="font-size: 14px; line-height: 1.3">{{ c.t }}</strong><span style="color: #5d6670; font-size: 12.5px">{{ c.n }}</span></a></sc-for>
+</div>
+</section>
+
+<section aria-labelledby="mm-h" style="padding: 28px 12px 0">
+<div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px"><h2 id="mm-h" style="margin: 0; font-size: 20px; font-weight: 800">Чохли на моделі</h2><a href="#" style="font-weight: 700; color: #b0242f; padding: 10px 0">Усі</a></div>
+<div style="display: flex; flex-direction: column; background: #ffffff; border: 1px solid #e2e6ea; border-radius: 8px">
+<sc-for list="{{ models }}" as="m" hint-placeholder-count="5"><a href="#" style="display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-bottom: 1px solid #eceff2; min-height: 44px"><img src="{{ m.img }}" alt="" width="40" height="40" style="width: 40px; height: 40px; object-fit: contain"><strong style="flex: 1; font-size: 14.5px">{{ m.t }}</strong><span style="color: #5d6670; font-size: 13px">{{ m.n }}</span></a></sc-for>
+</div>
+</section>
+
+<section aria-labelledby="bm-h" style="padding: 28px 12px 0">
+<h2 id="bm-h" style="margin: 0 0 10px; font-size: 20px; font-weight: 800">Корисне в блозі</h2>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{ posts }}" as="a" hint-placeholder-count="3"><a href="#" style="background: #ffffff; border: 1px solid #e2e6ea; border-radius: 8px; overflow: hidden; display: flex; align-items: center; gap: 12px"><img src="{{ a.img }}" alt="" width="120" height="60" style="width: 120px; height: 80px; object-fit: cover; flex-shrink: 0; background: #f6f7f9"><span style="padding: 8px 10px 8px 0; font-size: 14px; font-weight: 700; line-height: 1.35">{{ a.t }}</span></a></sc-for>
+</div>
+</section>
+
+<section aria-labelledby="sm-h" style="margin: 28px 12px; background: #ffffff; border: 1px solid #e2e6ea; border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 8px; color: #3d454d">
+<h2 id="sm-h" style="margin: 0; font-size: 17px; font-weight: 800; color: #1c2228">SMARKET — чохли й мобільні аксесуари</h2>
+<p style="margin: 0; font-size: 14px">Фірмові чохли для iPhone, Samsung, Xiaomi та інших, друк вашого фото на чохлі, зарядні, кабелі, навушники. Оплата при отриманні.</p>
+</section>
+
+<footer style="background: #262c32; color: #b9c1c8; padding: 22px 16px; display: flex; flex-direction: column; gap: 10px; font-size: 14px">
+<a href="#" style="color: #ffffff; font-weight: 800; font-size: 20px">099 419 03 90</a>
+<nav aria-label="Покупцям" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px"><a href="#" style="padding: 10px 0">Доставка й оплата</a><a href="#" style="padding: 10px 0">Повернення</a><a href="#" style="padding: 10px 0">Відстежити замовлення</a><a href="#" style="padding: 10px 0">Блог</a></nav>
+<span style="display: flex; justify-content: space-between"><span>© SMARKET</span><span><strong style="color: #ffffff">UA</strong> · RU</span></span>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":3400}}'>
+class Component extends DCLogic {
+renderVals() {
+const b = '/_blob/';
+const mk = (t, price, old, img) => {
+const d = old > price;
+return { t: t, price: price, old: d ? old : '', disc: d ? '−' + Math.round((old - price) / old * 100) + '%' : '', pc: d ? '#d0313d' : '#1c2228', img: b + img };
+};
+return {
+brands: ['Apple', 'Samsung', 'Xiaomi', 'Motorola', 'Google', 'Realme', 'OPPO', 'УСІ'],
+perks: [
+{ t: 'Безкоштовна доставка від 1000 ₴', d: 'Нова Пошта по всій Україні', icon: 'M3 6h11v10H3zM14 10h4l3 3v3h-7M7 16.4a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2zM17 16.4a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2z' },
+{ t: 'Оплата при отриманні', d: 'Платите, коли переконалися', icon: 'M3 7h18v10H3zM3 11h18M7 15h3' },
+{ t: '−10 % на наступні замовлення', d: 'Для тих, хто вже купував', icon: 'M3 12V4h8l10 10-8 8L3 12zM7.5 6.2a1.3 1.3 0 1 0 0 2.6 1.3 1.3 0 0 0 0-2.6z' }
+],
+fresh: [
+mk('Чохол TPU Ummi transparent для iPhone 16e / 17e', 279, 309, '7304726cbf8a65a5beef4001cdddd00d'),
+mk('Друкований чохол «Звірята з кавою» для iPhone 16e', 269, 289, 'bfd48653e3ab0cc7ec76ddebd4a92f86'),
+mk('МЗП Acefast A69 PD30W GaN', 469, 499, '5a4a2495d25c26c33b5fb88af524475e'),
+mk('TWS-навушники Amaya ATW-07', 799, 829, '7bf1e1edbec2f8bc9e3449d53a9776c1')
+],
+tiles: [
+{ t: 'Чохли для телефонів', n: '1 500+ моделей', img: b + '73d2bb07a46c9f31a6f8570ce54cc02e' },
+{ t: 'Зарядні пристрої', n: '222 товари', img: b + '5a4a2495d25c26c33b5fb88af524475e' },
+{ t: 'Кабелі й перехідники', n: '282 товари', img: b + 'f79260337f61099adb3b078482201366' },
+{ t: 'Навушники', n: '89 товарів', img: b + '4a43357544c8be198d0526c0dc5b6987' },
+{ t: 'Автотримачі', n: '93 товари', img: b + '811dcdaa29e1671ad3d12f82be60a171' },
+{ t: 'Bluetooth-колонки', n: '34 товари', img: b + '457bad66e6bb40c0b239a12bf4a60869' }
+],
+models: [
+{ t: 'iPhone 17 Pro Max', n: '225', img: b + '0835c87633f3cba89596a20f9233ff84' },
+{ t: 'iPhone 16e', n: '171', img: b + '5c067625a218876cd7546673db53d0f1' },
+{ t: 'iPhone 15', n: '229', img: b + '4892e57a84251daba057c0222576b10a' },
+{ t: 'Samsung Galaxy A16', n: '154', img: b + 'b70ee30754fa30f8fb9895c79ed2d055' },
+{ t: 'Xiaomi Redmi 15C', n: '177', img: b + 'd05dc31643c937902d27f8ddc1976f08' }
+],
+posts: [
+{ t: 'Як вибрати чохол на телефон — покрокова інструкція', img: b + '9f069747649b0b0a77f659d6867b766a' },
+{ t: 'Що краще поклеїти на екран для захисту смартфона?', img: b + 'c726c83b687f0ed6a8b1dc33626884d6' },
+{ t: 'Гаманець у телефоні — Google Pay та Apple Pay', img: b + '0df55c05c2fabdf6dce43ddf9642865e' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

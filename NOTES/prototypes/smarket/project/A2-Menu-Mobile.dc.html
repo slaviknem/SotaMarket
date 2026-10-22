@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>SMARKET — мобільне меню, варіант A2 «Класика+»</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; font-family: Manrope, system-ui, sans-serif; color: #1f1c1a; background: {{ c.bg }}; font-size: 15px; line-height: 1.4; display: flex; flex-direction: column; overflow: hidden">
+<div style="height: 60px; padding: 0 6px 0 16px; display: flex; align-items: center; justify-content: space-between; background: #ffffff; border-bottom: 1px solid {{ c.line }}; flex-shrink: 0">
+<span style="display: flex; align-items: center; gap: 2px; font-weight: 800; font-size: 23px; letter-spacing: -.6px; color: {{ c.band }}; line-height: 1"><span style="width: 30px; height: 30px; border-radius: 8px; background: #c9303c; color: #ffffff; display: grid; place-items: center; margin-right: 2px; font-size: 19px">S</span>MARKET</span>
+<a href="A2-Home-Mobile.dc.html" aria-label="Закрити меню" style="width: 44px; height: 44px; display: grid; place-items: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></a>
+</div>
+<div style="flex: 1; overflow: hidden; padding: 12px; display: flex; flex-direction: column; gap: 12px">
+<div style="background: #ffffff; border: 1px solid {{ c.line }}; border-radius: 14px; overflow: hidden; flex-shrink: 0">
+<div style="background: {{ c.band }}; color: #ffffff; height: 48px; padding: 0 16px; display: flex; align-items: center; gap: 10px; font-weight: 800"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"></path></svg>Каталог товарів</div>
+<button type="button" aria-expanded="true" style="width: 100%; min-height: 50px; display: flex; align-items: center; gap: 12px; padding: 0 16px; border: 0; border-bottom: 1px solid {{ c.line }}; background: {{ c.tint }}; font: inherit; font-weight: 800; color: #a8242f; text-align: left"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.5h8a2.5 2.5 0 0 1 2.5 2.5v14a2.5 2.5 0 0 1-2.5 2.5H8A2.5 2.5 0 0 1 5.5 19V5A2.5 2.5 0 0 1 8 2.5zM9 6.5h.01"></path></svg><span style="flex: 1">Чохли для телефонів</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" style="transform: rotate(180deg)"><path d="m6 9 6 6 6-6"></path></svg></button>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; padding: 6px 16px 8px 48px; border-bottom: 1px solid {{ c.line }}">
+<sc-for list="{{ brands }}" as="b" hint-placeholder-count="8"><a href="#" style="min-height: 40px; display: flex; align-items: center; font-weight: 600">{{ b }}</a></sc-for>
+</div>
+<sc-for list="{{ cats }}" as="k" hint-placeholder-count="6"><a href="#" style="min-height: 48px; display: flex; align-items: center; gap: 12px; padding: 0 16px; border-bottom: 1px solid {{ k.c.line }}; font-weight: 600"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9303c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ k.icon }}"></path></svg><span style="flex: 1">{{ k.t }}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a49d96" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg></a></sc-for>
+</div>
+<nav aria-label="Покупцям" style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{ info }}" as="i" hint-placeholder-count="5"><a href="#" style="height: 40px; padding: 0 14px; border-radius: 999px; background: #ffffff; border: 1px solid {{ i.c.line }}; display: flex; align-items: center; font-size: 14px; font-weight: 600">{{ i.t }}</a></sc-for>
+</nav>
+</div>
+<div style="flex-shrink: 0; background: {{ c.band }}; color: #c9c2bb; padding: 12px 16px 14px; display: flex; align-items: center; justify-content: space-between">
+<span style="display: flex; flex-direction: column; line-height: 1.2"><span style="font-size: 12.5px">Гаряча лінія</span><a href="#" style="font-weight: 800; font-size: 19px; color: #ffffff">099 419 03 90</a></span>
+<span style="display: flex; gap: 4px"><a href="#" aria-current="true" style="min-width: 40px; height: 36px; border-radius: 8px; background: #c9303c; color: #ffffff; display: grid; place-items: center; font-weight: 800">UA</a><a href="#" style="min-width: 40px; height: 36px; border-radius: 8px; display: grid; place-items: center; font-weight: 600; color: #ffffff">RU</a></span>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"palette":{"editor":"enum","options":["Теплий сірий","Бежевий","Нейтральний сірий"],"default":"Теплий сірий"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+const P = {
+'Теплий сірий': { bg: '#f2f0ed', top: '#e7e4df', band: '#2b2826', line: '#e3dfd9', mu: '#66605a', tile: '#f4f2ef', tint: '#f6e3e1' },
+'Бежевий': { bg: '#f5efe6', top: '#ebe3d6', band: '#2e2924', line: '#e5dccf', mu: '#695f55', tile: '#f7f2ea', tint: '#f6e2db' },
+'Нейтральний сірий': { bg: '#f1f1f1', top: '#e5e5e5', band: '#29292b', line: '#e1e1e1', mu: '#626265', tile: '#f4f4f4', tint: '#f5e3e4' }
+};
+const c = P[this.props.palette] || P['Теплий сірий'];
+const withC = (xs) => xs.map((x) => Object.assign({}, x, { c: c }));
+return {
+c: c,
+brands: ['Apple', 'Samsung', 'Xiaomi', 'Motorola', 'Google', 'Realme', 'OPPO', 'Усі бренди'],
+cats: withC([
+{ t: 'Друк на чохлі', icon: 'M4 20l4-1 10-10-3-3L5 16l-1 4zM14 6l3 3' },
+{ t: 'Зарядні пристрої', icon: 'M9 3v5M15 3v5M7 8h10v3a5 5 0 0 1-10 0V8zM12 16v5' },
+{ t: 'Кабелі й перехідники', icon: 'M6 3v5h4V3M8 8v6a4 4 0 0 0 8 0v-3M14 11h4V6h-4z' },
+{ t: 'Навушники', icon: 'M4 15v-3a8 8 0 0 1 16 0v3M4 15h3v5H5a1 1 0 0 1-1-1v-4zM20 15h-3v5h2a1 1 0 0 0 1-1v-4z' },
+{ t: 'Bluetooth-колонки', icon: 'M7 3h10a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM12 13a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM12 7h.01' },
+{ t: 'Автотримачі', icon: 'M5 11l2-5h10l2 5M4 11h16v6H4zM7 17v2M17 17v2M7.5 14h.01M16.5 14h.01' }
+]),
+info: withC([{ t: 'Доставка й оплата' }, { t: 'Повернення' }, { t: 'Відстежити замовлення' }, { t: 'Блог' }, { t: 'Про нас' }])
+};
+}
+}
+</script>
+</body>
+</html>

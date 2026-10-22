@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>SotaMARKET — мобільне меню, варіант B «Майстерня»</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&amp;family=Golos+Text:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#13202e}
+a{color:#ffffff;text-decoration:none}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; font-family: 'Golos Text', system-ui, sans-serif; color: #ffffff; background: #13202e; font-size: 15.5px; line-height: 1.45; display: flex; flex-direction: column; overflow: hidden">
+<div style="height: 64px; padding: 0 8px 0 16px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0">
+<span style="font-family: Unbounded, sans-serif; font-weight: 800; font-size: 19px; letter-spacing: -.4px">Sota<span style="color: #ff9b26">MARKET</span></span>
+<a href="B-Home-Mobile.dc.html" aria-label="Закрити меню" style="width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.28); display: grid; place-items: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></a>
+</div>
+<div style="flex: 1; padding: 8px 16px 0; display: flex; flex-direction: column; gap: 22px; overflow: hidden">
+<form role="search" style="display: flex; align-items: center; gap: 10px; background: #ffffff; border-radius: 999px; padding: 0 18px; height: 52px; flex-shrink: 0">
+<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#5d6670" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+<label for="qmb" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Модель телефону</label>
+<input id="qmb" type="search" placeholder="Яка в тебе модель?" style="flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; color: #13202e; outline: none">
+</form>
+<nav aria-label="Розділи" style="display: flex; flex-direction: column">
+<sc-for list="{{ main }}" as="m" hint-placeholder-count="4"><a href="#" style="display: flex; align-items: baseline; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,.12)"><span style="font-family: Unbounded, sans-serif; font-weight: 700; font-size: 28px; letter-spacing: -.6px; line-height: 1.15">{{ m.t }}</span><span style="color: #9fb0c0; font-size: 13.5px">{{ m.d }}</span></a></sc-for>
+</nav>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 12.5px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: #9fb0c0">Бренди</span>
+<div style="display: flex; flex-wrap: wrap; gap: 8px"><sc-for list="{{ brands }}" as="b" hint-placeholder-count="8"><a href="#" style="height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid rgba(255,255,255,.28); display: flex; align-items: center; font-size: 14.5px">{{ b }}</a></sc-for></div>
+</div>
+<nav aria-label="Покупцям" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; font-size: 15px">
+<sc-for list="{{ info }}" as="i" hint-placeholder-count="4"><a href="#" style="padding: 10px 0; color: #dfe6ec">{{ i }}</a></sc-for>
+</nav>
+</div>
+<div style="flex-shrink: 0; padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 12px">
+<a href="#" style="height: 56px; border-radius: 18px; background: #ff9b26; color: #13202e; font-weight: 700; font-size: 16.5px; display: flex; align-items: center; justify-content: center; gap: 10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0-4 4m4-4 4 4"></path><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"></path></svg>Надрукувати своє фото</a>
+<span style="display: flex; justify-content: space-between; align-items: center; font-size: 13.5px; color: #9fb0c0"><span>Пн–Сб 9:00–18:00 · [ТЕЛЕФОН]</span><span style="display: flex; gap: 4px"><a href="#" aria-current="true" style="min-width: 40px; height: 36px; border-radius: 10px; background: #ffffff; color: #13202e; display: grid; place-items: center; font-weight: 600">UA</a><a href="#" style="min-width: 40px; height: 36px; border-radius: 10px; display: grid; place-items: center">RU</a></span></span>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+main: [
+{ t: 'Чохли', d: '1 100+ моделей' },
+{ t: 'Теми', d: 'футбол, аніме…' },
+{ t: 'Створити свій', d: 'конструктор' }
+],
+brands: ['Apple', 'Samsung', 'Xiaomi', 'Motorola', 'Google', 'Realme', 'OPPO', 'Усі 22'],
+info: ['Доставка й оплата', 'Повернення', 'Відстежити замовлення', 'Про нас']
+};
+}
+}
+</script>
+</body>
+</html>

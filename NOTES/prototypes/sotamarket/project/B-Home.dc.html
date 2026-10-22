@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>SotaMARKET — головна, варіант B «Майстерня»</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&amp;family=Golos+Text:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#ffffff}
+a{color:#13202e;text-decoration:none}a:hover{color:#2e5577}
+.ink a{color:#ffffff}.ink a:hover{color:#ffc27a}
+.card img{transition:transform .25s ease}.card:hover img{transform:scale(1.04) rotate(-1.5deg)}
+.pill:hover{background:#13202e;color:#ffffff}
+@media (max-width:860px){.wide-only{display:none !important}}
+</style>
+</helmet>
+<div style="font-family: 'Golos Text', system-ui, sans-serif; color: #13202e; background: #ffffff; font-size: 16px; line-height: 1.5">
+
+<header style="max-width: 1320px; margin: 0 auto; padding: 0 24px; height: 84px; display: flex; align-items: center; gap: 28px">
+<a href="#" aria-label="SotaMARKET — на головну" style="font-family: Unbounded, 'Golos Text', sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -.5px; line-height: 1; flex-shrink: 0">Sota<span style="color: #ff9b26">MARKET</span></a>
+<nav aria-label="Розділи" class="wide-only" style="display: flex; gap: 6px; flex: 1; justify-content: center">
+<a href="#" style="padding: 10px 14px; font-weight: 500">Чохли</a>
+<a href="#" style="padding: 10px 14px; font-weight: 500">Теми</a>
+<a href="#" style="padding: 10px 14px; font-weight: 500">Створити свій</a>
+<a href="#" style="padding: 10px 14px; font-weight: 500">Доставка</a>
+</nav>
+<span style="flex: 1" class="wide-only"></span>
+<nav aria-label="Кабінет" style="display: flex; gap: 4px; margin-left: auto">
+<a href="#" aria-label="Пошук" style="width: 46px; height: 46px; border-radius: 50%; border: 1.5px solid #e6e2dc; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg></a>
+<a href="#" aria-label="Обране" style="width: 46px; height: 46px; border-radius: 50%; border: 1.5px solid #e6e2dc; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></a>
+<a href="#" aria-label="Кошик, 2 товари" style="height: 46px; padding: 0 18px 0 14px; border-radius: 999px; background: #13202e; color: #ffffff; display: flex; align-items: center; gap: 8px; font-weight: 600"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7L6 7z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg>2</a>
+</nav>
+</header>
+
+<main style="max-width: 1320px; margin: 0 auto; padding: 0 24px">
+<section style="background: #ff9b26; border-radius: 36px; padding: 56px; display: flex; flex-wrap: wrap; gap: 40px; align-items: center; position: relative; overflow: hidden">
+<div style="flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 22px; position: relative">
+<h1 style="margin: 0; font-family: Unbounded, sans-serif; font-weight: 800; font-size: 68px; line-height: .98; letter-spacing: -2px; white-space: pre-line">Твоє фото.
+Твій чохол.</h1>
+<p style="margin: 0; font-size: 19px; max-width: 520px; text-wrap: pretty">Друкуємо будь-яку картинку на чохлі для понад 1 100 моделей телефонів. Від 259 ₴, готово за 2–3 дні.</p>
+<form style="display: flex; gap: 10px; flex-wrap: wrap; background: #ffffff; border-radius: 24px; padding: 10px; max-width: 620px">
+<label style="flex: 1 1 150px; display: flex; flex-direction: column; padding: 4px 12px; font-size: 12.5px; font-weight: 600; color: #5d4a35">Бренд
+<select style="border: 0; background: transparent; font: inherit; font-size: 16px; font-weight: 600; color: #13202e; padding: 2px 0; outline: none"><option>Apple</option><option>Samsung</option><option>Xiaomi</option></select>
+</label>
+<label style="flex: 1 1 170px; display: flex; flex-direction: column; padding: 4px 12px; font-size: 12.5px; font-weight: 600; color: #5d4a35; border-left: 1.5px solid #f0e6da">Модель
+<select style="border: 0; background: transparent; font: inherit; font-size: 16px; font-weight: 600; color: #13202e; padding: 2px 0; outline: none"><option>iPhone 16e</option><option>iPhone 17 Pro</option><option>iPhone 15</option></select>
+</label>
+<button type="submit" style="flex: 1 1 200px; height: 58px; border: 0; border-radius: 18px; background: #13202e; color: #ffffff; font: inherit; font-weight: 600; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0-4 4m4-4 4 4"></path><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"></path></svg>Завантажити фото</button>
+</form>
+<a href="#ready" style="align-self: flex-start; font-weight: 600; border-bottom: 2px solid #13202e; padding-bottom: 2px">або обрати готовий дизайн</a>
+</div>
+<div style="flex: 1 1 380px; min-width: 0; display: flex; justify-content: center; position: relative; min-height: 520px">
+<img src="/_blob/f6487be087bdb21482313a408fd72e2a" alt="" style="position: absolute; left: 0; top: 36px; width: 170px; border-radius: 24px; transform: rotate(-12deg); box-shadow: 0 16px 34px rgba(19,32,46,.22)">
+<img src="/_blob/57e2ea7ae5eb1a77002c6dddb07e4b6b" alt="" style="position: absolute; right: 0; bottom: 30px; width: 170px; border-radius: 24px; transform: rotate(10deg); box-shadow: 0 16px 34px rgba(19,32,46,.22)">
+<div style="position: relative; width: 250px; height: 500px; border-radius: 46px; background: #ffffff; box-shadow: 0 30px 60px rgba(19,32,46,.25); padding: 16px; box-sizing: border-box">
+<div style="position: absolute; left: 22px; top: 22px; width: 92px; height: 92px; border-radius: 26px; background: #13202e"></div>
+<div style="height: 100%; border: 2.5px dashed #ff9b26; border-radius: 34px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; padding: 20px; box-sizing: border-box">
+<span style="width: 64px; height: 64px; border-radius: 50%; background: #fff4e8; color: #c46200; display: grid; place-items: center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"></rect><circle cx="9" cy="10" r="1.8"></circle><path d="m21 16-5-5-8 8"></path></svg></span>
+<strong style="font-family: Unbounded, sans-serif; font-size: 17px; line-height: 1.2">Сюди — твоє фото</strong>
+<span style="font-size: 13.5px; color: #5d6670">Перетягни картинку або натисни, щоб обрати</span>
+</div>
+</div>
+</div>
+</section>
+
+<section id="ready" aria-labelledby="ready-h" style="padding: 88px 0 40px">
+<div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; margin-bottom: 30px">
+<h2 id="ready-h" style="margin: 0; font-family: Unbounded, sans-serif; font-weight: 700; font-size: 40px; line-height: 1.05; letter-spacing: -1px; white-space: pre-line">Не хочеш
+вигадувати — обирай</h2>
+<div role="tablist" aria-label="Теми" style="display: flex; gap: 6px; flex-wrap: wrap">
+<button type="button" role="tab" aria-selected="true" style="height: 44px; padding: 0 18px; border-radius: 999px; border: 0; background: #13202e; color: #ffffff; font: inherit; font-weight: 600; cursor: pointer">Хіти</button>
+<sc-for list="{{ themes }}" as="t" hint-placeholder-count="6"><button type="button" role="tab" aria-selected="false" class="pill" style="height: 44px; padding: 0 18px; border-radius: 999px; border: 1.5px solid #e6e2dc; background: #ffffff; color: #13202e; font: inherit; font-weight: 500; cursor: pointer">{{ t.t }}</button></sc-for>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 28px 22px">
+<sc-for list="{{ products }}" as="p" hint-placeholder-count="8"><article class="card" style="display: flex; flex-direction: column; gap: 12px">
+<a href="#" style="display: block; background: #fff4e8; border-radius: 28px; overflow: hidden; position: relative"><img src="{{ p.img }}" alt="{{ p.t }}" width="600" height="600" style="width: 100%; height: auto; display: block; mix-blend-mode: multiply"><span style="position: absolute; left: 14px; top: 14px; background: #ffffff; border-radius: 999px; padding: 5px 12px; font-size: 13px; font-weight: 600">{{ p.v }} принтів</span></a>
+<div style="display: flex; justify-content: space-between; gap: 12px; align-items: flex-start">
+<a href="#" style="font-weight: 500; font-size: 15.5px; line-height: 1.35">{{ p.t }}</a>
+<strong style="font-family: Unbounded, sans-serif; font-size: 18px; white-space: nowrap">{{ p.price }} ₴</strong>
+</div>
+</article></sc-for>
+</div>
+<div style="display: flex; justify-content: center; margin-top: 36px"><a href="#" style="height: 56px; padding: 0 30px; border-radius: 999px; border: 2px solid #13202e; display: inline-flex; align-items: center; font-weight: 600">Усі дизайни для iPhone 16e</a></div>
+</section>
+
+<section aria-labelledby="how-h" style="padding: 56px 0">
+<h2 id="how-h" style="margin: 0 0 36px; font-family: Unbounded, sans-serif; font-weight: 700; font-size: 40px; letter-spacing: -1px">Як це працює</h2>
+<ol style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 22px">
+<sc-for list="{{ steps }}" as="s" hint-placeholder-count="3"><li style="border: 2px dashed #e6d6c2; border-radius: 28px; padding: 28px; display: flex; flex-direction: column; gap: 12px"><span style="font-family: Unbounded, sans-serif; font-weight: 800; font-size: 54px; line-height: 1; color: #ff9b26">{{ s.n }}</span><strong style="font-size: 20px">{{ s.t }}</strong><span style="color: #4c5662">{{ s.d }}</span></li></sc-for>
+</ol>
+</section>
+
+<section aria-labelledby="find-h" class="ink" style="background: #13202e; color: #ffffff; border-radius: 36px; padding: 52px 56px; display: flex; flex-wrap: wrap; gap: 32px; align-items: center">
+<div style="flex: 1 1 400px; min-width: 0; display: flex; flex-direction: column; gap: 18px">
+<h2 id="find-h" style="margin: 0; font-family: Unbounded, sans-serif; font-weight: 700; font-size: 34px; letter-spacing: -.5px">Знайди свою модель</h2>
+<form role="search" style="display: flex; align-items: center; gap: 10px; background: #ffffff; border-radius: 999px; padding: 0 8px 0 22px; height: 60px; max-width: 560px">
+<label for="qb" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Модель телефону</label>
+<input id="qb" type="search" placeholder="Наприклад, «Galaxy A17» або «Redmi 15C»" style="flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 16px; color: #13202e; outline: none">
+<button type="submit" aria-label="Шукати" style="width: 46px; height: 46px; border-radius: 50%; border: 0; background: #ff9b26; color: #13202e; display: grid; place-items: center; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"></path></svg></button>
+</form>
+</div>
+<div style="flex: 1 1 460px; min-width: 0; display: flex; flex-wrap: wrap; gap: 10px">
+<sc-for list="{{ models }}" as="m" hint-placeholder-count="10"><a href="#" style="height: 44px; padding: 0 18px; border-radius: 999px; border: 1.5px solid rgba(255,255,255,.28); display: flex; align-items: center; font-weight: 500">{{ m }}</a></sc-for>
+</div>
+</section>
+
+<section aria-labelledby="th-h" style="padding: 88px 0 40px">
+<h2 id="th-h" style="margin: 0 0 30px; font-family: Unbounded, sans-serif; font-weight: 700; font-size: 40px; letter-spacing: -1px">Теми</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 16px">
+<sc-for list="{{ themes }}" as="t" hint-placeholder-count="8"><a href="#" style="position: relative; height: 150px; border-radius: 28px; background: #fff4e8; overflow: hidden; display: block"><span style="position: absolute; left: 24px; top: 22px; font-family: Unbounded, sans-serif; font-weight: 700; font-size: 24px">{{ t.t }}</span><img src="{{ t.img }}" alt="" width="170" height="170" style="position: absolute; right: -18px; bottom: -40px; width: 170px; transform: rotate(12deg); mix-blend-mode: multiply"></a></sc-for>
+</div>
+</section>
+
+<section aria-labelledby="seo-h" style="padding: 40px 0 88px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 24px 56px">
+<h2 id="seo-h" style="margin: 0; font-family: Unbounded, sans-serif; font-weight: 700; font-size: 26px; line-height: 1.15; letter-spacing: -.5px">Чохли з картинками, які кажуть «це мій телефон»</h2>
+<div style="display: flex; flex-direction: column; gap: 14px; color: #3c4652">
+<p style="margin: 0; text-wrap: pretty">Силіконові з принтами — м’які й легкі. Soft Touch — бархатисті, не збирають відбитків. Протиударні — з посиленими кутами для тих, у кого телефон вічно падає. На кожен — будь-яка картинка: фото з відпустки, улюблений герой, герб чи логотип клубу.</p>
+<p style="margin: 0; text-wrap: pretty">Чохол із фото — ще й подарунок, який точно не загубиться серед інших. Друкуємо 2–3 дні й відправляємо Новою Поштою чи Укрпоштою по всій Україні.</p>
+</div>
+</section>
+</main>
+
+<footer class="ink" style="background: #13202e; color: #c9d2db">
+<div style="max-width: 1320px; margin: 0 auto; padding: 56px 24px 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 32px">
+<div style="display: flex; flex-direction: column; gap: 14px"><span style="font-family: Unbounded, sans-serif; font-weight: 800; font-size: 26px; color: #ffffff; letter-spacing: -.5px">Sota<span style="color: #ff9b26">MARKET</span></span><span style="font-size: 14.5px">Друк на чохлах для 1 100+ моделей телефонів.</span></div>
+<nav aria-label="Каталог" style="display: flex; flex-direction: column; gap: 10px"><strong style="color: #ffffff">Каталог</strong><a href="#">Чохли для телефонів</a><a href="#">Створити свій</a><a href="#">Теми</a></nav>
+<nav aria-label="Покупцям" style="display: flex; flex-direction: column; gap: 10px"><strong style="color: #ffffff">Покупцям</strong><a href="#">Доставка й оплата</a><a href="#">Повернення</a><a href="#">Відстежити замовлення</a><a href="#">Про нас</a></nav>
+<div style="display: flex; flex-direction: column; gap: 10px"><strong style="color: #ffffff">На зв’язку</strong><span>м. Львів · Пн–Сб 9:00–18:00</span><a href="#">[ТЕЛЕФОН]</a><a href="#">info@sotamarket.com.ua</a></div>
+</div>
+<div style="max-width: 1320px; margin: 0 auto; padding: 18px 24px 30px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 13.5px; border-top: 1px solid rgba(255,255,255,.12)"><span>© 2020–2026 SotaMARKET</span><span style="display: flex; gap: 12px"><a href="#" aria-current="true" style="font-weight: 600">UA</a><a href="#">RU</a></span></div>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":3300}}'>
+class Component extends DCLogic {
+renderVals() {
+const b = '/_blob/';
+return {
+themes: [
+{ t: 'Футбол', img: b + 'fb1034be1064069be03b46f96f1bbd7a' },
+{ t: 'Аніме', img: b + '6cc815847a7c8cdd81a58d376e7b547a' },
+{ t: 'Українські', img: b + '886e8fb90f3a281d9c0c6f8d8623b4ee' },
+{ t: 'Брендові', img: b + 'e136ad15dbcaac3ac9e48d1138f9b02b' },
+{ t: 'Тварини', img: b + 'f6487be087bdb21482313a408fd72e2a' },
+{ t: 'Мультики', img: b + 'bcc776d4b010a172d7c6aba4787652aa' },
+{ t: 'Ігри', img: b + '57e2ea7ae5eb1a77002c6dddb07e4b6b' },
+{ t: 'Кіно', img: b + '24cbdf1ee6b774e38ec00cefb6a2c1a6' }
+],
+products: [
+{ t: 'Чохол з українським воїном на iPhone 16е', price: 259, v: 6, img: b + '886e8fb90f3a281d9c0c6f8d8623b4ee' },
+{ t: 'Чохол з принтом Килим для iPhone 16e', price: 269, v: 6, img: b + 'ff1568a6d95277678840527e38a7dceb' },
+{ t: 'Чохол з картинкою Наруто Аніме для iPhone 16е', price: 259, v: 8, img: b + '6cc815847a7c8cdd81a58d376e7b547a' },
+{ t: 'Чохол з принтом дракон Беззубик Айфон 16е', price: 259, v: 6, img: b + '24cbdf1ee6b774e38ec00cefb6a2c1a6' },
+{ t: 'Чохол з ФК Динамо Київ на Айфон 16е', price: 259, v: 7, img: b + '45967c1f630b17a9ce97c571b4df2646' },
+{ t: 'Чохол з принтом лисички Айфон 16е', price: 259, v: 5, img: b + 'bcc776d4b010a172d7c6aba4787652aa' },
+{ t: 'Чохол з принтом Формула 1 на iPhone 16е', price: 259, v: 9, img: b + '087ca6c9791336e6deb24634f592866d' },
+{ t: 'Чохол з українським гербом на iPhone 16е', price: 259, v: 6, img: b + '7d8ee7d79e5c997cbbad4ee2b3f82f8e' }
+],
+steps: [
+{ n: '01', t: 'Обери телефон', d: 'Понад 1 100 моделей: свіжі iPhone і Galaxy, Redmi, Moto, Pixel та інші.' },
+{ n: '02', t: 'Завантаж картинку', d: 'Додай фото чи текст і подивись, як воно ляже на чохол. Менеджер подзвонить і все звірить.' },
+{ n: '03', t: 'Отримай за 2–3 дні', d: 'Друкуємо УФ-фарбою й відправляємо Новою Поштою чи Укрпоштою.' }
+],
+models: ['iPhone 17 Pro Max', 'iPhone 17 Pro', 'iPhone 16e', 'iPhone 15', 'iPhone 13', 'iPhone 11', 'Galaxy A26 5G', 'Galaxy A17', 'Galaxy A07', 'Redmi 15C', 'Redmi Note 13 Pro', 'Moto G06']
+};
+}
+}
+</script>
+</body>
+</html>

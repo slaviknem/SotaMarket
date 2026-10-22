@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>SMARKET — головна, варіант A2 «Класика+»</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}
+.band a:hover,.foot a:hover{color:#ffb3b8}
+.card{transition:border-color .15s ease, box-shadow .2s ease, transform .2s ease}
+.card:hover{border-color:#d3cdc6 !important;box-shadow:0 14px 30px rgba(43,40,38,.1);transform:translateY(-2px)}
+.buy{transition:background .15s ease}.buy:hover{background:#c9303c !important}
+.side a{transition:background .12s ease, color .12s ease}.side a:hover{background:#faf1f0;color:#a8242f}
+.ul:hover{text-decoration:underline}
+@media (max-width:900px){.wide-only{display:none !important}}
+</style>
+</helmet>
+<div style="font-family: Manrope, system-ui, sans-serif; color: #1f1c1a; background: {{ c.bg }}; font-size: 14.5px; line-height: 1.5">
+
+<header>
+<div style="background: {{ c.top }}; color: #4a4541; font-size: 13px">
+<div style="max-width: 1240px; margin: 0 auto; padding: 0 24px; height: 36px; display: flex; align-items: center; gap: 20px">
+<nav aria-label="Інформація" style="display: flex; gap: 20px"><a href="#" class="ul">Про нас</a><a href="#" class="ul">Доставка й оплата</a><a href="#" class="ul">Повернення</a><a href="#" class="ul">Блог</a><a href="#" class="ul">Відстежити замовлення</a></nav>
+<span style="margin-left: auto; display: flex; gap: 10px"><a href="#" aria-current="true" style="font-weight: 800; color: #a8242f">UA</a><a href="#">RU</a></span>
+</div>
+</div>
+<div style="background: #ffffff; border-bottom: 1px solid {{ c.line }}">
+<div style="max-width: 1240px; margin: 0 auto; padding: 0 24px; height: 92px; display: flex; align-items: center; gap: 32px">
+<a href="#" aria-label="SMARKET — на головну" style="display: flex; align-items: center; gap: 3px; flex-shrink: 0; font-weight: 800; font-size: 29px; letter-spacing: -.8px; color: {{ c.band }}; line-height: 1"><span style="width: 38px; height: 38px; border-radius: 10px; background: #c9303c; color: #ffffff; display: grid; place-items: center; margin-right: 3px; font-size: 25px">S</span>MARKET</a>
+<form role="search" style="flex: 1; min-width: 0; height: 50px; display: flex; border: 1.5px solid {{ c.line }}; border-radius: 12px; overflow: hidden; background: #ffffff">
+<label style="display: flex; align-items: center; padding: 0 14px; background: {{ c.tile }}; border-right: 1px solid {{ c.line }}; font-size: 13.5px; font-weight: 700"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Розділ</span><select style="border: 0; background: transparent; font: inherit; color: #1f1c1a; outline: none"><option>Усі товари</option><option>Чохли</option><option>Аксесуари</option></select></label>
+<label for="qa2" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Пошук</label>
+<input id="qa2" type="search" placeholder="Модель телефону, чохол чи аксесуар" style="flex: 1; min-width: 0; border: 0; padding: 0 16px; font: inherit; font-size: 15px; color: #1f1c1a; outline: none">
+<button type="submit" aria-label="Шукати" style="width: 58px; border: 0; background: #c9303c; color: #ffffff; display: grid; place-items: center; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg></button>
+</form>
+<div class="wide-only" style="display: flex; align-items: center; gap: 12px; flex-shrink: 0"><span style="width: 42px; height: 42px; border-radius: 50%; background: {{ c.tint }}; color: #a8242f; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"></path></svg></span><span style="display: flex; flex-direction: column; line-height: 1.2"><span style="font-size: 12.5px; color: {{ c.mu }}">Гаряча лінія</span><a href="#" style="font-size: 19px; font-weight: 800; letter-spacing: -.2px">099 419 03 90</a></span></div>
+</div>
+</div>
+<nav class="band" aria-label="Каталог і бренди" style="background: {{ c.band }}; color: #ffffff">
+<div style="max-width: 1240px; margin: 0 auto; padding: 0 24px; height: 54px; display: flex; align-items: stretch; gap: 8px">
+<a href="#" style="width: 270px; box-sizing: border-box; background: #c9303c; display: flex; align-items: center; gap: 12px; padding: 0 18px; font-weight: 800; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"></path></svg>Каталог товарів</a>
+<div style="display: flex; align-items: center; overflow-x: auto; flex: 1; min-width: 0"><sc-for list="{{ brands }}" as="b" hint-placeholder-count="9"><a href="#" style="padding: 0 13px; font-weight: 600; white-space: nowrap">{{ b }}</a></sc-for><a href="#" style="padding: 0 13px; font-weight: 800; white-space: nowrap; color: #ffb3b8">Усі бренди</a></div>
+<a href="#" aria-label="Обране" style="width: 48px; display: grid; place-items: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></a>
+<a href="#" aria-label="Кошик, 2 товари" style="position: relative; width: 48px; display: grid; place-items: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7L6 7z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg><span style="position: absolute; top: 9px; right: 6px; min-width: 18px; height: 18px; border-radius: 9px; background: #c9303c; color: #ffffff; font-size: 11px; font-weight: 800; display: grid; place-items: center">2</span></a>
+</div>
+</nav>
+</header>
+
+<main style="max-width: 1240px; margin: 0 auto; padding: 20px 24px 72px; display: flex; flex-direction: column; gap: 52px">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap">
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12.5px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: #a8242f">Чохли · друк · аксесуари</span><h1 style="margin: 0; font-size: 30px; line-height: 1.1; font-weight: 800; letter-spacing: -.6px">Чохли й аксесуари для смартфонів</h1></div>
+<span style="color: {{ c.mu }}; font-size: 15px">Фірмові чохли й друк вашого фото для 1 500+ моделей</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: stretch">
+<nav class="side" aria-label="Каталог" style="flex: 1 1 250px; max-width: 270px; background: #ffffff; border: 1px solid {{ c.line }}; border-radius: 14px; padding: 8px 0; overflow: hidden">
+<sc-for list="{{ cats }}" as="k" hint-placeholder-count="10"><a href="#" style="display: flex; align-items: center; gap: 12px; padding: 10px 18px; font-weight: 600"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9303c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="{{ k.icon }}"></path></svg><span style="flex: 1">{{ k.t }}</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a49d96" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg></a></sc-for>
+</nav>
+<div style="flex: 999 1 600px; min-width: 0; min-height: 410px; position: relative; border-radius: 14px; overflow: hidden; background: {{ c.band }}; color: #ffffff">
+<a href="#" style="position: absolute; inset: 0; display: block">
+<img src="{{ slide.img }}" alt="{{ slide.title }}" width="840" height="395" style="width: 100%; height: 100%; object-fit: cover; display: block">
+<span aria-hidden="true" style="position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.2) 40%, rgba(0,0,0,0) 62%)"></span>
+<div style="position: absolute; left: 48px; bottom: 60px; max-width: 44%; display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-size: 42px; line-height: 1.05; font-weight: 800; letter-spacing: -.9px">{{ slide.title }}</h2>
+<span style="font-size: 17px; color: #ece7e2">{{ slide.desc }}</span>
+</div>
+</a>
+<div aria-label="Слайди" style="position: absolute; left: 48px; bottom: 28px; display: flex; gap: 6px"><sc-for list="{{ dots }}" as="d" hint-placeholder-count="2"><button type="button" aria-label="{{ d.label }}" style="width: {{ d.w }}; height: 6px; border: 0; border-radius: 3px; background: {{ d.bg }}; padding: 0; cursor: pointer"></button></sc-for></div>
+<div style="position: absolute; right: 20px; bottom: 18px; display: flex; gap: 8px">
+<button type="button" aria-label="Попередній банер" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,.3); background: rgba(0,0,0,.4); color: #ffffff; display: grid; place-items: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m5-5-5 5 5 5"></path></svg></button>
+<button type="button" aria-label="Наступний банер" style="width: 44px; height: 44px; border-radius: 50%; border: 0; background: #c9303c; color: #ffffff; display: grid; place-items: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"></path></svg></button>
+</div>
+</div>
+</div>
+<ul aria-label="Переваги" style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 16px">
+<sc-for list="{{ perks }}" as="k" hint-placeholder-count="3"><li style="display: flex; gap: 16px; align-items: center; padding: 18px 22px; background: #ffffff; border: 1px solid {{ k.c.line }}; border-radius: 14px"><span style="width: 48px; height: 48px; border-radius: 50%; background: {{ k.c.tint }}; color: #a8242f; display: grid; place-items: center; flex-shrink: 0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ k.icon }}"></path></svg></span><span style="display: flex; flex-direction: column"><strong style="font-size: 15.5px">{{ k.t }}</strong><span style="color: {{ k.c.mu }}; font-size: 13.5px">{{ k.d }}</span></span></li></sc-for>
+</ul>
+</div>
+
+<section aria-labelledby="new2-h">
+<div style="display: flex; align-items: flex-end; gap: 18px; flex-wrap: wrap; margin-bottom: 18px">
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12.5px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: #a8242f">Щойно на складі</span><h2 id="new2-h" style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -.4px">Нові надходження</h2></div>
+<div role="tablist" aria-label="Розділ" style="margin-left: auto; display: flex; gap: 2px; background: #ffffff; border: 1px solid {{ c.line }}; border-radius: 12px; padding: 4px">
+<button type="button" role="tab" aria-selected="true" style="height: 44px; padding: 0 18px; border-radius: 9px; border: 0; background: {{ c.band }}; color: #ffffff; font: inherit; font-weight: 800; cursor: pointer">Усі</button>
+<button type="button" role="tab" aria-selected="false" style="height: 44px; padding: 0 18px; border-radius: 9px; border: 0; background: transparent; color: #1f1c1a; font: inherit; font-weight: 700; cursor: pointer">Чохли</button>
+<button type="button" role="tab" aria-selected="false" style="height: 44px; padding: 0 18px; border-radius: 9px; border: 0; background: transparent; color: #1f1c1a; font: inherit; font-weight: 700; cursor: pointer">Аксесуари</button>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr)); gap: 14px">
+<sc-for list="{{ fresh }}" as="p" hint-placeholder-count="10"><article class="card" style="background: #ffffff; border: 1px solid {{ p.c.line }}; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 10px">
+<div style="position: relative; background: {{ p.c.tile }}; border-radius: 10px; overflow: hidden">
+<a href="#" style="display: block"><img src="{{ p.img }}" alt="{{ p.t }}" width="600" height="600" style="width: 100%; height: auto; display: block; mix-blend-mode: multiply"></a>
+<sc-if value="{{ p.disc }}" hint-placeholder-val="{{ true }}"><span style="position: absolute; left: 8px; top: 8px; background: #c9303c; color: #ffffff; font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 999px">{{ p.disc }}</span></sc-if>
+<button type="button" aria-label="В обране" style="position: absolute; right: 4px; top: 4px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: transparent; color: #4a4541; display: grid; place-items: center; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
+</div>
+<a href="#" class="ul" style="padding: 0 4px; font-size: 14px; line-height: 1.4; min-height: 59px">{{ p.t }}</a>
+<div style="padding: 0 4px; display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<span style="display: flex; flex-direction: column; line-height: 1.2"><sc-if value="{{ p.old }}" hint-placeholder-val="{{ true }}"><s style="font-size: 13px; color: {{ p.c.mu }}">{{ p.old }} ₴</s></sc-if><strong style="font-size: 19px; font-weight: 800; color: {{ p.pc }}">{{ p.price }} ₴</strong></span>
+<button type="button" class="buy" aria-label="Додати в кошик" style="width: 44px; height: 44px; border-radius: 10px; border: 0; background: {{ p.c.band }}; color: #ffffff; display: grid; place-items: center; cursor: pointer; flex-shrink: 0"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7L6 7z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg></button>
+</div>
+</article></sc-for>
+</div>
+</section>
+
+<section aria-labelledby="cat2-h">
+<div style="display: flex; flex-direction: column; gap: 2px; margin-bottom: 18px"><span style="font-size: 12.5px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: #a8242f">Аксесуари</span><h2 id="cat2-h" style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -.4px">Популярні категорії</h2></div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr)); gap: 14px">
+<sc-for list="{{ tiles }}" as="k" hint-placeholder-count="6"><a href="#" class="card" style="background: #ffffff; border: 1px solid {{ k.c.line }}; border-radius: 14px; padding: 14px 22px 14px 14px; display: flex; align-items: center; gap: 18px"><span style="width: 92px; height: 92px; border-radius: 50%; background: {{ k.c.tile }}; display: grid; place-items: center; flex-shrink: 0"><img src="{{ k.img }}" alt="" width="76" height="76" style="width: 76px; height: 76px; object-fit: contain; mix-blend-mode: multiply"></span><span style="flex: 1; display: flex; flex-direction: column"><strong style="font-size: 17px; font-weight: 800">{{ k.t }}</strong><span style="color: {{ k.c.mu }}">{{ k.n }}</span></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c9303c" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg></a></sc-for>
+</div>
+</section>
+
+<section aria-labelledby="mod2-h">
+<div style="display: flex; align-items: flex-end; gap: 18px; margin-bottom: 18px"><div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12.5px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: #a8242f">Моделі</span><h2 id="mod2-h" style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -.4px">Чохли на популярні моделі</h2></div><a href="#" class="ul" style="margin-left: auto; font-weight: 800; color: #a8242f">Усі моделі →</a></div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 12px">
+<sc-for list="{{ models }}" as="m" hint-placeholder-count="8"><a href="#" class="card" style="background: #ffffff; border: 1px solid {{ m.c.line }}; border-radius: 14px; padding: 10px 14px 10px 10px; display: flex; align-items: center; gap: 12px"><span style="width: 56px; height: 56px; border-radius: 12px; background: {{ m.c.tile }}; display: grid; place-items: center; flex-shrink: 0"><img src="{{ m.img }}" alt="" width="46" height="46" style="width: 46px; height: 46px; object-fit: contain; mix-blend-mode: multiply"></span><span style="display: flex; flex-direction: column; line-height: 1.3"><strong style="font-size: 14.5px">{{ m.t }}</strong><span style="color: {{ m.c.mu }}; font-size: 13px">{{ m.n }} товарів</span></span></a></sc-for>
+</div>
+</section>
+
+<section aria-labelledby="blog2-h">
+<div style="display: flex; align-items: flex-end; gap: 18px; margin-bottom: 18px"><div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12.5px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: #a8242f">Блог</span><h2 id="blog2-h" style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -.4px">Корисне про смартфони</h2></div><a href="#" class="ul" style="margin-left: auto; font-weight: 800; color: #a8242f">Усі статті →</a></div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 16px">
+<sc-for list="{{ posts }}" as="a" hint-placeholder-count="3"><article class="card" style="background: #ffffff; border: 1px solid {{ a.c.line }}; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column"><a href="#" style="display: block; background: {{ a.c.tile }}"><img src="{{ a.img }}" alt="" width="600" height="300" style="width: 100%; height: auto; display: block; mix-blend-mode: multiply"></a><span style="padding: 16px 18px 20px; display: flex; flex-direction: column; gap: 6px"><span style="color: #a8242f; font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase">{{ a.tag }}</span><a href="#" class="ul" style="font-size: 16.5px; font-weight: 800; line-height: 1.35">{{ a.t }}</a></span></article></sc-for>
+</div>
+</section>
+
+<section aria-labelledby="seo2-h" style="background: #ffffff; border: 1px solid {{ c.line }}; border-radius: 14px; padding: 30px 34px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 12px 40px; color: #4a4541">
+<h2 id="seo2-h" style="margin: 0; font-size: 20px; font-weight: 800; color: #1f1c1a; grid-column: 1 / -1">SMARKET — чохли й мобільні аксесуари з доставкою по Україні</h2>
+<p style="margin: 0; text-wrap: pretty">У каталозі — фірмові чохли для iPhone, Samsung, Xiaomi, Motorola та ще понад двадцяти брендів: силіконові, з MagSafe, прозорі, книжки. Не знайшли свій дизайн — надрукуємо ваше фото на чохлі.</p>
+<p style="margin: 0; text-wrap: pretty">Поруч — зарядні пристрої, кабелі, навушники, колонки й автотримачі. Оплата при отриманні, доставка Новою Поштою, а від 1000 ₴ — безкоштовно.</p>
+</section>
+</main>
+
+<footer class="foot" style="background: {{ c.band }}; color: #c9c2bb; border-top: 3px solid #c9303c">
+<div style="max-width: 1240px; margin: 0 auto; padding: 44px 24px 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 28px; font-size: 14px">
+<div style="display: flex; flex-direction: column; gap: 12px"><span style="display: flex; align-items: center; gap: 3px; font-weight: 800; font-size: 24px; color: #ffffff; line-height: 1; letter-spacing: -.6px"><span style="width: 30px; height: 30px; border-radius: 8px; background: #c9303c; display: grid; place-items: center; margin-right: 3px; font-size: 19px">S</span>MARKET</span><span>Чохли й аксесуари для смартфонів.</span></div>
+<nav aria-label="Каталог" style="display: flex; flex-direction: column; gap: 8px"><strong style="color: #ffffff">Каталог</strong><a href="#">Чохли для телефонів</a><a href="#">Друк на чохлі</a><a href="#">Зарядні пристрої</a><a href="#">Навушники</a></nav>
+<nav aria-label="Покупцям" style="display: flex; flex-direction: column; gap: 8px"><strong style="color: #ffffff">Покупцям</strong><a href="#">Доставка й оплата</a><a href="#">Повернення</a><a href="#">Відстежити замовлення</a><a href="#">Блог</a></nav>
+<div style="display: flex; flex-direction: column; gap: 8px"><strong style="color: #ffffff">Контакти</strong><a href="#" style="color: #ffffff; font-size: 18px; font-weight: 800">099 419 03 90</a><span>[ГРАФІК РОБОТИ]</span><span>[EMAIL]</span></div>
+</div>
+<div style="max-width: 1240px; margin: 0 auto; padding: 16px 24px 24px; border-top: 1px solid rgba(255,255,255,.1); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 13px"><span>© SMARKET</span><span><a href="#" aria-current="true" style="color: #ffffff; font-weight: 800">UA</a> · <a href="#">RU</a></span></div>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"palette":{"editor":"enum","options":["Теплий сірий","Бежевий","Нейтральний сірий"],"default":"Теплий сірий"},"$preview":{"width":1440,"height":3500}}'>
+class Component extends DCLogic {
+renderVals() {
+const P = {
+'Теплий сірий': { bg: '#f2f0ed', top: '#e7e4df', band: '#2b2826', line: '#e3dfd9', mu: '#66605a', tile: '#f4f2ef', tint: '#f6e3e1' },
+'Бежевий': { bg: '#f5efe6', top: '#ebe3d6', band: '#2e2924', line: '#e5dccf', mu: '#695f55', tile: '#f7f2ea', tint: '#f6e2db' },
+'Нейтральний сірий': { bg: '#f1f1f1', top: '#e5e5e5', band: '#29292b', line: '#e1e1e1', mu: '#626265', tile: '#f4f4f4', tint: '#f5e3e4' }
+};
+const c = P[this.props.palette] || P['Теплий сірий'];
+const withC = (xs) => xs.map((x) => Object.assign({}, x, { c: c }));
+const b = '/_blob/';
+const mk = (t, price, old, img) => {
+const d = old > price;
+return { t: t, price: price, old: d ? old : '', disc: d ? '−' + Math.round((old - price) / old * 100) + '%' : '', pc: d ? '#c9303c' : '#1f1c1a', img: b + img, c: c };
+};
+return {
+c: c,
+brands: ['Apple', 'Samsung', 'Xiaomi', 'Motorola', 'Google', 'Realme', 'OPPO', 'TECNO', 'Ulefone'],
+// Банер — справжній запис адмінки smarket (banners id 3): картинка + підписи двома мовами
+slide: { img: b + 'd551cf49a3791a103b07e5823dc990b2', title: 'Друк на чохлі', desc: 'Створи індивідуальний дизайн' },
+dots: [
+{ label: 'Банер 1', w: '30px', bg: '#c9303c' },
+{ label: 'Банер 2', w: '10px', bg: 'rgba(255,255,255,.55)' }
+],
+cats: [
+{ t: 'Чохли для телефонів', icon: 'M8 2.5h8a2.5 2.5 0 0 1 2.5 2.5v14a2.5 2.5 0 0 1-2.5 2.5H8A2.5 2.5 0 0 1 5.5 19V5A2.5 2.5 0 0 1 8 2.5zM9 6.5h.01' },
+{ t: 'Друк на чохлі', icon: 'M4 20l4-1 10-10-3-3L5 16l-1 4zM14 6l3 3' },
+{ t: 'Зарядні пристрої', icon: 'M9 3v5M15 3v5M7 8h10v3a5 5 0 0 1-10 0V8zM12 16v5' },
+{ t: 'Кабелі й перехідники', icon: 'M6 3v5h4V3M8 8v6a4 4 0 0 0 8 0v-3M14 11h4V6h-4z' },
+{ t: 'Навушники', icon: 'M4 15v-3a8 8 0 0 1 16 0v3M4 15h3v5H5a1 1 0 0 1-1-1v-4zM20 15h-3v5h2a1 1 0 0 0 1-1v-4z' },
+{ t: 'Bluetooth-колонки', icon: 'M7 3h10a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM12 13a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM12 7h.01' },
+{ t: 'Автотримачі', icon: 'M5 11l2-5h10l2 5M4 11h16v6H4zM7 17v2M17 17v2M7.5 14h.01M16.5 14h.01' },
+{ t: 'Карти пам’яті', icon: 'M7 3h7l4 4v14H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM10 3v3M13 3v3' },
+{ t: 'Смарт-гаджети', icon: 'M9 3h6l1 4M9 3L8 7M8 17l1 4h6l1-4M7 7h10v10H7z' },
+{ t: 'Інші аксесуари', icon: 'M5 12h.01M12 12h.01M19 12h.01' }
+],
+perks: withC([
+{ t: 'Безкоштовна доставка', d: 'Для замовлень від 1000 ₴', icon: 'M3 6h11v10H3zM14 10h4l3 3v3h-7M7 16.4a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2zM17 16.4a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2z' },
+{ t: 'Оплата при отриманні', d: 'Платите, коли переконалися', icon: 'M3 7h18v10H3zM3 11h18M7 15h3' },
+{ t: '−10 % на наступні замовлення', d: 'Для тих, хто вже купував у нас', icon: 'M3 12V4h8l10 10-8 8L3 12zM7.5 6.2a1.3 1.3 0 1 0 0 2.6 1.3 1.3 0 0 0 0-2.6z' }
+]),
+fresh: [
+mk('Чохол TPU Ummi transparent для Apple iPhone 16e / 17e', 279, 309, '7304726cbf8a65a5beef4001cdddd00d'),
+mk('Чохол TPU+PC Empire with Magnetic Fit and Ring для iPhone 16e / 17e', 589, 619, 'd327cf262a5ea6f1155c70536932e699'),
+mk('Друкований чохол «Звірята з кавою» для iPhone 16e', 269, 289, 'bfd48653e3ab0cc7ec76ddebd4a92f86'),
+mk('Чохол Silk (AA) NO LOGO with Magnetic Fit для iPhone 16e / 17e', 239, 269, '73d2bb07a46c9f31a6f8570ce54cc02e'),
+mk('TPU чохол Nova для Apple iPhone 16e / 17e', 129, 159, '4e389d1d40d7d8cd36c95258a02f03f6'),
+mk('МЗП Acefast A69 PD30W GaN (USB-C + USB-A)', 469, 499, '5a4a2495d25c26c33b5fb88af524475e'),
+mk('Бездротові TWS-навушники Amaya ATW-07', 799, 829, '7bf1e1edbec2f8bc9e3449d53a9776c1'),
+mk('Чохол з малюнком Стіч для iPhone 16e', 269, 289, 'c07cedece9a71cd27a14d3db21e4a186'),
+mk('Автотримач з бездротовою зарядкою Amaya APH-W08 15W', 559, 589, 'a4168285c2856c46a426b1494bf0d42e'),
+mk('Чохол з принтом Лабубу для iPhone 16e', 279, 0, '98b62b38a41be75c3a0fac66d1e1c74c')
+],
+tiles: withC([
+{ t: 'Чохли для телефонів', n: '1 500+ моделей', img: b + '73d2bb07a46c9f31a6f8570ce54cc02e' },
+{ t: 'Зарядні пристрої', n: '222 товари', img: b + '5a4a2495d25c26c33b5fb88af524475e' },
+{ t: 'Кабелі й перехідники', n: '282 товари', img: b + 'f79260337f61099adb3b078482201366' },
+{ t: 'Навушники', n: '89 товарів', img: b + '4a43357544c8be198d0526c0dc5b6987' },
+{ t: 'Автотримачі', n: '93 товари', img: b + '811dcdaa29e1671ad3d12f82be60a171' },
+{ t: 'Bluetooth-колонки', n: '34 товари', img: b + '457bad66e6bb40c0b239a12bf4a60869' }
+]),
+models: withC([
+{ t: 'iPhone 17 Pro Max', n: '225', img: b + '0835c87633f3cba89596a20f9233ff84' },
+{ t: 'iPhone 17 Pro', n: '228', img: b + '28957b451e2f47a4ecdaef9d957e8c18' },
+{ t: 'iPhone 16e', n: '171', img: b + '5c067625a218876cd7546673db53d0f1' },
+{ t: 'iPhone 15', n: '229', img: b + '4892e57a84251daba057c0222576b10a' },
+{ t: 'Samsung Galaxy A16', n: '154', img: b + 'b70ee30754fa30f8fb9895c79ed2d055' },
+{ t: 'Xiaomi Redmi 15C', n: '177', img: b + 'd05dc31643c937902d27f8ddc1976f08' },
+{ t: 'Motorola Moto G06', n: '160', img: b + 'af0866a4dd8730b5e5032a69f5e8eeb1' },
+{ t: 'Redmi Note 13 Pro', n: '169', img: b + 'b2358be0be706d86294ed8ed0a8ea8f8' }
+]),
+posts: withC([
+{ tag: 'Поради', t: 'Як вибрати чохол на телефон — покрокова інструкція', img: b + '9f069747649b0b0a77f659d6867b766a' },
+{ tag: 'Захист', t: 'Що краще поклеїти на екран для захисту смартфона?', img: b + 'c726c83b687f0ed6a8b1dc33626884d6' },
+{ tag: 'Технології', t: 'Гаманець у телефоні — Google Pay та Apple Pay', img: b + '0df55c05c2fabdf6dce43ddf9642865e' }
+])
+};
+}
+}
+</script>
+</body>
+</html>

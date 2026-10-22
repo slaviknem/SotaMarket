@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Print-Case — головна на телефоні, варіант A «Вітрина»</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800;900&amp;display=swap">
+<style>
+body{margin:0;background:#ffffff}
+a{color:inherit;text-decoration:none}
+</style>
+</helmet>
+<div style="width: 390px; font-family: Montserrat, system-ui, sans-serif; color: #1f2024; background: #ffffff; font-size: 15px; line-height: 1.5; overflow: hidden">
+
+<header style="height: 62px; padding: 0 6px 0 16px; display: flex; align-items: center; gap: 2px; border-bottom: 1px solid #ececec">
+<a href="#" aria-label="Print-Case — на головну" style="flex: 1; display: flex; align-items: baseline; gap: 3px; font-size: 21px; letter-spacing: .8px; line-height: 1"><span style="width: 9px; height: 9px; background: #f7941d; align-self: center; margin-right: 5px"></span><span style="font-weight: 300">PRINT</span><span style="font-weight: 900">CASE</span></a>
+<a href="#" aria-label="Пошук" style="width: 44px; height: 44px; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="square" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg></a>
+<a href="#" aria-label="Кошик, 1 товар" style="position: relative; width: 44px; height: 44px; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="#1f2024" aria-hidden="true"><path d="M6 7h12l-1.2 13H7.2L6 7zm3 0a3 3 0 0 1 6 0h-1.6a1.4 1.4 0 0 0-2.8 0H9z"></path></svg><span style="position: absolute; top: 6px; right: 4px; min-width: 16px; height: 16px; background: #f7941d; font-size: 10px; font-weight: 900; display: grid; place-items: center">1</span></a>
+<a href="A-Menu-Mobile.dc.html" aria-label="Меню" style="width: 44px; height: 44px; display: grid; place-items: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="square" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></a>
+</header>
+<a href="#" style="margin: 10px 12px 0; height: 46px; border: 1.5px solid #1f2024; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-size: 12.5px; font-weight: 800; letter-spacing: 1px">ТВОЯ МОДЕЛЬ: IPHONE 16E<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></a>
+
+<section style="margin-top: 10px; background: #fff5eb; padding: 28px 16px 0; display: flex; flex-direction: column; gap: 14px; overflow: hidden">
+<span style="font-size: 11.5px; font-weight: 800; letter-spacing: 1.6px">ЧОХЛИ З ПРИНТОМ ДЛЯ ТВОГО ТЕЛЕФОНА</span>
+<h1 style="margin: 0; line-height: .9; letter-spacing: -2px"><span style="display: block; font-size: 80px; font-weight: 200">PRINT</span><span style="display: block; font-size: 80px; font-weight: 900">CASE</span><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)"> — чохли з принтом</span></h1>
+<p style="margin: 0; color: #3a3c42">Понад 2 000 дизайнів. Обери свій або надрукуємо твій.</p>
+<div style="display: flex; gap: 8px"><a href="#" style="flex: 1; height: 50px; background: #1f2024; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 800; letter-spacing: 1.2px">ОБРАТИ ДИЗАЙН</a><a href="#" style="flex: 1; height: 50px; border: 2px solid #1f2024; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 800; letter-spacing: 1.2px">СТВОРИТИ СВІЙ</a></div>
+<div style="position: relative; height: 290px">
+<img src="/_blob/af1a8a12e7b17fd6dd3572ce5be70c74" alt="" width="804" height="1004" style="position: absolute; left: 4px; top: 20px; width: 180px; height: auto; transform: rotate(-7deg); mix-blend-mode: multiply">
+<img src="/_blob/64ddf7697775901a28c5af081e10b4b9" alt="" width="804" height="1004" style="position: absolute; right: 0; top: 0; width: 196px; height: auto; transform: rotate(6deg); mix-blend-mode: multiply">
+<span style="position: absolute; left: 40%; bottom: 30px; width: 86px; height: 86px; border-radius: 50%; background: #f7941d; display: grid; place-items: center; text-align: center; font-weight: 900; font-size: 11px; line-height: 1.1; transform: rotate(-10deg)">ВІД<br><span style="font-size: 21px">249 ₴</span></span>
+</div>
+</section>
+
+<section aria-labelledby="tm-h" style="padding: 40px 0 0">
+<h2 id="tm-h" style="margin: 0 16px 14px; font-size: 24px; font-weight: 900; letter-spacing: .4px">ТЕМИ</h2>
+<div style="display: flex; gap: 6px; overflow-x: auto; padding: 0 16px">
+<sc-for list="{{ themes }}" as="t" hint-placeholder-count="6"><a href="#" style="position: relative; width: 132px; height: 240px; flex-shrink: 0; overflow: hidden; display: block; background: #f2f2f2"><img src="{{ t.img }}" alt="" width="132" height="240" style="width: 100%; height: 100%; object-fit: cover; display: block"><span style="position: absolute; left: 0; right: 0; bottom: 0; background: #1f2024; color: #ffffff; padding: 9px 10px; font-size: 11.5px; font-weight: 800; letter-spacing: 1px">{{ t.t }}</span></a></sc-for>
+</div>
+</section>
+
+<section aria-labelledby="pm-h" style="padding: 40px 12px 0">
+<h2 id="pm-h" style="margin: 0 4px 6px; font-size: 24px; font-weight: 900; letter-spacing: .4px">ПОПУЛЯРНІ ДИЗАЙНИ</h2>
+<div style="display: flex; gap: 18px; margin: 0 4px 16px; font-size: 12px; font-weight: 800; letter-spacing: 1px"><span style="padding: 12px 0; box-shadow: inset 0 -2px 0 #f7941d">ХІТИ</span><span style="padding: 12px 0; color: #5c5f66">НОВИНКИ</span><span style="padding: 12px 0; color: #5c5f66">ДЛЯ НЕЇ</span><span style="padding: 12px 0; color: #5c5f66">ДЛЯ НЬОГО</span></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 10px">
+<sc-for list="{{ designs }}" as="d" hint-placeholder-count="6"><article style="display: flex; flex-direction: column; gap: 6px; position: relative">
+<a href="#" style="display: block"><img src="{{ d.img }}" alt="{{ d.t }}" width="504" height="630" style="width: 100%; height: auto; display: block"></a>
+<sc-if value="{{ d.badge }}" hint-placeholder-val="{{ true }}"><span style="position: absolute; left: 0; top: 0; background: {{ d.bbg }}; color: {{ d.bfg }}; font-size: 10px; font-weight: 800; letter-spacing: .8px; padding: 3px 6px">{{ d.badge }}</span></sc-if>
+<a href="#" style="font-weight: 600; font-size: 13.5px; line-height: 1.3; text-align: center">{{ d.t }}</a>
+<span style="text-align: center; font-weight: 800; font-size: 14px">від 249 ₴</span>
+</article></sc-for>
+</div>
+<a href="#" style="display: flex; justify-content: center; align-items: center; height: 50px; margin-top: 22px; border: 2px solid #1f2024; font-size: 12.5px; font-weight: 800; letter-spacing: 1.2px">УСІ ДИЗАЙНИ</a>
+</section>
+
+<section aria-labelledby="ow-h" style="margin-top: 40px; background: #141416; color: #ffffff; padding: 28px 18px; display: flex; flex-direction: column; gap: 14px">
+<span style="color: #f7941d; font-size: 11.5px; font-weight: 800; letter-spacing: 1.6px">КОНСТРУКТОР</span>
+<h2 id="ow-h" style="margin: 0; font-size: 30px; line-height: 1; font-weight: 900">НЕМАЄ ПОТРІБНОГО?<br><span style="font-weight: 200">ЗБЕРИ СВІЙ</span></h2>
+<p style="margin: 0; color: #c7c8cc">Фото, напис чи колаж — побачиш на чохлі ще до замовлення.</p>
+<a href="#" style="height: 52px; background: #f7941d; color: #1f2024; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 900; letter-spacing: 1.2px">ВІДКРИТИ КОНСТРУКТОР</a>
+</section>
+
+<section aria-labelledby="bm-h" style="padding: 40px 12px 0">
+<h2 id="bm-h" style="margin: 0 4px 14px; font-size: 24px; font-weight: 900; letter-spacing: .4px">ДЛЯ ТВОГО ТЕЛЕФОНА</h2>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid #ececec; border-left: 1px solid #ececec">
+<sc-for list="{{ brands }}" as="b" hint-placeholder-count="6"><a href="#" style="height: 60px; display: flex; align-items: center; justify-content: center; border-right: 1px solid #ececec; border-bottom: 1px solid #ececec; font-size: 14px; font-weight: 800; letter-spacing: .8px">{{ b }}</a></sc-for>
+</div>
+</section>
+
+<section aria-labelledby="sm-h" style="margin: 40px 12px 0; background: #fff5eb; padding: 22px 18px; display: flex; flex-direction: column; gap: 8px">
+<h2 id="sm-h" style="margin: 0; font-size: 17px; font-weight: 900; letter-spacing: .3px">ЧОХЛИ З КАРТИНКАМИ ПІД ЗАМОВЛЕННЯ</h2>
+<p style="margin: 0; color: #3a3c42; font-size: 14px">Тисячі дизайнів на будь-який настрій — квіти, аніме, авто, космос, милі тварини. Кожен друкуємо під твою модель.</p>
+</section>
+
+<footer style="margin-top: 32px; background: #141416; color: #b9babe; padding: 24px 16px; display: flex; flex-direction: column; gap: 10px; font-size: 14px">
+<span style="display: flex; align-items: baseline; gap: 3px; font-size: 20px; color: #ffffff"><span style="font-weight: 300">PRINT</span><span style="font-weight: 900">CASE</span></span>
+<nav aria-label="Покупцям" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px"><a href="#" style="padding: 10px 0">Доставка й оплата</a><a href="#" style="padding: 10px 0">Повернення</a><a href="#" style="padding: 10px 0">Відстежити замовлення</a><a href="#" style="padding: 10px 0">Про нас</a></nav>
+<span style="display: flex; justify-content: space-between; font-size: 12.5px; letter-spacing: 1px"><span>© PRINT-CASE</span><span><strong style="color: #ffffff">UA</strong> · RU</span></span>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":3300}}'>
+class Component extends DCLogic {
+renderVals() {
+const b = '/_blob/';
+const hit = { badge: 'ХІТ', bbg: '#f7941d', bfg: '#1f2024' };
+const neu = { badge: 'НОВИНКА', bbg: '#1f2024', bfg: '#ffffff' };
+const none = { badge: '', bbg: '', bfg: '' };
+const d = (t, id, x) => Object.assign({ t: t, img: b + id }, x || none);
+return {
+themes: [
+{ t: 'КВІТИ', img: b + 'a23b4563e5ec04bd00d0dbfa0570c66f' },
+{ t: 'ТВАРИНИ', img: b + '7f45ca79736022e33fde763298d6e7a4' },
+{ t: 'АНІМЕ', img: b + '70b306ff143f051a1c069f53581dcdfd' },
+{ t: 'РІЗНЕ', img: b + '55de327f68c895ff0d9abe9d3ec4aef8' },
+{ t: 'КІНО', img: b + 'e2d719dd3eddf4b8c0defe406035f701' },
+{ t: 'ДИТЯЧІ', img: b + '9b53ac965e42990f083a6dc628b5e213' }
+],
+designs: [
+d('Капібари з апельсинами', 'e22df3218ba0f2148c3c570266b5428c', hit),
+d('Фіолетові квіти з росою', '61a0f1674acbfb68f6dbf086d661aed5', hit),
+d('Kuromi — ніжний фіолетовий', '79f18329782334325a0868bbef294bc4'),
+d('Бант-квітка', '46e7d1f1be265e77580e2a9eb4d83451', neu),
+d('Стіч з укулеле', 'f45b7dd1392fd7bbacaab6b8718ce96f'),
+d('Cybertruck на Марсі', '785c144f64992021ff24a8a5885e8a1b', neu)
+],
+brands: ['APPLE', 'SAMSUNG', 'XIAOMI', 'MOTOROLA', 'GOOGLE', 'УСІ →']
+};
+}
+}
+</script>
+</body>
+</html>
