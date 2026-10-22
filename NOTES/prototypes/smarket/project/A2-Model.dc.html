@@ -136,7 +136,7 @@ details[open] .chev{transform:rotate(180deg)}
 </footer>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"palette":{"editor":"enum","options":["Теплий сірий","Бежевий","Нейтральний сірий"],"default":"Теплий сірий"},"$preview":{"width":1440,"height":2900}}'>
+<script type="text/x-dc" data-dc-script data-props='{"palette":{"editor":"enum","options":["Теплий сірий","Бежевий","Нейтральний сірий"],"default":"Бежевий"},"$preview":{"width":1440,"height":2900}}'>
 class Component extends DCLogic {
 renderVals() {
 const P = {
@@ -144,7 +144,7 @@ const P = {
 'Бежевий': { bg: '#f5efe6', top: '#ebe3d6', band: '#2e2924', line: '#e5dccf', mu: '#695f55', tile: '#f7f2ea', tint: '#f6e2db' },
 'Нейтральний сірий': { bg: '#f1f1f1', top: '#e5e5e5', band: '#29292b', line: '#e1e1e1', mu: '#626265', tile: '#f4f4f4', tint: '#f5e3e4' }
 };
-const c = P[this.props.palette] || P['Теплий сірий'];
+const c = P[this.props.palette] || P['Бежевий'];
 const withC = (xs) => xs.map((x) => Object.assign({}, x, { c: c }));
 const b = '/_blob/';
 const mk = (t, price, old, img) => {
