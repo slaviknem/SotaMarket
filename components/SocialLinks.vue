@@ -1,6 +1,6 @@
 <template>
 	<ul class="social-links" :aria-label="t('footer.follow')">
-		<li v-for="s in socials" :key="s.name">
+		<li v-for="s in socialLinks" :key="s.name">
 			<a
 				class="social-links__link"
 				:href="s.url"
@@ -17,21 +17,12 @@
 
 <script setup lang="ts">
 // Іконки соцмереж з посиланнями (перевикористовується у футері / контактах).
-// Гліфи — у реєстрі AppIcon, адреси — з налаштувань адмінки (спільні з sameAs у schema.org).
+// Гліфи — у реєстрі AppIcon, адреси — з налаштувань адмінки (спільні з sameAs у schema.org;
+// мережі з порожньою адресою useSiteSettings уже відкинув).
 const { t } = useI18n()
-const { social } = useSiteSettings()
+const { socialLinks } = useSiteSettings()
 
 withDefaults(defineProps<{ size?: number }>(), { size: 18 })
-
-// Порожня адреса = мережу не ведемо: іконку не показуємо взагалі
-const socials = computed(() =>
-	[
-		{ name: 'Instagram', icon: 'instagram', url: social.value.instagram },
-		{ name: 'Facebook', icon: 'facebook', url: social.value.facebook },
-		{ name: 'Telegram', icon: 'telegram', url: social.value.telegram },
-		{ name: 'YouTube', icon: 'youtube', url: social.value.youtube },
-	].filter((s) => s.url)
-)
 </script>
 
 <style scoped>

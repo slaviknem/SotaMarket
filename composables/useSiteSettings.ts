@@ -133,6 +133,7 @@ export function useSiteSettings() {
 	// яка читає той самий вузол
 	const phones = computed(() => contacts.value.phones.map((p) => p.phone))
 	const phone = computed(() => phones.value[0] || '')
+	const social = computed(() => settings.value.social)
 
 	return {
 		settings,
@@ -143,7 +144,17 @@ export function useSiteSettings() {
 		schedule: computed(() => contacts.value.schedule),
 		policies: computed(() => settings.value.policies),
 		promoAccessories: computed(() => settings.value.promo_accessories),
-		social: computed(() => settings.value.social),
+		social,
+		// Соцпрофілі магазину — іконки футера (SocialLinks) і sameAs у JSON-LD.
+		// Порожня адреса — мережу не ведемо: ні іконки, ні посилання
+		socialLinks: computed(() =>
+			[
+				{ name: 'Instagram', icon: 'instagram', url: social.value.instagram },
+				{ name: 'Facebook', icon: 'facebook', url: social.value.facebook },
+				{ name: 'Telegram', icon: 'telegram', url: social.value.telegram },
+				{ name: 'YouTube', icon: 'youtube', url: social.value.youtube },
+			].filter((s) => s.url)
+		),
 		phones,
 		phone,
 		// Приклад номера в підказках форм — головний телефон магазину: «099 419 03 90» → «099-419-03-90»

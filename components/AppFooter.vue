@@ -50,7 +50,7 @@
 						</ul>
 					</div>
 
-					<div class="footer__social">
+					<div v-if="socialLinks.length" class="footer__social">
 						<div class="footer__title">{{ t('footer.social') }}</div>
 						<SocialLinks :size="18" />
 					</div>
@@ -68,11 +68,13 @@
 const { t } = useI18n()
 const localePath = useLocalePath()
 const brand = useBrand()
-const { contacts, phones, schedule } = useSiteSettings()
+const { contacts, phones, schedule, socialLinks } = useSiteSettings()
 const { footerInfoLinks, buyerLinks } = useSiteMenus()
 </script>
 
 <style scoped>
+/* Футер — на --bg-deep: текст, роздільники й лого — токени --on-deep*, --border-deep, --logo-on-deep
+   (у світлій темі смуга темна, і звичайні --text* на ній не читаються) */
 .footer {
 	margin-top: 40px;
 	background: var(--bg-deep);
@@ -92,11 +94,12 @@ const { footerInfoLinks, buyerLinks } = useSiteMenus()
 
 .footer__logo :deep(.app-logo) {
 	height: 32px;
+	color: var(--logo-on-deep);
 }
 
 .footer__about-text {
 	margin-top: 10px;
-	color: var(--text-muted);
+	color: var(--on-deep-muted);
 	font-size: 13.5px;
 	max-width: 320px;
 }
@@ -109,7 +112,7 @@ const { footerInfoLinks, buyerLinks } = useSiteMenus()
 	flex-direction: column;
 	gap: 8px;
 	font-size: 13.5px;
-	color: var(--text-soft);
+	color: var(--on-deep-soft);
 }
 
 .footer__contacts li {
@@ -124,7 +127,7 @@ const { footerInfoLinks, buyerLinks } = useSiteMenus()
 }
 
 .footer__contacts a:hover {
-	color: var(--accent);
+	color: var(--on-deep-hover);
 }
 
 .footer__title {
@@ -133,7 +136,7 @@ const { footerInfoLinks, buyerLinks } = useSiteMenus()
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 	margin-bottom: 14px;
-	color: var(--text);
+	color: var(--on-deep);
 }
 
 .footer__links {
@@ -146,13 +149,13 @@ const { footerInfoLinks, buyerLinks } = useSiteMenus()
 }
 
 .footer__links a {
-	color: var(--text-muted);
+	color: var(--on-deep-muted);
 	font-size: 13.5px;
 	transition: color 0.15s;
 }
 
 .footer__links a:hover {
-	color: var(--accent);
+	color: var(--on-deep-hover);
 }
 
 .footer__schedule {
@@ -163,11 +166,11 @@ const { footerInfoLinks, buyerLinks } = useSiteMenus()
 	flex-direction: column;
 	gap: 8px;
 	font-size: 13.5px;
-	color: var(--text-soft);
+	color: var(--on-deep-soft);
 }
 
 .footer__schedule span {
-	color: var(--text-muted);
+	color: var(--on-deep-muted);
 }
 
 .footer__bottom {
@@ -177,8 +180,8 @@ const { footerInfoLinks, buyerLinks } = useSiteMenus()
 	gap: 14px;
 	flex-wrap: wrap;
 	padding: 18px 0;
-	border-top: 1px solid var(--border);
-	color: var(--text-muted);
+	border-top: 1px solid var(--border-deep);
+	color: var(--on-deep-muted);
 	font-size: 13px;
 }
 
@@ -206,7 +209,7 @@ const { footerInfoLinks, buyerLinks } = useSiteMenus()
 		grid-column: 1 / -1;
 		text-align: center;
 		padding-bottom: 24px;
-		border-bottom: 1px solid var(--border);
+		border-bottom: 1px solid var(--border-deep);
 	}
 
 	.footer__about-text {
@@ -229,7 +232,7 @@ const { footerInfoLinks, buyerLinks } = useSiteMenus()
 		gap: 24px 18px;
 		align-items: start;
 		padding-top: 24px;
-		border-top: 1px solid var(--border);
+		border-top: 1px solid var(--border-deep);
 	}
 
 	.footer__social {

@@ -337,6 +337,7 @@ onMounted(() => {
 	display: contents;
 }
 
+/* Верхня смуга — на --bg-deep: текст — токени --on-deep* (у світлій темі смуга темна) */
 .header__topbar {
 	background: var(--bg-deep);
 	border-bottom: 1px solid var(--border);
@@ -363,13 +364,13 @@ onMounted(() => {
 }
 
 .topbar-links a {
-	color: var(--text-muted);
+	color: var(--on-deep-muted);
 	white-space: nowrap;
 	transition: color 0.15s;
 }
 
 .topbar-links a:hover {
-	color: var(--accent);
+	color: var(--on-deep-hover);
 }
 
 .topbar-right {
@@ -383,13 +384,13 @@ onMounted(() => {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	color: var(--text-soft);
+	color: var(--on-deep-soft);
 	font-weight: 600;
 	white-space: nowrap;
 }
 
 .topbar-phone:hover {
-	color: var(--accent);
+	color: var(--on-deep-hover);
 }
 
 .topbar-phone svg {

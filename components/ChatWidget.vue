@@ -44,35 +44,19 @@
 							<p>{{ t('chat.greeting') }}</p>
 						</div>
 
-						<div class="chat__messengers">
+						<div v-if="messengers.length" class="chat__messengers">
 							<span class="chat__messengers-label">{{ t('chat.orMessenger') }}</span>
 							<div class="chat__messengers-row">
 								<a
+									v-for="m in messengers"
+									:key="m.name"
 									class="chat__messenger"
-									:href="social.telegram"
+									:href="m.url"
 									target="_blank"
 									rel="noopener nofollow"
-									aria-label="Telegram"
+									:aria-label="m.name"
 								>
-									<AppIcon name="telegram" :size="20" />
-								</a>
-								<a
-									class="chat__messenger"
-									:href="social.viber"
-									target="_blank"
-									rel="noopener nofollow"
-									aria-label="Viber"
-								>
-									<AppIcon name="viber" :size="20" />
-								</a>
-								<a
-									class="chat__messenger"
-									:href="social.whatsapp"
-									target="_blank"
-									rel="noopener nofollow"
-									aria-label="WhatsApp"
-								>
-									<AppIcon name="whatsapp" :size="20" />
+									<AppIcon :name="m.icon" :size="20" />
 								</a>
 							</div>
 						</div>
@@ -218,6 +202,15 @@ const { t } = useI18n()
 const { notify } = useNotify()
 const { social } = useSiteSettings()
 const chat = useChat()
+
+// Месенджери магазину з налаштувань: порожня адреса — там не відповідаємо, кнопки немає
+const messengers = computed(() =>
+	[
+		{ name: 'Telegram', icon: 'telegram', url: social.value.telegram },
+		{ name: 'Viber', icon: 'viber', url: social.value.viber },
+		{ name: 'WhatsApp', icon: 'whatsapp', url: social.value.whatsapp },
+	].filter((m) => m.url)
+)
 
 // Інтро (привітання + месенджери) показуємо, доки клієнт не написав перше повідомлення
 const showIntro = computed(() => !chat.messages.value.some((m: ChatMessage) => m.sender_type === 'client'))

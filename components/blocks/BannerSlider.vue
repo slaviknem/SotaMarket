@@ -181,20 +181,21 @@ const modules = [Autoplay, Pagination]
 	font-weight: 800;
 	line-height: 1.15;
 	margin: 0 0 8px;
-	color: var(--text);
+	color: var(--text-on-img);
 }
 
 .banner-slide__desc {
 	font-size: clamp(12px, 1.5vw, 17px);
 	/* світліше за --text-soft: підпис на фото має лишатися читабельним */
-	color: var(--text);
+	color: var(--text-on-img);
 	/* трохи щільніше за звичайний абзац — на фото тонке накреслення «губиться» */
 	font-weight: 500;
 	margin: 0;
 }
 
+/* Крапки — поверх фото, як і напис */
 :deep(.swiper-pagination-bullet) {
-	background: var(--text);
+	background: var(--text-on-img);
 	opacity: 0.5;
 }
 

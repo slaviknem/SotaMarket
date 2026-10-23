@@ -34,6 +34,8 @@ Nuxt 3 + Vue 3 (SSR) фронтенд floy.com.ua. Працюй **завжди**
   Жодних літералів типу `#ff7a00`, `#14100b`, `99px`, `#fff` у компонентах.
   Потрібен новий колір → **додай токен** у `brand/theme.css`, розмір — у `main.css`; не хардкодь.
   Чинні токени: `--bg*`, `--text*`, `--accent*`, `--on-accent`, `--bg-deep`, `--img-bg`,
+  `--on-deep*` / `--border-deep` / `--logo-on-deep` (текст, роздільники й лого на `--bg-deep` — у світлій темі
+  смуга темна), `--text-on-img` (напис поверх фото),
   `--radius-sm|--radius|--radius-lg|--radius-pill`, `--shadow-*`, `--success/--danger/--warning`,
   `--on-success/--on-danger/--on-overlay`, `--logo-color`, `--overlay`, `--select-arrow`, `--sidebar-w`,
   шари `--z-*` (`--z-dropdown` … `--z-chat-lightbox`).

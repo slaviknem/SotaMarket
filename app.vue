@@ -57,7 +57,7 @@ useHead(() => ({
 // з продавцем, його контактами, соцпрофілями та умовами покупки.
 const config = useRuntimeConfig()
 const localePath = useLocalePath()
-const { contacts, social, phone, delivery, policies } = useSiteSettings()
+const { contacts, socialLinks, phone, delivery, policies } = useSiteSettings()
 
 // Умова доставки Новою поштою по Україні для діапазону суми замовлення. Тариф і поріг
 // безкоштовної доставки — з налаштувань адмінки, тих самих, що рахує кошик: Google звіряє
@@ -100,12 +100,7 @@ useJsonLd(() => [
 		currenciesAccepted: 'UAH',
 		// Соцпрофілі: зв'язують сайт із тими самими акаунтами в графі знань
 		// (той самий список, що й в іконках футера — SocialLinks)
-		sameAs: [
-			social.value.instagram,
-			social.value.facebook,
-			social.value.telegram,
-			social.value.youtube,
-		].filter(Boolean),
+		sameAs: socialLinks.value.map((s) => s.url),
 		// Повернення (підтверджено магазином): 14 днів поштою, пересилку назад оплачує покупець,
 		// а брак чи наша помилка — за наш рахунок. Індивідуальний друк перекриває це на своєму
 		// Offer (PrintcasePage) — його не повертають.
