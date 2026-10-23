@@ -1,5 +1,6 @@
 // Меню сайта — єдине джерело пунктів: інфо-сторінки (топбар шапки, мобільне меню, футер, бокове
 // меню інфо-сторінок), колонка футера «Покупцям», розділи блогу (<BlocksSideMenu> і стрічка блогу).
+import type { BrandFeatures } from '~/types/brand'
 
 export interface SideMenuItem {
 	to: string
@@ -19,12 +20,12 @@ export interface SideMenu {
 export const BLOG_TYPES = ['new', 'akcii', 'review', 'info']
 
 // Інфо-сторінки — порядок однаковий скрізь. footer: false — пункт показує колонка «Покупцям», а не
-// «Інформація» (відстеження замовлення)
-const INFO_PAGES: { path: string; label: string; footer?: false }[] = [
+// «Інформація» (відстеження замовлення); feature — пункт є, лише коли розділ увімкнено (useFeatures)
+const INFO_PAGES: { path: string; label: string; footer?: false; feature?: keyof BrandFeatures }[] = [
 	{ path: '/about', label: 'header.topbar.about' },
 	{ path: '/dostavka', label: 'header.topbar.dostavka' },
 	{ path: '/povernennya', label: 'header.topbar.povernennya' },
-	{ path: '/otzyvy-klientov', label: 'header.topbar.otzyvy' },
+	{ path: '/otzyvy-klientov', label: 'header.topbar.otzyvy', feature: 'reviews' },
 	{ path: '/shop/track-order', label: 'header.topbar.trackOrder', footer: false },
 	{ path: '/article', label: 'header.topbar.blog' },
 ]
@@ -42,10 +43,12 @@ export function useSiteMenus() {
 	const { t } = useI18n()
 	const localePath = useLocalePath()
 	const route = useRoute()
+	const features = useFeatures()
+	const infoPages = INFO_PAGES.filter((p) => !p.feature || features[p.feature])
 
 	const link = (p: { path: string; label: string }) => ({ to: localePath(p.path), label: t(p.label) })
-	const infoLinks = computed(() => INFO_PAGES.map(link))
-	const footerInfoLinks = computed(() => INFO_PAGES.filter((p) => p.footer !== false).map(link))
+	const infoLinks = computed(() => infoPages.map(link))
+	const footerInfoLinks = computed(() => infoPages.filter((p) => p.footer !== false).map(link))
 	const buyerLinks = computed(() => BUYER_PAGES.map(link))
 
 	const blogTypes = BLOG_TYPES

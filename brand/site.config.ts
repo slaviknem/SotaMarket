@@ -8,20 +8,21 @@ export default {
 	domain: 'floy.com.ua',
 	url: 'https://floy.com.ua',
 
-	// Страховка на випадок недоступної адмінки — значення мають збігатися з тим, що зараз у БД
-	// (вузол public.floy). Живі значення приходять з адмінки (composables/useSiteSettings.ts).
+	// Стартові значення налаштувань адмінки (NOTES/plans/PLAN-MULTISITE.md §5.0.1). Живі — вузли
+	// public.common (доставка, політики) і public.floy (ціни, контакти й графік, соцмережі, аксесуари
+	// «в набір»), приходять через composables/useSiteSettings.ts; коли адмінка лежить — остання копія
+	// з диска (.cache/settings). Значення — як у storage/settings/floy.json 23.10
 	settingsFallback: {
 		prices: {
-			printcase: 289,
+			printcase: 299,
 			printcase_old: 299,
-			neoprint: 259,
+			neoprint: 269,
 			neoprint_old: 299,
 			prepay_printcase: 50,
 		},
 		delivery: {
-			n_pochta: { delivery: 60, nal_plateg: 20 },
-			// 140 грн — реальна ціна НП за адресну доставку (Полтава → Київ, «Документи»),
-			// поки вузол n_pochta_kur не заведено в налаштуваннях адмінки
+			n_pochta: { delivery: 80, nal_plateg: 20 },
+			// 140 грн — реальна ціна НП за адресну доставку (Полтава → Київ, «Документи»)
 			n_pochta_kur: { delivery: 140, nal_plateg: 20 },
 			ukrpochta: { delivery: 60, nal_plateg: 15 },
 			samovuvoz: { delivery: 0, nal_plateg: 0 },
@@ -37,6 +38,17 @@ export default {
 			address: 'м. Полтава, проспект Віталія Грицаєнка, 15А',
 			address_city: 'Полтава',
 			address_street: 'проспект Віталія Грицаєнка, 15А',
+			schedule: [
+				{ days: 'monSat', time: '9:00 – 18:00' },
+				{ days: 'sunday', time: null },
+			],
+		},
+		policies: {
+			// Підтверджено магазином: 14 днів поштою, пересилку назад оплачує покупець
+			return_days: 14,
+			// Плитка біля банера пише «1–3 дні» (brand/i18n: index.deliveryNovaInfo) — розбіжність
+			// чекає рішення власника (PLAN-SCALING §4 п. 1)
+			shipping_days: [1, 2],
 		},
 		social: {
 			instagram: 'https://www.instagram.com/floy.com.ua/',
@@ -46,21 +58,41 @@ export default {
 			viber: 'viber://chat?number=%2B380990721412',
 			whatsapp: 'https://wa.me/380990721412',
 		},
+		promo_accessories: [
+			{
+				id: 102,
+				alias: 'steklo',
+				alias_cat: 'zashchitnye-stekla',
+				title: { uk: 'Скло на {model}', ru: 'Стекло на {model}' },
+				image: 'temp/promotional/steklo.jpg',
+				price: 249,
+				discount: 50,
+				default: true,
+				only_case: true,
+			},
+			{
+				id: 516219,
+				alias: 'accessories_106456',
+				alias_cat: 'aksessuary',
+				title: { uk: 'Дата кабель Baseus Cafule Type-C 3A (1m)', ru: 'Дата кабель Baseus Cafule Type-C 3A (1m)' },
+				image: 'images/products/big/kabelya/2471033.jpg',
+				price: 269,
+				discount: 30,
+				default: true,
+			},
+			{
+				id: 537181,
+				alias: 'accessories_398159',
+				alias_cat: 'aksessuary',
+				title: { uk: 'МЗП Hoco CS22A Value PD30W + кабель Type-C', ru: 'СЗУ Hoco CS22A Value PD30W + кабель Type-C' },
+				image: 'images/products/big/zaryadnye-ustroystva/4528473.jpg',
+				price: 279,
+				discount: 50,
+				default: false,
+			},
+		],
 		np_local_db: false,
 		alphaprint_on_fly: true,
-	},
-
-	schedule: [
-		{ days: 'monSat', time: '9:00 – 18:00' },
-		{ days: 'sunday', time: null },
-	],
-
-	policies: {
-		// Підтверджено магазином: 14 днів поштою, пересилку назад оплачує покупець
-		returnDays: 14,
-		// Плитка біля банера пише «1–3 дні» (brand/i18n: index.deliveryNovaInfo) — розбіжність
-		// чекає рішення власника (PLAN-SCALING §4 п. 1)
-		shippingDays: [1, 2],
 	},
 
 	home: {
@@ -71,40 +103,4 @@ export default {
 			{ title: 'product.type.accessories', category: 'accessories' },
 		],
 	},
-
-	promoAccessories: [
-		{
-			id: 102,
-			alias: 'steklo',
-			alias_cat: 'zashchitnye-stekla',
-			title: { uk: 'Скло на {model}', ru: 'Стекло на {model}' },
-			image: 'temp/promotional/steklo.jpg',
-			price: 249,
-			discount: 50,
-			default: true,
-			onlyCase: true,
-		},
-		{
-			id: 516219,
-			alias: 'accessories_106456',
-			alias_cat: 'aksessuary',
-			title: { uk: 'Дата кабель Baseus Cafule Type-C 3A (1m)', ru: 'Дата кабель Baseus Cafule Type-C 3A (1m)' },
-			image: 'images/products/big/kabelya/2471033.jpg',
-			price: 269,
-			discount: 30,
-			default: true,
-		},
-		{
-			id: 537181,
-			alias: 'accessories_398159',
-			alias_cat: 'aksessuary',
-			title: { uk: 'МЗП Hoco CS22A Value PD30W + кабель Type-C', ru: 'СЗУ Hoco CS22A Value PD30W + кабель Type-C' },
-			image: 'images/products/big/zaryadnye-ustroystva/4528473.jpg',
-			price: 279,
-			discount: 50,
-			default: false,
-		},
-	],
-
-	phoneExample: '099-072-14-12',
 } satisfies BrandConfig

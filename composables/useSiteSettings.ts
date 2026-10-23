@@ -1,13 +1,15 @@
-// Налаштування сайту — єдине джерело для цін, доставки, контактів і соцмереж.
+// Налаштування сайту — єдине джерело для всього, що менеджер міняє без деплою: ціни, доставка,
+// контакти й графік, соцмережі, умови повернення й строки доставки, аксесуари «в набір».
+// Що де лежить (однаково для всіх сайтів) — NOTES/plans/PLAN-MULTISITE.md §5.0.1.
 //
 // Значення приходять з адмінки: вузол public.{site} (злитий зі public.common) вивантажується
 // в storage/settings/{site}.json при кожному збереженні налаштувань, сайт читає його через
-// server/api/settings.ts і кладе сюди на SSR (plugins/settings.server.ts).
+// server/api/settings.get.ts і кладе сюди на SSR (plugins/settings.server.ts). Коли адмінка
+// недоступна — остання успішна копія з диска (.cache/settings).
 //
-// DEFAULTS — не «значення за замовчуванням для нового сайту», а страховка: якщо адмінка
-// недоступна або вузол ще не заведений, сайт працює на них замість того, щоб показати
-// порожні ціни. Тому вони мають збігатися з тим, що зараз у БД. Самі значення — у конфігу
-// бренду (brand/site.config.ts → settingsFallback): у кожного магазину свої.
+// DEFAULTS — стартові значення з конфігу бренду (brand/site.config.ts → settingsFallback): на
+// них живе новий сайт, поки його вузла ще немає, і будь-який сайт, якщо адмінка лежить, а копії
+// на диску ще немає (перший старт). Будь-яке поле з адмінки їх перекриває.
 import brand from '#brand/site.config'
 
 export interface DeliveryTariff {
@@ -18,6 +20,32 @@ export interface DeliveryTariff {
 export interface SitePhone {
 	operator: string
 	phone: string
+}
+
+/**
+ * Рядок графіка у футері: days — ключ footer.* у i18n (зараз є monSat і sunday; інший набір днів —
+ * спершу ключ у i18n/locales), time — години або null («вихідний»)
+ */
+export interface ScheduleRow {
+	days: string
+	time: string | null
+}
+
+/** Аксесуар «в набір» на сторінці товару (товари в кожного сайту свої — id з його каталогу) */
+export interface PromoAccessory {
+	id: number
+	alias: string
+	alias_cat: string
+	/** Назва за мовою; {model} — повна назва моделі з картки товару */
+	title: { uk: string; ru: string }
+	/** Картинка — шлях від URL_STORAGE */
+	image: string
+	price: number
+	discount: number
+	/** Обраний у наборі за замовчуванням */
+	default: boolean
+	/** Лише до чохлів (напр. скло на ту саму модель) */
+	only_case?: boolean
 }
 
 export interface SiteSettings {
@@ -42,7 +70,15 @@ export interface SiteSettings {
 		address: string
 		address_city: string
 		address_street: string
+		schedule: ScheduleRow[]
 	}
+	// Умови для JSON-LD магазину (MerchantReturnPolicy, ShippingService) — спільні, public.common
+	policies: {
+		return_days: number
+		// Строк доставки Новою поштою, днів [від, до]
+		shipping_days: [number, number]
+	}
+	promo_accessories: PromoAccessory[]
 	social: {
 		instagram: string
 		facebook: string
@@ -104,8 +140,13 @@ export function useSiteSettings() {
 		delivery: computed(() => settings.value.delivery),
 		freeDeliveryFrom: computed(() => settings.value.delivery.free_delivery_from),
 		contacts,
+		schedule: computed(() => contacts.value.schedule),
+		policies: computed(() => settings.value.policies),
+		promoAccessories: computed(() => settings.value.promo_accessories),
 		social: computed(() => settings.value.social),
 		phones,
 		phone,
+		// Приклад номера в підказках форм — головний телефон магазину: «099 419 03 90» → «099-419-03-90»
+		phoneExample: computed(() => phone.value.replace(/\s+/g, '-')),
 	}
 }

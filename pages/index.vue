@@ -32,7 +32,12 @@
 
 		<LazyBlocksPostsGrid hydrate-on-visible :title="t('index.lastBlog')" :posts="posts" />
 
-		<LazyBlocksReviewsStrip hydrate-on-visible :title="t('index.lastReviews')" :reviews="latestReviews" />
+		<LazyBlocksReviewsStrip
+			v-if="features.reviews"
+			hydrate-on-visible
+			:title="t('index.lastReviews')"
+			:reviews="latestReviews"
+		/>
 
 		<!-- SEO-текст -->
 		<section class="block">
@@ -50,6 +55,7 @@ const shopApi = useShopApi()
 const config = useRuntimeConfig()
 const localePath = useLocalePath()
 const url = useUrl()
+const features = useFeatures()
 
 // Вкладки каруселі новинок — з конфігу бренду (категорії в кожного магазину свої)
 const productTabs = computed(() =>
@@ -64,7 +70,8 @@ const [{ data: banners }, { data: popularModels }, { data: latestProducts }, { d
 		useAsyncData('home-latest-' + locale.value, () => shopApi.getLatestProducts({ category: 'all', limit: 10 })),
 		useAsyncData('home-cats-' + locale.value, () => shopApi.getPopularCategory({ type: 'category', limit: 6 })),
 		useAsyncData('home-posts-' + locale.value, () => shopApi.getLatestArticles({ type: 'all', limit: 3 })),
-		useAsyncData('home-reviews-' + locale.value, () => shopApi.getLatestReviews(10, 4)),
+		// Розділ відгуків вимкнено — стрічки немає, тож і запиту теж
+		useAsyncData('home-reviews-' + locale.value, async () => (features.reviews ? shopApi.getLatestReviews(10, 4) : [])),
 		useAsyncData('home-article-' + locale.value, async () => (await shopApi.getArticleByAlias('index')) ?? false),
 	])
 

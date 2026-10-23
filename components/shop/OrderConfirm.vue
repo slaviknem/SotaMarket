@@ -487,6 +487,8 @@ const shopApi = useShopApi()
 const localePath = useLocalePath()
 const { maskPhone, isValidPhone, phoneDigits } = usePhone()
 const { hasLatin } = useFio()
+// Приклад номера в підказці — телефон магазину з налаштувань
+const { phoneExample } = useSiteSettings()
 
 // ─────────────────────────── Стан ───────────────────────────
 
@@ -861,7 +863,7 @@ function startPhoneEdit() {
 
 function savePhone() {
 	if (!isValidPhone(phoneDraft.value)) {
-		phoneError.value = t('confirm.phoneError', { example: useBrand().phoneExample })
+		phoneError.value = t('confirm.phoneError', { example: phoneExample.value })
 		return
 	}
 	const digits = phoneDigits(phoneDraft.value)

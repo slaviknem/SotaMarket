@@ -46,7 +46,7 @@
 					<div class="footer__schedule-block">
 						<div class="footer__title">{{ t('footer.schedule') }}</div>
 						<ul class="footer__schedule">
-							<li v-for="row in brand.schedule" :key="row.days"><span>{{ t(`footer.${row.days}`) }}:</span> {{ row.time ?? t('footer.dayOff') }}</li>
+							<li v-for="row in schedule" :key="row.days"><span>{{ t(`footer.${row.days}`) }}:</span> {{ row.time ?? t('footer.dayOff') }}</li>
 						</ul>
 					</div>
 
@@ -68,7 +68,7 @@
 const { t } = useI18n()
 const localePath = useLocalePath()
 const brand = useBrand()
-const { contacts, phones } = useSiteSettings()
+const { contacts, phones, schedule } = useSiteSettings()
 const { footerInfoLinks, buyerLinks } = useSiteMenus()
 </script>
 

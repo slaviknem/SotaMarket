@@ -1,12 +1,25 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
-import brand from './brand/site.config'
+import { existsSync } from 'node:fs'
+import brandConfig from './brand/site.config'
+import type { BrandConfig } from './types/brand'
 import { readTheme } from './scripts/lib/brand.mjs'
+
+// Через BrandConfig: необов'язкові поля (features, font) читаються й тоді, коли в конфігу їх немає
+const brand: BrandConfig = brandConfig
 
 // Тека бренду: назва, домен, лого, палітра, тексти про магазин (brand/README.md).
 // Код бере її лише через аліас #brand, тож теку можна підмінити одним рядком
 const BRAND_DIR = fileURLToPath(new URL('./brand', import.meta.url))
+// Власні версії компонентів бренду (brand/components/README.md): те саме ім'я перекриває рушій
+const BRAND_COMPONENTS = join(BRAND_DIR, 'components')
+// Шрифт, який вантажиться на кожній сторінці: preload з конфігу бренду, без нього — Inter рушія
+const FONT_PRELOAD = brand.font?.preload ?? ['/fonts/inter-cyrillic.woff2', '/fonts/inter-latin.woff2']
+// Сторінки вимкнених розділів (brand → features): адреса без сторінки — 404, або 301 з redirects
+const FEATURE_PAGES: Record<string, keyof NonNullable<BrandConfig['features']>> = {
+	'/otzyvy-klientov': 'reviews',
+}
 // Кольори теми як hex — для theme-color і site.webmanifest (джерело — brand/theme.css)
 const theme = readTheme(BRAND_DIR)
 // Сховище адмінки — спільне для всіх сайтів; хост для IPX і preconnect береться звідси ж
@@ -24,6 +37,13 @@ export default defineNuxtConfig({
 	alias: {
 		'#brand': BRAND_DIR,
 	},
+
+	// Компонент із тим самим іменем у brand/components (з тією ж вкладеністю: blocks/, shop/…)
+	// перекриває рушій — вищий priority. Теки бренду може й не бути (сайт без власних компонентів)
+	components: [
+		...(existsSync(BRAND_COMPONENTS) ? [{ path: BRAND_COMPONENTS, priority: 2 }] : []),
+		{ path: '~/components', priority: 1 },
+	],
 
 	image: {
 		// IPX оптимізує зображення зі сховища адмінки (WebP + точні розміри + кеш)
@@ -79,22 +99,18 @@ export default defineNuxtConfig({
 				{ rel: 'manifest', href: '/site.webmanifest' },
 				{ rel: 'preconnect', href: new URL(URL_STORAGE).origin },
 				{ rel: 'dns-prefetch', href: new URL(URL_STORAGE).origin },
-				// Шрифт самохоститься (@font-face — у main.css). Два набори, потрібні на кожній
-				// сторінці, стартують одразу з HTML, не чекаючи розбору CSS.
-				{
-					rel: 'preload',
-					as: 'font',
-					type: 'font/woff2',
-					href: '/fonts/inter-cyrillic.woff2',
-					crossorigin: 'anonymous',
-				},
-				{
-					rel: 'preload',
-					as: 'font',
-					type: 'font/woff2',
-					href: '/fonts/inter-latin.woff2',
-					crossorigin: 'anonymous',
-				},
+				// Шрифт самохоститься (@font-face — у main.css, шрифт бренду — у brand/theme.css). Два
+				// набори, потрібні на кожній сторінці, стартують одразу з HTML, не чекаючи розбору CSS.
+				...FONT_PRELOAD.map(
+					(href) =>
+						({
+							rel: 'preload',
+							as: 'font',
+							type: 'font/woff2',
+							href,
+							crossorigin: 'anonymous',
+						}) as const
+				),
 			],
 		},
 	},
@@ -141,6 +157,14 @@ export default defineNuxtConfig({
 		'build:manifest'(manifest) {
 			for (const chunk of Object.values(manifest)) {
 				if (!chunk.isEntry) chunk.css = []
+			}
+		},
+
+		// Вимкнений розділ бренду — без сторінки (i18n додає мовні копії вже після цього хука)
+		'pages:extend'(pages) {
+			for (let i = pages.length - 1; i >= 0; i--) {
+				const feature = FEATURE_PAGES[pages[i].path]
+				if (feature && brand.features?.[feature] === false) pages.splice(i, 1)
 			}
 		},
 	},
@@ -205,14 +229,17 @@ export default defineNuxtConfig({
 
 		// Кеш зібраних композицій «принт + модель» (server/utils/caseImage.ts) — sharp відпрацьовує
 		// один раз на пару, далі віддаємо з диска. Окремі теки: неопрінти (/img/neoprint) і
-		// альфапринти (/img/print) — розмір і чистка кожного типу незалежні
+		// альфапринти (/img/print) — розмір і чистка кожного типу незалежні.
+		// settings — остання вдала відповідь налаштувань адмінки (server/api/settings.get.ts)
 		storage: {
 			neoprint: { driver: 'fs', base: './.cache/neoprint' },
 			alphaprint: { driver: 'fs', base: './.cache/alphaprint' },
+			settings: { driver: 'fs', base: './.cache/settings' },
 		},
 		devStorage: {
 			neoprint: { driver: 'fs', base: './.cache/neoprint' },
 			alphaprint: { driver: 'fs', base: './.cache/alphaprint' },
+			settings: { driver: 'fs', base: './.cache/settings' },
 		},
 	},
 

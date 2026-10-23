@@ -3,5 +3,12 @@
 // Ключ сайту, назва й адреса є ще й у runtimeConfig.public (site, siteName, siteUrl) —
 // звідти їх читають сервер і наявний код; SITE_URL при цьому береться з оточення.
 import brand from '#brand/site.config'
+import type { BrandConfig, BrandFeatures } from '~/types/brand'
 
 export const useBrand = () => brand
+
+// Перемикачі розділів: чого в конфігу немає — увімкнено. Через BrandConfig, бо в конфігу
+// без поля features (satisfies лишає вузький тип) звернення до нього не пройшло б перевірку типів
+const features: BrandFeatures = { reviews: true, ...(brand as BrandConfig).features }
+
+export const useFeatures = () => features

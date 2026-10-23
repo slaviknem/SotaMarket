@@ -1,21 +1,18 @@
 // Тип конфігу бренду (brand/site.config.ts). Живе в рушії, а не в теці бренду: копії теки для
 // інших сайтів перевіряються тим самим типом (`satisfies BrandConfig`), тож не розходяться.
+// У конфігу — обличчя й будова сайту (міняються з деплоєм). Усе, що менеджер міняє сам (ціни, доставка,
+// контакти й графік, соцмережі, політики, аксесуари «в набір»), — налаштування адмінки, тут лише їх
+// стартові значення (settingsFallback). Розподіл — NOTES/plans/PLAN-MULTISITE.md §5.0.1.
 import type { SiteSettings } from '../composables/useSiteSettings'
 
-export interface BrandPromoAccessory {
-	id: number
-	alias: string
-	alias_cat: string
-	/** Назва за мовою; {model} — повна назва моделі з картки товару */
-	title: { uk: string; ru: string }
-	/** Картинка — шлях від URL_STORAGE */
-	image: string
-	price: number
-	discount: number
-	/** Обраний у наборі за замовчуванням */
-	default: boolean
-	/** Лише для чохлів (скло на ту саму модель) */
-	onlyCase?: boolean
+/**
+ * Перемикачі розділів (PLAN-MULTISITE §4.3). Чого немає — увімкнено (useFeatures()).
+ * Вимкнений розділ зникає з меню й точок входу, його сторінка — з маршрутів (nuxt.config.ts → pages:extend);
+ * стару адресу за потреби веде 301 з redirects
+ */
+export interface BrandFeatures {
+	/** Сторінка відгуків /otzyvy-klientov, пункт меню, стрічка відгуків на головній */
+	reviews: boolean
 }
 
 export interface BrandConfig {
@@ -27,22 +24,23 @@ export interface BrandConfig {
 	domain: string
 	/** Адреса сайту, коли в оточенні немає SITE_URL */
 	url: string
-	/** Ціни, доставка, контакти, соцмережі — поки недоступна адмінка (мають збігатися з БД) */
+	/**
+	 * Стартові значення налаштувань адмінки (public.common + public.{key}): на них сайт живе, поки його
+	 * вузла немає, і коли адмінка недоступна, а копії на диску ще немає. Значення з адмінки їх перекривають
+	 */
 	settingsFallback: SiteSettings
-	/** Графік у футері: days — ключ footer.* у i18n, time — години або null («вихідний») */
-	schedule: { days: string; time: string | null }[]
-	policies: {
-		/** Днів на повернення — JSON-LD MerchantReturnPolicy */
-		returnDays: number
-		/** Строк доставки Новою поштою, днів [від, до] — JSON-LD ShippingService */
-		shippingDays: [number, number]
-	}
 	home: {
 		/** Вкладки каруселі новинок: ключ i18n назви й alias категорії в API */
 		productTabs: { title: string; category: string }[]
 	}
-	/** Аксесуари «в набір» на сторінці товару */
-	promoAccessories: BrandPromoAccessory[]
-	/** Приклад номера в підказці форми підтвердження — {example} у confirm.phoneError */
-	phoneExample: string
+	/** Перемикачі розділів; без поля — усе увімкнено */
+	features?: Partial<BrandFeatures>
+	/**
+	 * 301 зі старих адрес (server/middleware/brand-redirects.ts): «стара» → «нова», шляхи без /uk —
+	 * мовний префікс запиту переноситься сам. Ключ «/a/*» ловить /a і все під ним; «/b/*» у значенні
+	 * дописує хвіст (/a/x → /b/x), без «/*» — хвіст відкидається
+	 */
+	redirects?: Record<string, string>
+	/** Шрифт бренду: woff2 для preload (@font-face і --font — у theme.css); без поля — Inter рушія */
+	font?: { preload: string[] }
 }

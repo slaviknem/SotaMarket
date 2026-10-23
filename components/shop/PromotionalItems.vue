@@ -67,10 +67,11 @@ const storage = config.public.urlStorage
 const isCase = computed(() => props.product?.type === 'chekhly')
 const modelName = computed(() => props.product?.categories?.[0]?.name_full || props.product?.categories?.[0]?.name || '')
 
-// Каталог акційних аксесуарів — з конфігу бренду (brand/site.config.ts → promoAccessories):
+// Каталог акційних аксесуарів — з налаштувань сайту (адмінка, public.{site}.promo_accessories):
 // ціна, знижка, чи обраний за замовчуванням. {model} у назві — модель з картки товару
+const { promoAccessories } = useSiteSettings()
 const ACCESSORIES = computed(() =>
-	useBrand().promoAccessories.map((a) => ({
+	promoAccessories.value.map((a) => ({
 		...a,
 		title_uk: a.title.uk.replace('{model}', modelName.value),
 		title_ru: a.title.ru.replace('{model}', modelName.value),
@@ -79,7 +80,7 @@ const ACCESSORIES = computed(() =>
 )
 
 // Видимі аксесуари (скло — лише для чохлів)
-const accessories = computed(() => ACCESSORIES.value.filter((a: any) => !a.onlyCase || isCase.value))
+const accessories = computed(() => ACCESSORIES.value.filter((a: any) => !a.only_case || isCase.value))
 
 // Стан вибору (id → обраний). Головний товар завжди в наборі.
 const selectedIds = ref(new Set<number>())

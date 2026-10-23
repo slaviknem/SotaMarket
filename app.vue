@@ -57,7 +57,7 @@ useHead(() => ({
 // з продавцем, його контактами, соцпрофілями та умовами покупки.
 const config = useRuntimeConfig()
 const localePath = useLocalePath()
-const { contacts, social, phone, delivery } = useSiteSettings()
+const { contacts, social, phone, delivery, policies } = useSiteSettings()
 
 // Умова доставки Новою поштою по Україні для діапазону суми замовлення. Тариф і поріг
 // безкоштовної доставки — з налаштувань адмінки, тих самих, що рахує кошик: Google звіряє
@@ -71,8 +71,8 @@ const npConditions = (orderValue: object, rate: number) => ({
 		'@type': 'ServicePeriod',
 		duration: {
 			'@type': 'QuantitativeValue',
-			minValue: brand.policies.shippingDays[0],
-			maxValue: brand.policies.shippingDays[1],
+			minValue: policies.value.shipping_days[0],
+			maxValue: policies.value.shipping_days[1],
 			unitCode: 'DAY',
 		},
 	},
@@ -115,7 +115,7 @@ useJsonLd(() => [
 			applicableCountry: 'UA',
 			returnPolicyCountry: 'UA',
 			returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
-			merchantReturnDays: brand.policies.returnDays,
+			merchantReturnDays: policies.value.return_days,
 			returnMethod: 'https://schema.org/ReturnByMail',
 			returnFees: 'https://schema.org/ReturnFeesCustomerResponsibility',
 			itemDefectReturnFees: 'https://schema.org/FreeReturn',
