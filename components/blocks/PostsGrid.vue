@@ -1,7 +1,9 @@
 <template>
+	<!-- Без заголовка (сторінки блогу: там свій h1) — лише сітка, і без власного .container: блок там уже
+	     всередині контейнера сторінки, другий давав подвійний відступ -->
 	<section v-if="posts?.length" class="block">
-		<div class="container">
-			<div class="section-title">
+		<div :class="{ container: title }">
+			<div v-if="title" class="section-title">
 				<h2>{{ title }}</h2>
 			</div>
 

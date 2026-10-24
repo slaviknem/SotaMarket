@@ -7,7 +7,7 @@
 		<!-- Категорії блогу -->
 		<BlocksSideMenu :menu="blogMenu" variant="strip" class="blog-nav" />
 
-		<BlocksPostsGrid :title="''" :posts="posts" class="blog-grid" />
+		<BlocksPostsGrid :title="''" :posts="posts" />
 	</div>
 </template>
 
@@ -53,9 +53,5 @@ useJsonLd(() => ({
 <style scoped>
 .blog-nav {
 	margin: 4px 0 8px;
-}
-
-.blog-grid :deep(.section-title) {
-	display: none;
 }
 </style>
