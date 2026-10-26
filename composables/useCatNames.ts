@@ -21,8 +21,26 @@ export interface ICatNames {
 	short_: string
 }
 
+// Назва категорії для заголовків, плиток і крихт. У розділів аксесуарів (type=category) title_full —
+// загальна назва з довідника, російською й у /uk («Зарядные Устройства»), а назва сайту мовою сторінки
+// (та сама, що в меню) — title_rus («Зарядні пристрої»; поле названо невдало). У моделей, брендів і серій
+// навпаки: title_full — офіційна назва («iPhone 17 Pro»), title_rus — кирилицею («Айфон 17 Про»)
+export function catTitle(category: any): string {
+	if (category?.type === 'category') return category.title_rus || category.title_full || category.title || ''
+	return category?.title_full || category?.title_rus || category?.title || ''
+}
+
+// Назва розділу аксесуарів мовою сторінки за alias — з меню, яке вже завантажив app.vue (кеш
+// 'menu-{мова}', без запиту): категорія товару приходить лише з name/name_full довідника
+export function useMenuCategoryTitle() {
+	const { locale } = useI18n()
+	const { data: menu } = useNuxtData<any>('menu-' + locale.value)
+	return (alias: string): string => menu.value?.categories?.find((c: any) => c.url === alias)?.title || ''
+}
+
 export function catNames(category: any): ICatNames {
-	const full = category?.title_full || category?.title_rus || category?.title || ''
+	// У розділу аксесуарів повна назва — та, що й кирилична (title_rus), тож alt нижче порожній
+	const full = catTitle(category)
 	const brand = category?.brend?.title || ''
 
 	const altRaw = category?.title_rus || ''

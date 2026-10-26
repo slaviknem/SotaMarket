@@ -30,8 +30,13 @@ export const PAGES = [
 	// У «chekhly» фільтрів в API немає — будь-який /chekhly/filter/* дає 301 на /chekhly.
 	// Лишаємо як перевірку самого редиректу
 	{ path: '/chekhly/filter/anime' },
+	// Розділ аксесуарів: назва категорії — мовою сторінки (у /uk не російська)
+	{ path: '/zaryadnye-ustroystva', styles: true },
+	{ path: '/uk/zaryadnye-ustroystva' },
 	{ path: '/iphone-17-pro/chekhly_1043975', styles: true },
 	{ path: '/iphone-17-pro/chekhly_1043975/attr/black' },
+	// Товар розділу аксесуарів — крихта категорії мовою сторінки
+	{ path: '/uk/kabelya/accessories_1043808' },
 	{ path: '/article' },
 	{ path: '/article/new' },
 	{ path: '/article/info/kabeli-do-smartfoniv-tipi-osoblivosti-ta-vazhlivist-viboru', styles: true },

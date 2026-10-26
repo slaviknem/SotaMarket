@@ -372,6 +372,10 @@ const modelCategory = computed(() => product.value?.categories?.[0])
 // Статус друку моделі — ним живе пропозиція конструктора під товаром
 const printState = computed(() => printStockState(modelCategory.value))
 
+// Розділ аксесуарів — назвою з меню (мовою сторінки, як h1 його сторінки): name/name_full товару — з довідника,
+// російською й у /uk
+const menuCategoryTitle = useMenuCategoryTitle()
+
 const breadcrumbs = computed(() => {
 	const crumbs: { title: string; url?: string }[] = []
 	const cat = modelCategory.value
@@ -380,7 +384,8 @@ const breadcrumbs = computed(() => {
 		if (cat.brend_alias) {
 			crumbs.push({ title: cat.brend_name, url: url.category(cat.brend_alias) })
 		}
-		crumbs.push({ title: cat.name_full || cat.name, url: url.category(cat.alias) })
+		const title = (cat.type === 'category' && menuCategoryTitle(cat.alias)) || cat.name_full || cat.name
+		crumbs.push({ title, url: url.category(cat.alias) })
 	}
 
 	// Сторінка варіанта: товар — окрема крихта з посиланням, тож кожен принт лінкує на

@@ -15,13 +15,13 @@
 					<div class="cat-card__img">
 						<AppImage
 							:src="url.categoryImg(cat.image_file)"
-							:alt="cat.title_full || cat.title"
+							:alt="catTitle(cat)"
 							:width="160"
 							:height="160"
 						/>
 					</div>
 					<div class="cat-card__info">
-						<div class="cat-card__title">{{ cat.title_full || cat.title }}</div>
+						<div class="cat-card__title">{{ catTitle(cat) }}</div>
 						<div v-if="cat.products_count" class="cat-card__count">
 							{{ cat.products_count }} {{ t('category.products') }}
 						</div>

@@ -95,7 +95,7 @@ useJsonLd(() => ({
 			.map((c: any, i: number) => ({
 				'@type': 'ListItem',
 				position: i + 1,
-				name: c.title_full || c.title,
+				name: catTitle(c),
 				url: config.public.siteUrl + url.category(c.alias),
 			})),
 	},

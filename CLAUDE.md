@@ -82,7 +82,12 @@ Nuxt 3 + Vue 3 (SSR) фронтенд floy.com.ua. Працюй **завжди**
 - **Логіку — у composables** (`composables/`): API → `useShopApi`, URL/зображення/ціна → `useUrl`,
   SEO → `useSeo`, кошик/списки → `useCart`/`useLists`, хелпери товару → `useProductHelpers`. Не дублюй fetch/обчислення в сторінках.
   Посилання меню (інфо-сторінки, «Покупцям», блог) — лише з `useSiteMenus` (один перелік для шапки, мобільного
-  меню, футера й бокових меню); `tel:` — `telHref()` (`usePhone.ts`); назва серії — `serieTitle()` (`useShopApi.ts`).
+  меню, футера й бокових меню); `tel:` — `telHref()` (`usePhone.ts`); назва серії — `serieTitle()` (`useShopApi.ts`);
+  назва категорії (у розділу аксесуарів — мовою сторінки) — `catTitle()` / `catNames()` (`useCatNames.ts`).
+- **Велика логіка — окремо від вигляду**, щоб бренд перекривав лише вигляд (`brand/components/README.md`):
+  сторінка категорії — логіка `ShopCategoryPage`, вигляд `ShopCategoryView`, стан між ними — `useCategoryPage()`;
+  картка товару — логіка `useProductCard(props)`, вигляд `ProductCard`. Новий рядок даних для вигляду — поле в
+  стані рушія, а не власний запит у вигляді.
 - Компоненти — **малі, сфокусовані, керовані пропсами**, з типами через `defineProps<…>()`. DRY. Без «магічних» копіпаст.
 
 ## 3. SEO + заточеність під ШІ/AI-краулери
