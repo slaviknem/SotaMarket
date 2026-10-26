@@ -6,13 +6,19 @@
 import type { SiteSettings } from '../composables/useSiteSettings'
 
 /**
- * Перемикачі розділів (PLAN-MULTISITE §4.3). Чого немає — увімкнено (useFeatures()).
+ * Перемикачі розділів (PLAN-MULTISITE §4.3). Чого немає — значення рушія (useFeatures()): розділи
+ * увімкнено, додаткові можливості (caseFilter) — вимкнено.
  * Вимкнений розділ зникає з меню й точок входу, його сторінка — з маршрутів (nuxt.config.ts → pages:extend);
  * стару адресу за потреби веде 301 з redirects
  */
 export interface BrandFeatures {
 	/** Сторінка відгуків /otzyvy-klientov, пункт меню, стрічка відгуків на головній */
 	reviews: boolean
+	/**
+	 * Фільтр «Тип чохла: Фірмові / З принтом» у сайдбарі категорії (API: filters/{…}?case=1, products?case=…).
+	 * Показується, лише коли в категорії є обидва типи
+	 */
+	caseFilter: boolean
 }
 
 export interface BrandConfig {

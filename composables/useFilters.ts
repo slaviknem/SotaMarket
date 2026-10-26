@@ -12,11 +12,17 @@ export interface IFilterNode {
 	items?: IFilterNode[]
 	// Синтетична група (Категорія/Форм-фактор/Матеріал) — лише UI-групувальник, без власної сторінки
 	synthetic?: boolean
+	// Пункти групи без SEO-сторінки /filter/… — лише вибір у сайдбарі (?filter_…): «Тип чохла»
+	pageless?: boolean
 }
 
 // Листкові типи (пункти з порожнім items), які групуємо під синтетичними батьками.
-// Це фасети каталогу (Категорія/Форм-фактор/Матеріал), а не теми принтів.
-export const LEAF_TYPES = ['cat', 'form_factor', 'material'] as const
+// Це фасети каталогу (Тип чохла/Категорія/Форм-фактор/Матеріал), а не теми принтів. Порядок — порядок груп.
+// case — «Фірмові / З принтом»: розріз товарів у API (features.caseFilter), а не записи фільтрів
+export const LEAF_TYPES = ['case', 'cat', 'form_factor', 'material'] as const
+
+// Фасети, у пунктів яких немає власної сторінки (API шукає їх не як фільтри, а параметром)
+const PAGELESS_TYPES: readonly string[] = ['case']
 
 const isLeafType = (type: string) => (LEAF_TYPES as readonly string[]).includes(type)
 
@@ -64,6 +70,7 @@ export function useFilters() {
 			type,
 			open: true,
 			synthetic: true,
+			...(PAGELESS_TYPES.includes(type) && { pageless: true }),
 			items: [...byType[type]].sort((a, b) => (a.ordering ?? 0) - (b.ordering ?? 0)),
 		}))
 

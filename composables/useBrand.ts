@@ -7,8 +7,9 @@ import type { BrandConfig, BrandFeatures } from '~/types/brand'
 
 export const useBrand = () => brand
 
-// Перемикачі розділів: чого в конфігу немає — увімкнено. Через BrandConfig, бо в конфігу
-// без поля features (satisfies лишає вузький тип) звернення до нього не пройшло б перевірку типів
-const features: BrandFeatures = { reviews: true, ...(brand as BrandConfig).features }
+// Перемикачі розділів: чого в конфігу немає — значення рушія (розділи увімкнено, фільтр «Тип чохла» —
+// ні). Через BrandConfig, бо в конфігу без поля features (satisfies лишає вузький тип) звернення до
+// нього не пройшло б перевірку типів
+const features: BrandFeatures = { reviews: true, caseFilter: false, ...(brand as BrandConfig).features }
 
 export const useFeatures = () => features

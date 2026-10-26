@@ -27,6 +27,10 @@ const shopApi = useShopApi()
 const { buildFilterTree, findGroupAlias, isParentTheme, expandAliasForApi, filterChildIds } = useFilters()
 const { title: neoPrintTitle, price: neoPrintPrice } = useNeoPrint()
 
+// «Тип чохла» (Фірмові / З принтом) — якщо сайт його вмикає, і не на сторінці теми /filter/: теми — це
+// принти, фірмових серед них немає
+const withCaseFilter = useFeatures().caseFilter && !props.filterAlias
+
 const mobileFiltersOpen = ref(false)
 
 // Закриваємо мобільний сайдбар при переході на іншу сторінку (клік по посиланню-фільтру)
@@ -66,7 +70,9 @@ const keySuffix = computed(() => `${props.categoryAlias}-${props.filterAlias || 
 // Бренди тягнемо лише в режимі лендінгу, фільтри — лише поза ним (порожні fetcher'и не б'ють API).
 const [{ data: category, error: categoryError }, { data: filtersTree }, { data: brandsData }, { data: brandTilesData }] = await Promise.all([
 	useAsyncData('cat-' + keySuffix.value, async () => (await shopApi.getCategoryByAlias(props.categoryAlias)) ?? false),
-	useAsyncData('cat-filters-' + keySuffix.value, async () => (props.brandsLanding ? [] : shopApi.getFilters(props.categoryAlias))),
+	useAsyncData('cat-filters-' + keySuffix.value, async () =>
+		props.brandsLanding ? [] : shopApi.getFilters(props.categoryAlias, withCaseFilter)
+	),
 	// Повний каталог брендів (бренд → серії → моделі) — лише для лендінгу /chekhly.
 	// У payload — тільки назви й адреси (menuBrands): решта полів меню каталогу не потрібна
 	useAsyncData('brands-catalog-' + keySuffix.value, async () => {

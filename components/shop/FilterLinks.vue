@@ -67,16 +67,19 @@ const url = useUrl()
 const isCurrentGroup = (g: IFilterNode) =>
 	g.alias === props.activeAlias || !!g.items?.some((i) => i.alias === props.activeAlias)
 
+// Блок — посилання на сторінки фільтрів, тож групи без сторінок («Тип чохла») сюди не йдуть
+const linkGroups = computed(() => props.groups.filter((g: IFilterNode) => !g.pageless))
+
 // Сторінка категорії (без activeAlias) — повний блок: категорія є хабом для всіх фільтрів.
 // Сторінка фільтра — тематичний силос: розгорнуто лише синтетичні групи (топ-фасети,
 // їх мало) і групу активного фільтра (сусіди за темою — релевантні анкори).
 const expandedGroups = computed(() =>
-	props.activeAlias ? props.groups.filter((g: IFilterNode) => g.synthetic || isCurrentGroup(g)) : props.groups
+	props.activeAlias ? linkGroups.value.filter((g: IFilterNode) => g.synthetic || isCurrentGroup(g)) : linkGroups.value
 )
 
 // Решта тем на сторінці фільтра — згорнуті до посилань-хабів
 const themeHubs = computed(() =>
-	props.activeAlias ? props.groups.filter((g: IFilterNode) => !g.synthetic && !isCurrentGroup(g)) : []
+	props.activeAlias ? linkGroups.value.filter((g: IFilterNode) => !g.synthetic && !isCurrentGroup(g)) : []
 )
 </script>
 

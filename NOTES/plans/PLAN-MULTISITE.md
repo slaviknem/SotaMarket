@@ -473,6 +473,10 @@ Nuxt 3.21: `components: [{ path: sites/<ключ>/components, priority: 10 }, '~
 
 1. **Реєстр сайтів** `config/sites.php` (ключ, домен, URL, назви для ШІ, колір для статистики, `features`) —
    усі місця з п. 9 читають його; `BaseApiSiteController` пускає лише ключі з реєстру (решта — 404).
+   **26.10 (SMARKET S7):** реєстр — клас `App\Actions\SiteRegistry` (ключ, назва, URL, назва й персона для чату), а не
+   `config/sites.php`: конфіг на проді закешований, і новий файл до `config:cache` читався б порожнім — apisite дав би
+   404 усім сайтам. З реєстру вже читають `BaseApiSiteController`, `SearchEngine` (sotamarket більше не шукає в товарах
+   FLOY), `FindModelTool`, `ReviewController` (`sendReview`, `site_url`), `PromptBuilder`. Решта списків — у шапці класу.
 2. **Фільтри — завжди з `site`:** `getFilter`, `getProducts` (і всюди, де фільтр шукається за alias).
 3. **Неопрінти рахуються лише в моделі, що друкуються:** `type = 'model'` і `printcase = 1`. Тоді теми
    зникають з аксесуарів, брендів і серій, а `count` дорівнює тому, що реально видно. Статус друку
@@ -728,11 +732,13 @@ Print-Case — емоційно, про ідею й подарунок.
 1. `public.{ключ}` для smarket, sotamarket, printcase; `public.common.policies`; у `public.floy` —
    `contacts.schedule` і `promo_accessories` (§5.0.1). 23.10: SQL для smarket, common і floy —
    `FLOY-ADMIN/NOTES/sql/settings-public-sites.sql`; sotamarket і printcase — у їхніх планах.
-2. Відгуки (`sendReview`, `site_url`), пошук (`SearchEngine`, `FindModelTool`) — з реєстру.
-3. Чат: персона/промпт по сайту (`PromptBuilder`), сайт у сповіщеннях.
+2. Відгуки (`sendReview`, `site_url`), пошук (`SearchEngine`, `FindModelTool`) — з реєстру. ✅ 26.10 (SMARKET S7)
+3. Чат: персона/промпт по сайту (`PromptBuilder`), сайт у сповіщеннях. Персона — ✅ 26.10: `chat_intro` у реєстрі
+   (SMARKET — консультант із сумісності; FLOY — без змін, промпт той самий до символу).
 4. Мета-шаблони — для всіх типів сторінок, на кожен сайт.
 5. Тексти моделей і статті тем — покриття, генерація бракуючих.
-6. Sitemap — `SitemapGenerator` для кожного сайту (з реєстру), з урахуванням §6.2–§6.4.
+6. Sitemap — `SitemapGenerator` для кожного сайту (з реєстру), з урахуванням §6.2–§6.4. smarket — ✅ 26.10
+   (`$siteConfig`, нові секції `articles` і `products`; крон — після старих карт).
 7. Імпорт Print-Case (§6.4).
 8. Замовлення й повідомлення: SMS/Viber/email, опитувальник, MonoPay — назва й підпис сайту.
 9. Картинки: webp-прев'ю неальфапринтів smarket/sotamarket, `alphaprint_files` по сайту (PLAN-ALPHAPRINT).

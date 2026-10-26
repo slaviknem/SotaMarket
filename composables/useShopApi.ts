@@ -322,7 +322,8 @@ export function useShopApi() {
 			const params: Record<string, any> = { filters: '' }
 
 			for (const key in filters) {
-				if (key === 'category') params.category = filters[key]
+				// category і «Тип чохла» (case) — окремі параметри: це не записи фільтрів адмінки
+				if (key === 'category' || key === 'case') params[key] = filters[key]
 				else params.filters += filters[key] + ';' // групи фільтрів розділяються ';'
 			}
 
@@ -371,9 +372,9 @@ export function useShopApi() {
 				res ? { ...res, data: cardList(res.data) } : res
 			),
 
-		// Фільтри категорії (дерево)
-		getFilters: async (categoryAlias: string) => {
-			const res = await api<{ data: any[] }>(`filters/${categoryAlias}`)
+		// Фільтри категорії (дерево). withCase — ще й «Тип чохла» (пункти type = case, features.caseFilter)
+		getFilters: async (categoryAlias: string, withCase = false) => {
+			const res = await api<{ data: any[] }>(`filters/${categoryAlias}`, withCase ? { case: 1 } : {})
 			return res?.data ?? []
 		},
 

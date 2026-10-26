@@ -51,8 +51,18 @@
 						>
 							<AppIcon name="check-sm" :width="10" :height="8" :stroke-width="2.5" />
 						</button>
-						<!-- Назва: посилання на окрему SEO-сторінку фільтра (crawlable для індексації) -->
+						<!-- Назва: посилання на окрему SEO-сторінку фільтра (crawlable для індексації).
+						     У групи без сторінок («Тип чохла») назва перемикає фільтр, як і квадратик -->
+						<button
+							v-if="group.pageless"
+							type="button"
+							class="filter-item__label filter-item__label--btn"
+							@click="$emit('toggle', { group: group.alias, alias: item.alias })"
+						>
+							{{ item.title }}
+						</button>
 						<NuxtLink
+							v-else
 							class="filter-item__label"
 							:class="{ 'is-active': item.alias === activeAlias }"
 							:to="url.category(categoryAlias, item.alias)"
@@ -313,6 +323,14 @@ const hasSelected = computed(() => Object.values(props.selected).some((v) => v.l
 	color: var(--text-soft);
 	cursor: pointer;
 	transition: color 0.15s;
+}
+
+/* Назва-кнопка (група без сторінок) — вигляд як у посилання */
+.filter-item__label--btn {
+	padding: 0;
+	font-size: 13.5px;
+	line-height: inherit;
+	text-align: left;
 }
 
 .filter-item__label:hover,
