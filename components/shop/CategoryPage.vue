@@ -255,11 +255,16 @@ const hasFilterQuery = computed(() =>
 	Object.keys(route.query).some((k) => k.startsWith('filter_'))
 )
 
-const { data: productsData, pending: productsPending } = await useAsyncData(
+const { data: productsData, pending: productsPending, error: productsError } = await useAsyncData(
 	'cat-products-' + keySuffix.value,
 	() => shopApi.getProductsList(options.value, apiFilters.value),
 	{ watch: [() => route.query] }
 )
+
+// Товари не віддались — 503, а не модель без товарів: таку сторінку nginx тримав би в кеші добу, а Google
+// запам'ятав би порожньою (див. throwIfApiDown). Лише перше завантаження — збій при зміні фільтра чи
+// сторінки на клієнті лишає показане
+throwIfApiDown(productsError.value, 'Products')
 
 const products = computed(() => productsData.value?.data || [])
 const total = computed(() => productsData.value?.meta?.total || 0)

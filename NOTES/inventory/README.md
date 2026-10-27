@@ -27,6 +27,28 @@ node scripts/site-inventory.mjs smarket --check --fresh   # --fresh — кача
 `--check` ходить на живий сайт **по одному запиту з паузою**: старі сайти віддають 502 вже на двох
 паралельних (Sota — і на послідовних). 5xx перепитується; «502→200» у зведенні — вдалося з другого разу.
 
+## Прогін адрес через рушій (перед перемиканням, `PLAN-MULTISITE.md` §12 п. 2, §14 п. 1)
+
+`scripts/url-check.mjs` — ті самі адреси з `urls.tsv` на новому сайті: ланцюг 301, кінцевий код, canonical,
+noindex, кількість `h1`, картки товарів на моделях, згадки «floy»; з `--compare` — title, `h1` і description
+тих самих адрес на старому сайті. Вибірка стала (той самий набір щоразу). Зразки команд (ПК, PowerShell, тека
+проєкту сайту; Node 22 — у PATH, як вище):
+
+```powershell
+# dev; моделі, бренди, розділи, статті — усі, товари — вибіркою; проби — 301-карта бренду й службові адреси
+node scripts/url-check.mjs http://localhost:3010 .snapshots/inventory/smarket/urls.tsv --probes `
+  --sample='*:all,product@model:600,product@category:300' --slice=0:1000 --out=dev-1
+node scripts/url-check.mjs report dev-1 dev-2          # зведення кількох частин
+# title / h1 / description проти старого сайту — по 15 адрес кожного типу
+node scripts/url-check.mjs http://localhost:3010 .snapshots/inventory/smarket/urls.tsv --sample='*:15' `
+  --compare=https://www.steklomarket.com.ua --out=compare
+```
+
+**Dev падає по пам'яті** (воркер Nitro, «JS heap out of memory») після ~1–2 тис. сторінок — тому `--slice` частинами
+й перезапуск dev між ними (`touch nuxt.config.ts`). На сервері (збірка) — одним прогоном за списком із git
+(`<ключ>-check.tsv` у цій теці — робить `--save-list`; у SMARKET — 520 адрес), з `--host=<домен>`: так запит
+іде, як від nginx.
+
 ## Від власника
 
 **1. Google Search Console** — для кожного з трьох ресурсів (steklomarket.com.ua, sotamarket.com.ua,
