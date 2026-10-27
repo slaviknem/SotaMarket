@@ -69,7 +69,9 @@ Nuxt 3 + Vue 3 (SSR) фронтенд floy.com.ua. Працюй **завжди**
 - **Усе, чим магазин відрізняється від копій рушія, — у теці `brand/`** (аліас `#brand`): назва, домен,
   ключ API, графік, політики, вкладки головної, промотовари — `brand/site.config.ts` (тип — `types/brand.ts`,
   у коді — `useBrand()`); палітра — `brand/theme.css`; лого, фавікони, og — `brand/public/`;
-  `robots.txt` — шаблон `brand/robots.txt`; тексти про сам магазин — `brand/i18n/*.json`.
+  `robots.txt` — шаблон `brand/robots.txt`; тексти про сам магазин — `brand/i18n/*.json`;
+  сервер (процес PM2, порт, копії, кеш nginx) — `brand/server.env`, лічильники — `analytics` у `site.config.ts`
+  (`.env`, `deploy.sh`, `ecosystem.config.cjs` — спільні для всіх копій рушія).
   **Назву й домен не писати в код і тексти**: у компонентах — `useBrand().name` / `.domain`,
   у i18n — параметри `{brand}` / `{domain}`. Лого — лише `<AppLogo />`. Як копіювати — `brand/README.md`.
 

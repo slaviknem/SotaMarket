@@ -3,27 +3,37 @@
 // віддає 404 на всьому каталозі. Поки команда запуску жила лише в чиїйсь пам'яті
 // й у нотатках, прапорець двічі губився при вставці в термінал — тепер він у файлі.
 //
-// Запуск на сервері:
-//   cd /root/nodeapps/FLOY-PROD
-//   pm2 delete floy-prod
+// Файл спільний для всіх сайтів рушія (FLOY-NEW і копії: SMARKET…): ім'я процесу, порт і
+// кількість копій — з профілю сайту brand/server.env (той самий файл читає deploy.sh).
+//
+// Запуск на сервері, з теки сайту (FLOY — /root/nodeapps/FLOY-PROD, SMARKET — /root/nodeapps/SMARKET-PROD):
+//   pm2 delete <APP з brand/server.env>     # перший запуск — без delete
 //   pm2 start ecosystem.config.cjs
 //   pm2 save
 //
 // Перевірка після підйому (перший рядок має дати шлях до node 22, другий — 200):
-//   readlink -f /proc/$(pgrep -f "FLOY-PROD/(cluster.mjs|.output/server/index.mjs)" | head -1)/exe
-//   curl -s -o /dev/null -w "%{http_code}\n" "https://floy.com.ua/api/settings?t=1"
+//   readlink -f /proc/$(pgrep -f "$(pwd)/(cluster\.mjs|\.output/server/index\.mjs)" | head -1)/exe
+//   curl -s -o /dev/null -w "%{http_code}\n" "http://127.0.0.1:<PORT>/api/settings?t=1"
 // Саме readlink: `ps -o args=` показує `node <скрипт>` навіть із правильним
 // інтерпретатором, тобто як перевірка не годиться.
 //
-// Кількість копій — FLOY_WORKERS нижче: 4 копії на спільному порту (форкає
-// cluster.mjs, не PM2 — чому саме так, написано там). 1 = взагалі без форків.
-// Змінювати тільки тут і через деплой: правка файлу руками на сервері зламає
+// Кількість копій — WORKERS у brand/server.env (сюди — як FLOY_WORKERS): копії на спільному
+// порту форкає cluster.mjs, не PM2 — чому саме так, написано там. 1 = взагалі без форків.
+// Змінювати тільки в репозиторії й через деплой: правка файлів руками на сервері зламає
 // наступний `git pull` усередині deploy.sh.
+
+const { join } = require('path')
+const { readServerEnv } = require('./scripts/lib/server-env.cjs')
+
+const server = readServerEnv(join(__dirname, 'brand'))
+if (!server.APP || !Number(server.PORT) || !Number(server.WORKERS)) {
+	throw new Error('brand/server.env: потрібні APP, PORT і WORKERS')
+}
 
 module.exports = {
 	apps: [
 		{
-			name: 'floy-prod',
+			name: server.APP,
 			cwd: __dirname,
 			script: 'cluster.mjs',
 
@@ -40,8 +50,8 @@ module.exports = {
 			// немає в оточенні процесу, а сайт працює — дефолти з nuxt.config уже бойові.
 			env: {
 				NODE_ENV: 'production',
-				PORT: 3000,
-				FLOY_WORKERS: 4,
+				PORT: Number(server.PORT),
+				FLOY_WORKERS: Number(server.WORKERS),
 			},
 
 			// Падіння по колу не має ні їсти CPU, ні наливати логи: 19.09 у /root/.pm2/logs

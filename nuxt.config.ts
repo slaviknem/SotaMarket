@@ -5,6 +5,7 @@ import { existsSync } from 'node:fs'
 import brandConfig from './brand/site.config'
 import type { BrandConfig } from './types/brand'
 import { readTheme } from './scripts/lib/brand.mjs'
+import { readServerEnv } from './scripts/lib/server-env.cjs'
 
 // Через BrandConfig: необов'язкові поля (features, font) читаються й тоді, коли в конфігу їх немає
 const brand: BrandConfig = brandConfig
@@ -22,6 +23,9 @@ const FEATURE_PAGES: Record<string, keyof NonNullable<BrandConfig['features']>> 
 }
 // Кольори теми як hex — для theme-color і site.webmanifest (джерело — brand/theme.css)
 const theme = readTheme(BRAND_DIR)
+// Профіль сервера сайту (brand/server.env, його ж читають deploy.sh і ecosystem.config.cjs): тут — лише
+// порт, щоб dev кожної копії рушія мав свій (FLOY — 3000, SMARKET — 3010); NUXT_PORT / --port перекривають
+const SERVER = readServerEnv(BRAND_DIR)
 // Сховище адмінки — спільне для всіх сайтів; хост для IPX і preconnect береться звідси ж
 const URL_STORAGE = process.env.URL_STORAGE || 'https://admin.floy.com.ua/storage/'
 
@@ -31,6 +35,8 @@ export default defineNuxtConfig({
 	ssr: true,
 
 	devtools: { enabled: false },
+
+	devServer: { port: Number(SERVER.PORT) || 3000 },
 
 	modules: ['@nuxtjs/i18n', '@nuxt/image'],
 
@@ -73,11 +79,12 @@ export default defineNuxtConfig({
 			// Лічильники аналітики. Порожній ID = провайдер вимкнений (жодного запиту й байта JS).
 			// Самі скрипти вантажаться відкладено — plugins/analytics.client.ts.
 			// Зазвичай потрібен ЛИШЕ один із двох Google-варіантів: або GTM (з GA4-тегом
-			// усередині), або GA4 напряму.
+			// усередині), або GA4 напряму. ID — свої в кожного сайту: brand/site.config.ts → analytics;
+			// змінна оточення під час збірки перекриває (?? — порожня вимикає)
 			analytics: {
-				ga4: process.env.GA4_ID || '', // G-XXXXXXXXXX
-				gtm: process.env.GTM_ID || '', // GTM-XXXXXXX
-				metaPixel: process.env.META_PIXEL_ID || '', // 15-16 цифр
+				ga4: process.env.GA4_ID ?? brand.analytics?.ga4 ?? '', // G-XXXXXXXXXX
+				gtm: process.env.GTM_ID ?? brand.analytics?.gtm ?? '', // GTM-XXXXXXX
+				metaPixel: process.env.META_PIXEL_ID ?? brand.analytics?.metaPixel ?? '', // 15-16 цифр
 				dev: process.env.ANALYTICS_DEV === '1', // рахувати й у dev (для перевірки)
 			},
 		},

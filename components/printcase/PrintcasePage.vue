@@ -494,6 +494,7 @@
 // сторінці /neoprint.
 
 import type { IThemeDesign, IThemeNode } from '~/composables/useThemeDesigns'
+import type { BrandConfig } from '~/types/brand'
 import type { StageEl } from '~/components/printcase/StageElement.vue'
 import type { TextForm } from '~/components/printcase/TextModal.vue'
 import { STAGE_W, STAGE_H } from '~/components/printcase/PrintcaseStage.vue'
@@ -1793,7 +1794,11 @@ const breadcrumbs = computed(() => {
 // контент, і пошуковики його б однаково проігнорували.
 const indexable = computed(() => !!category.value?.printcase && !!articleHtml.value)
 
-const shareImage = computed(() => url.absolute('/images/printcase/printcase_product.jpg'))
+// Картинка для соцмереж — своя в бренду (brand/site.config.ts → printcaseImage), інакше рушія.
+// Через BrandConfig: у конфігу без поля (satisfies лишає вузький тип) звернення не пройшло б перевірку типів
+const shareImage = computed(() =>
+	url.absolute((useBrand() as BrandConfig).printcaseImage ?? '/images/printcase/printcase_product.jpg')
+)
 
 usePageSeo({
 	title: () =>

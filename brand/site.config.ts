@@ -8,6 +8,9 @@ export default {
 	domain: 'floy.com.ua',
 	url: 'https://floy.com.ua',
 
+	// Лічильники (до 27.10.2026 жили в .env)
+	analytics: { ga4: 'G-E8VV6X4J5C' },
+
 	// Стартові значення налаштувань адмінки (NOTES/plans/PLAN-MULTISITE.md §5.0.1). Живі — вузли
 	// public.common (доставка, політики) і public.floy (ціни, контакти й графік, соцмережі, аксесуари
 	// «в набір»), приходять через composables/useSiteSettings.ts; коли адмінка лежить — остання копія

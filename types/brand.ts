@@ -31,6 +31,12 @@ export interface BrandConfig {
 	/** Адреса сайту, коли в оточенні немає SITE_URL */
 	url: string
 	/**
+	 * Лічильники сайту — публічні ID (вони й так видні в HTML). Без поля чи порожньо — вимкнено.
+	 * Змінні GA4_ID / GTM_ID / META_PIXEL_ID під час збірки перекривають (порожня — вимикає),
+	 * на сервері без перезбірки — NUXT_PUBLIC_ANALYTICS_GA4 / _GTM / _METAPIXEL
+	 */
+	analytics?: { ga4?: string; gtm?: string; metaPixel?: string }
+	/**
 	 * Стартові значення налаштувань адмінки (public.common + public.{key}): на них сайт живе, поки його
 	 * вузла немає, і коли адмінка недоступна, а копії на диску ще немає. Значення з адмінки їх перекривають
 	 */
@@ -49,4 +55,9 @@ export interface BrandConfig {
 	redirects?: Record<string, string>
 	/** Шрифт бренду: woff2 для preload (@font-face і --font — у theme.css); без поля — Inter рушія */
 	font?: { preload: string[] }
+	/**
+	 * Картинка для соцмереж (og:image) сторінок конструктора /printcase — шлях від кореня сайту
+	 * (файл — у brand/public); без поля — /images/printcase/printcase_product.jpg рушія (в стилі FLOY)
+	 */
+	printcaseImage?: string
 }

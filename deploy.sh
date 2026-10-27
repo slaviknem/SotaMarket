@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 #
-# Викладка сайту на сервері (Linux).  Запуск із каталогу проєкту:
+# Викладка сайту на сервері (Linux).  Запуск із каталогу проєкту сайту:
 #
-#   bash deploy.sh              # прод   (pm2-процес floy-prod)
-#   bash deploy.sh floy-test    # тестовий стенд
+#   bash deploy.sh              # прод   (pm2-процес, порт і кеш nginx — brand/server.env)
+#   bash deploy.sh floy-test    # інший pm2-процес з того ж каталогу (тестовий стенд) — кеш nginx не чіпаємо
+#
+# Скрипт спільний для всіх сайтів рушія (FLOY-NEW і копії: SMARKET…): усе, чим сайти
+# відрізняються на сервері, — у профілі brand/server.env (його ж читає ecosystem.config.cjs).
+# Профіль береться той, що лежить на диску до `git pull`: зміна процесу чи порту однаково
+# вимагає pm2 delete + pm2 start (DEPLOY.md), тож діє з наступного запуску.
 #
 # Головне, чого не робить звичайний `nuxi build`: він ЧИСТИТЬ .output, тобто чанки
 # попередньої збірки зникають із сервера миттєво. У браузерів, які тримають сторінку
@@ -24,11 +29,20 @@
 
 set -e
 
-APP="${1:-floy-prod}"
+cd "$(dirname "$(readlink -f "$0")")"
+
+# Профіль сайту: APP (бойовий процес), PORT, NGINX_CACHE
+if [ -f brand/server.env ]; then
+	. brand/server.env
+else
+	echo "✗ немає brand/server.env — профілю сервера цього сайту" >&2
+	exit 1
+fi
+PROD_APP="$APP"
+APP="${1:-$PROD_APP}"
 KEEP_DAYS=14
 PREV="/tmp/_nuxt-prev-${APP}"
 
-cd "$(dirname "$(readlink -f "$0")")"
 echo "→ каталог: $(pwd), pm2-процес: ${APP}"
 
 # nvm — це shell-функція, у скрипті її треба підключити руками.
@@ -66,10 +80,10 @@ pm2 restart "$APP"
 # Спершу чекаємо, поки нова збірка відповідає: інакше в щойно очищений кеш могла б лягти
 # відповідь старого процесу. robots.txt Nitro віддає зі своєї статики — це перевірка саме
 # процесу, без залежності від API адмінки.
-NGINX_CACHE=/var/cache/nginx-floy
-if [ "$APP" = "floy-prod" ] && [ -d "$NGINX_CACHE" ]; then
+# Теки кешу ще немає (сайт до перемикання домену) — крок пропускається сам
+if [ "$APP" = "$PROD_APP" ] && [ -n "$NGINX_CACHE" ] && [ -d "$NGINX_CACHE" ]; then
 	for i in $(seq 1 30); do
-		if curl -sf -o /dev/null --max-time 5 http://127.0.0.1:3000/robots.txt; then break; fi
+		if curl -sf -o /dev/null --max-time 5 "http://127.0.0.1:${PORT}/robots.txt"; then break; fi
 		sleep 1
 	done
 	# Саме find, а не rm -rf …/*: nginx пише в кеш просто під час чистки (DEPLOY.md)

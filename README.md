@@ -1,7 +1,9 @@
-# FLOY — новий фронтенд (Nuxt 3)
+# Рушій магазинів на Nuxt 3 (FLOY, SMARKET…)
 
-Повна заміна старого сайту floy.com.ua (Nuxt 2) на **Nuxt 3 + Vue 3** з SSR.
-Використовує **той самий бекенд** `https://admin.floy.com.ua/apisite/` — нічого в адмінці міняти не треба.
+Фронтенд на **Nuxt 3 + Vue 3** з SSR, один рушій для кількох сайтів — кожен сайт окремим проєктом-копією:
+floy.com.ua (FLOY-NEW — `upstream`, заміна старого Nuxt 2) і steklomarket.com.ua (SMARKET, з 27.10.2026).
+Усе своє в сайту — у теці `brand/`, решта коду однакова.
+Дані — спільна адмінка `https://admin.floy.com.ua/apisite/` (ключ сайту — `brand/site.config.ts`).
 Всі URL збережені 1-в-1 зі старим сайтом, тому заміна безболісна для SEO.
 
 ## Технології
@@ -25,9 +27,11 @@
 | `/article`, `/article/{type}`, `/article/{type}/{alias}`  | Блог                                                                     |
 | `/shop/cart`, `/shop/cart/success`                        | Кошик / успішне замовлення (+ MonoPay)                                   |
 | `/shop/wishlist`, `/shop/compare`, `/shop/track-order`    | Обране / порівняння / трекінг                                            |
-| `/about`, `/dostavka`, `/povernennya`, `/otzyvy-klientov` | Інфо-сторінки (контент з API)                                            |
+| `/about`, `/dostavka`, `/povernennya`, `/otzyvy-klientov` | Інфо-сторінки (контент з API; відгуки вимикає `features.reviews` бренду) |
 | `/printcase`                                              | Конструктор чохлів (хаб)                                                 |
 | `/printcase/{model}`                                      | Конструктор під модель — індексована сторінка (`?model=` 301-иться сюди) |
+| `/neoprint/{model}/{design}`                              | Неопрінт — дизайн на моделі                                              |
+| `/search?q=…`                                             | Пошук (noindex)                                                          |
 
 Параметри листингу теж збережені: `?page=2&limit=12&sort=price-asc&filter_{group}=a,b`.
 
@@ -36,37 +40,49 @@
 На цій машині системний Node — v16, тому в `.node/` лежить портативний Node 22
 (не чіпає інші проєкти на сервері):
 
+| Сайт | Тека проєкту на ПК | dev (`PORT` з `brand/server.env`) |
+|---|---|---|
+| SMARKET | `C:\Web-SERVER\domains\SMARKET` | http://localhost:3010 |
+| FLOY | `C:\Web-SERVER\domains\FLOY-NEW` | http://localhost:3000 |
+
+У теці проєкту свого сайту (таблиця вище):
+
 ```powershell
-$env:Path = "C:\Web-SERVER\domains\FLOY-NEW\.node\node-v22.14.0-win-x64;" + $env:Path
-cd C:\Web-SERVER\domains\FLOY-NEW
 .\install.cmd     # залежності, один раз (голий npm install під Node 16 ламає node_modules)
-.\dev.cmd         # http://localhost:3000
+.\dev.cmd         # http://localhost:<PORT сайту> — SMARKET 3010, FLOY 3000
 ```
+
+`.cmd` самі ставлять портативний Node 22 з `.node\`; для `npm`/`npx` руками — спершу
+`$env:Path = "$PWD\.node\node-v22.14.0-win-x64;" + $env:Path`.
 
 ## Продакшн
 
 ```powershell
 npx nuxt build
-$env:PORT = "3000"
+$env:PORT = (Select-String '^PORT=(\d+)' brand\server.env).Matches.Groups[1].Value   # порт сайту з профілю
 node .output\server\index.mjs
 ```
 
 Потрібен **Node 18+** (на проді v22.23.1): у node 16 немає глобальних `fetch`/`Headers`,
 і Nuxt 3 піднімається мертвим — 200 без товарів і 404 на всіх сторінках моделей.
 
-Запуск на сервері описано у **`ecosystem.config.cjs`** (у корені репозиторію), одна команда:
+Запуск на сервері описано у **`ecosystem.config.cjs`** (у корені репозиторію), одна команда з теки сайту
+(SMARKET — `/root/nodeapps/SMARKET-PROD`, FLOY — `/root/nodeapps/FLOY-PROD`; ім'я процесу й порт — з профілю):
 
 ```bash
-cd /root/nodeapps/FLOY-PROD
 pm2 start ecosystem.config.cjs
 pm2 save
 ```
 
-Копії (за замовчуванням 4, змінна `FLOY_WORKERS` у тому ж файлі) форкає **`cluster.mjs`**,
-а не PM2: у cluster-режимі PM2 ігнорує `--interpreter` і копії дістаються від його демона
-на node 16. Тому в `pm2 list` завжди один рядок — це норма.
+Чим сайти відрізняються на сервері — **профіль `brand/server.env`**: процес PM2 (`APP`), порт (`PORT`, він же
+порт dev), кількість копій (`WORKERS`), кеш nginx (`NGINX_CACHE`). Його читають `ecosystem.config.cjs`,
+`deploy.sh` і `nuxt.config.ts`, тож ці файли однакові в усіх копіях рушія. FLOY — `floy-prod`, 3000, 4 копії;
+SMARKET — `smarket-prod`, 3010, 2 копії.
 
-Nginx проксіює домен на порт 3000 — так само, як проксіювався старий Nuxt 2.
+Копії форкає **`cluster.mjs`**, а не PM2: у cluster-режимі PM2 ігнорує `--interpreter` і копії дістаються
+від його демона на node 16. Тому в `pm2 list` завжди один рядок — це норма.
+
+Nginx проксіює домен на порт сайту (шаблон HestiaCP: FLOY — `node`, SMARKET — `smarket`).
 
 **Деталі експлуатації — `DEPLOY.md`, розділ «Як воно працює на сервері»:** дерево процесів,
 зміна кількості копій, перевірки після підйому, логи, кеш nginx, відкат.
@@ -76,9 +92,12 @@ Nginx проксіює домен на порт 3000 — так само, як �
 ```
 URL_API='https://admin.floy.com.ua/apisite/'
 URL_STORAGE='https://admin.floy.com.ua/storage/'
-SITE_URL='https://floy.com.ua'
 ```
 
+`.env` однаковий в усіх копіях рушія — лише спільна адмінка. Своє в кожного сайту — у `brand/`: адреса
+(`url`) і лічильники (`analytics`: GA4, GTM, Meta Pixel) — `brand/site.config.ts`; порт dev — `PORT` у
+`brand/server.env`. Перекрити на час збірки можна змінними `SITE_URL`, `GA4_ID` / `GTM_ID` / `META_PIXEL_ID`
+(порожня — вимикає), порт dev — `NUXT_PORT`. Адреса й API зашиваються у збірку (canonical, og, robots.txt).
 Для локального бекенда — розкоментувати localhost-рядки.
 
 ## SEO (вбудовано)
@@ -89,9 +108,10 @@ SITE_URL='https://floy.com.ua'
 - Open Graph + Twitter Card
 - `robots.txt` і `site.webmanifest` — маршрути (`server/routes/`) з `brand/`: шаблон `brand/robots.txt`,
   `Host` і `Sitemap` — з `SITE_URL`. Тестовий стенд — `NUXT_NOINDEX=1` (закриває від індексації)
-- **Sitemap**: генерує адмінка (`SitemapUtil.php`) і пише файли у статичну папку фронтенда.
-  Для нового сайту в `SitemapUtil` треба змінити `$pathSuffix` з `/public_html/src/static/` на
-  `/public_html/public/` (папка `public/` — аналог `static/` в Nuxt 3).
+- **Sitemap**: генерує адмінка (`App\Actions\Sitemap\SitemapGenerator`, крон 05:01 і `/do/generate_sitemap`) у
+  `storage/app/public/sitemap/{ключ сайту}/`; `/sitemap.xml` і `/sitemaps/` віддає nginx сайту з цієї теки
+  (доповнення вхоста `nginx.ssl.conf_sitemap`). У збірку рушія карта не входить: Nuxt 3 не роздає файли, що
+  з'явились після збірки.
 
 ## Як зробити сайт під інший бренд
 
@@ -102,9 +122,11 @@ SITE_URL='https://floy.com.ua'
    налаштування, графік, політики, вкладки головної, промотовари), `theme.css` (палітра; акцент —
    канал `--accent-rgb` **і** відтінки `--accent-hover`/`--accent-active`), `public/images/logo.svg`,
    `public/favicon.svg`, файл верифікації Google, `robots.txt`, `i18n/*.json` (тексти про магазин).
+   Інший вигляд — власні компоненти з тими самими іменами в `brand/components/` (`brand/components/README.md`).
 2. **Фавікони й og** — `node scripts/gen-icons.mjs` і `node scripts/gen-og.mjs` (портативний Node 22),
    пишуть у `brand/public/`.
-3. **`.env`** — `SITE_URL` нового домену; `URL_API` і `URL_STORAGE` — спільна адмінка.
+3. **Сервер** — `brand/server.env` (процес PM2, порт, копії, кеш nginx), лічильники — `analytics` у
+   `site.config.ts`; `.env`, `deploy.sh`, `ecosystem.config.cjs` — не чіпати (спільні).
 4. **Адмінка** — вузол налаштувань `public.{key}` (ціни, доставка, контакти, соцмережі); поки його
    немає — `settingsFallback` з конфігу. Категорії, SEO-тексти, банери, статті — вміст бази під цим ключем.
 5. **Перевірка** — тест бренду: SEO-зліпок (`node scripts/seo-snapshot.mjs <ім'я>`) без згадок старого
@@ -112,30 +134,37 @@ SITE_URL='https://floy.com.ua'
    `NOTES/plans/PLAN-SCALING.md`, 1.9 і 2.12.
 
 Свідомо спільне: шаблони FAQ і лідів (`{brand}`/`{domain}` підставляються), ключі сховища `floy_*`
-у браузері (на іншому домені не конфліктують), адмінка `admin.floy.com.ua`. Вибір сайту при збірці,
-деплой на кілька доменів — крок 2 (`NOTES/plans/PLAN-MULTISITE.md`).
+у браузері (на іншому домені не конфліктують), адмінка `admin.floy.com.ua`. Кожен сайт — окремий проєкт-копія
+рушія з `upstream` = FLOY-NEW (перший — SMARKET, `C:\Web-SERVER\domains\SMARKET`, на проді з 27.10.2026): свій
+`brand/`, `.env`, `ecosystem.config.cjs`, `deploy.sh`; порядок і сервер — `NOTES/plans/PLAN-MULTISITE.md` (§11).
 
 ## Що де лежить
 
-- `brand/` — усе, чим магазин відрізняється від копій рушія (див. вище)
+- `brand/` — усе, чим магазин відрізняється від копій рушія (див. вище); `brand/components/` — його власні компоненти
 - `composables/useShopApi.ts` — всі виклики до apisite (дзеркало старого `api/shop.ts`)
 - `composables/useCart.ts`, `useLists.ts` — кошик / wishlist / compare (localStorage)
 - `composables/useNovaPochta.ts` — пошук міст і відділень НП
 - `composables/useSeo.ts` — canonical / OG / JSON-LD хелпери
-- `components/shop/CategoryPage.vue` — спільна логіка категорії та сторінки фільтра
+- `components/shop/CategoryPage.vue` — спільна логіка категорії та сторінки фільтра (вигляд — `CategoryView.vue`,
+  стан між ними — `useCategoryPage()`)
 - `components/shop/ProductPage.vue` — товар (+ attr-сторінки)
 - `i18n/locales/ru.json`, `uk.json` — переклади (перенесені зі старого сайту + нові ключі);
   тексти про сам магазин — поверх них з `brand/i18n/`
-- `scripts/seo-snapshot.mjs`, `style-snapshot.mjs` — зліпки «до/після» для перевірки змін (`NOTES/plans/PLAN-SCALING.md` §2)
+- `scripts/seo-snapshot.mjs`, `style-snapshot.mjs` — зліпки «до/після» для перевірки змін (`NOTES/plans/PLAN-SCALING.md` §2);
+  `url-check.mjs` — прогін адрес (коди, 301, canonical; `NOTES/inventory/README.md`), `uniq-check.mjs` — унікальність
+  текстів між сайтами, `site-inventory.mjs` — інвентар адрес старого сайту
 - `NOTES/plans/` — плани робіт (`PLAN-*.md`, стан і порядок продовження — у шапці кожного);
   `NOTES/PROMTS.docx` — робочі нотатки із завданнями
 - Бекенд (адмінка й apisite) — сусідній репозиторій `../FLOY-ADMIN` (не частина фронтенда)
 
 ## ДЕПЛОЙ
 
-```bash
-cd /root/nodeapps/FLOY-PROD
-bash deploy.sh
-```
+Однаково на всіх сайтах — з теки сайту на сервері (bash):
 
-Докладно — `DEPLOY.md`.
+| Сайт | Команда |
+|---|---|
+| SMARKET — steklomarket.com.ua | `cd /root/nodeapps/SMARKET-PROD && bash deploy.sh` |
+| FLOY — floy.com.ua | `cd /root/nodeapps/FLOY-PROD && bash deploy.sh` |
+
+`deploy.sh` бере процес, порт і кеш nginx із `brand/server.env`: `git pull`, збірка під node 22, рестарт процесу,
+чистка кешу nginx. Докладно — `DEPLOY.md`.

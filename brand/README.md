@@ -5,10 +5,11 @@
 
 | Файл | Що в ньому | Куди йде |
 |---|---|---|
-| `site.config.ts` | обличчя й будова сайту: ключ API, назва, домен, адреса, вкладки головної; необов'язкові — `features` (перемикачі розділів), `redirects` (301-карта), `font` (preload шрифту); `settingsFallback` — стартові значення налаштувань адмінки | `useBrand()`, `useFeatures()`; ключ, назва й адреса — ще й `runtimeConfig.public` (`site`, `siteName`, `siteUrl`); `redirects` — `server/middleware/brand-redirects.ts`; `features` і `font` — ще й `nuxt.config.ts`; `settingsFallback` — `useSiteSettings()` |
+| `site.config.ts` | обличчя й будова сайту: ключ API, назва, домен, адреса, вкладки головної; необов'язкові — `features` (перемикачі розділів), `redirects` (301-карта), `font` (preload шрифту), `analytics` (ID лічильників GA4 / GTM / Meta Pixel), `printcaseImage` (og:image конструктора); `settingsFallback` — стартові значення налаштувань адмінки | `useBrand()`, `useFeatures()`; ключ, назва й адреса — ще й `runtimeConfig.public` (`site`, `siteName`, `siteUrl`); `redirects` — `server/middleware/brand-redirects.ts`; `features`, `font` і `analytics` — ще й `nuxt.config.ts`; `settingsFallback` — `useSiteSettings()` |
 | `theme.css` | палітра: канали `--*-rgb`, кольори, тіні, затемнення, `--logo-color`, `--select-arrow`; за потреби — шрифт (`@font-face` + `--font`) і структурні токени | підключається після `main.css`; `theme-color`, кольори manifest, генератори |
 | `public/` | фавікони, `images/logo.svg`, `images/og-default.jpg`, шрифт бренду (`fonts/`), файл верифікації Google | віддаються з кореня сайту, як і `public/` |
 | `components/` | власні версії компонентів рушія з тими самими іменами | перекривають `components/` (`components/README.md`) |
+| `server.env` | профіль сервера: процес PM2 (`APP`), порт Node і dev (`PORT`), копії (`WORKERS`), кеш nginx (`NGINX_CACHE`); `KEY=value` | `deploy.sh` (bash), `ecosystem.config.cjs` (PM2), `nuxt.config.ts` (порт dev) — через `scripts/lib/server-env.cjs` |
 | `robots.txt` | правила для ботів; `{siteUrl}` → адреса сайту | маршрут `/robots.txt` (`server/routes/robots.txt.ts`) |
 | `i18n/ru.json`, `i18n/uk.json` | тексти, що описують сам магазин: title і description головної та блогу, h1 головної, «про нас» у футері, плитки переваг; для другого й наступних сайтів — і SEO-шаблони (FAQ, ліди моделі й фільтра, заголовки, конструктор, лід товару), бо вони множаться на тисячі сторінок (можна перекрити будь-який ключ) | зливаються поверх спільних `i18n/locales/*.json`; збіг з іншим сайтом — `scripts/uniq-check.mjs` |
 | `skills/{скіл}.md` (необов'язково) | чим скіл `.claude/skills/{скіл}` для цього сайту відрізняється від FLOY: ключ, тон, H1, склад сторінки, файл для SQL | скіл читає його першим; немає файла — скіл працює як для FLOY |
@@ -52,7 +53,8 @@
    - `skills/*.md` — відмінності скілів статей (ключ сайту, тон, H1), якщо сайт пише свої статті.
 2. Перегенерувати растрові іконки й прев'ю (портативний Node 22 з `.node/`):
    `node scripts/gen-icons.mjs` і `node scripts/gen-og.mjs` — пишуть у `brand/public/`.
-3. В `.env` процесу: `SITE_URL` (домен сайту). `URL_API` і `URL_STORAGE` — спільна адмінка.
+3. Сервер — `server.env` (свій процес PM2, вільний порт, копії, тека кешу nginx) і лічильники — `analytics` у
+   `site.config.ts`. `.env`, `deploy.sh`, `ecosystem.config.cjs` — спільні, не правити (адреса сайту — `url` конфігу).
 4. В адмінці («Налаштування» → `public`) — вузол `public.{key}` тієї самої структури, що й `public.floy`
    (копія гілки зі своїми значеннями; зразок SQL — `FLOY-ADMIN/NOTES/sql/settings-smarket-tree.sql`): ключі
    як у `settingsFallback`, крім спільних `delivery` і `policies`, — `prices`, `contacts` (з `schedule`),

@@ -10,6 +10,27 @@ Nuxt 3 SSR — потрібен **запущений Node-процес**, не �
 > Node на сервері через nvm: **default = v16.20.2 (НЕ чіпати — старі сайти й pm2-демон)**,
 > для floy-new — **v22.23.1**. pm2-демон один (на node 16) — **другий pm2 не ставити**.
 
+## Кілька сайтів на рушії (з 27.10.2026)
+
+Нижче — історія й експлуатація FLOY; інші сайти — копії рушія, і все тут для них те саме, з іншими
+значеннями. Чим сайт відрізняється на сервері — лише профіль **`brand/server.env`**: його читають
+`deploy.sh`, `ecosystem.config.cjs` і `nuxt.config.ts` (порт dev), тож ці файли й `.env` однакові в усіх копіях.
+
+| | FLOY | SMARKET |
+|---|---|---|
+| домен | `floy.com.ua` | `steklomarket.com.ua` |
+| тека на сервері | `/root/nodeapps/FLOY-PROD` | `/root/nodeapps/SMARKET-PROD` |
+| `APP` — процес PM2 | `floy-prod` | `smarket-prod` |
+| `PORT` | `3000` | `3010` |
+| `WORKERS` — копій | `4` | `2` |
+| `NGINX_CACHE` | `/var/cache/nginx-floy` | `/var/cache/nginx-smarket` |
+| шаблон nginx (Hestia) | `node` | `smarket` (`SMARKET/NOTES/nginx/`) |
+
+Деплой скрізь однаковий: `cd <тека сайту>` → `bash deploy.sh`. Новий сайт: копія рушія з `upstream`, своя тека
+`brand/` (зокрема `server.env`), свій шаблон nginx — порядок перемикання: `SMARKET/NOTES/plans/PLAN-SITE-SMARKET.md`
+§8 «Сервер: S9». У командах нижче `floy-prod`, `FLOY-PROD`, 3000 і `nginx-floy` — для іншого сайту його значення
+з профілю.
+
 ---
 
 ## 0. Параметри розгортання
@@ -80,8 +101,8 @@ pm2 save
 PM2 бере node свого демона (16.20.2), а в cluster-режимі він ігнорує прапорець
 узагалі. У node 16 немає глобальних `fetch`/`Headers`, тож Nuxt 3 піднімається
 мертвим: головна без товарів, усі сторінки моделей — 404 «Category not found».
-19.09.2026 це коштувало доби. Кілька копій — через `FLOY_WORKERS` у
-`ecosystem.config.cjs` (форкає `cluster.mjs`, а не PM2).
+19.09.2026 це коштувало доби. Кілька копій — через `WORKERS` у `brand/server.env`
+(`ecosystem.config.cjs` передає його як `FLOY_WORKERS`; форкає `cluster.mjs`, а не PM2).
 
 Перевірка, що піднялось під тим node:
 
@@ -360,11 +381,11 @@ Nuxt 3 падає кожен `$fetch` із `TypeError: Headers is not a construc
 
 ### Змінити кількість копій
 
-`FLOY_WORKERS` в `ecosystem.config.cjs`. Правити **тільки в репозиторії**: зміна
-файлу руками на сервері обірве `git pull` усередині `deploy.sh`.
+`WORKERS` у `brand/server.env` (до 27.10.2026 — `FLOY_WORKERS` прямо в `ecosystem.config.cjs`).
+Правити **тільки в репозиторії**: зміна файлу руками на сервері обірве `git pull` усередині `deploy.sh`.
 
 ```bash
-# у репозиторії: правка FLOY_WORKERS → commit → push, далі на сервері:
+# у репозиторії: правка WORKERS → commit → push, далі на сервері:
 cd /root/nodeapps/FLOY-PROD
 git pull
 ls -l ecosystem.config.cjs cluster.mjs     # ОБОВ'ЯЗКОВО перед delete, див. нижче
@@ -375,7 +396,7 @@ find /var/cache/nginx-floy -type f -delete
 ```
 
 `pm2 restart` тут не підходить: PM2 тримає env у своєму дампі й нового значення
-`FLOY_WORKERS` не побачить. `FLOY_WORKERS=1` — безпечний відкат до одного процесу
+`FLOY_WORKERS` не побачить. `WORKERS=1` — безпечний відкат до одного процесу
 (після білого списку ботів один процес віддавав сторінку за 0.034 с).
 
 ⚠️ **`ls` перед `pm2 delete` — не формальність.** 19.09 перемикали до того, як
