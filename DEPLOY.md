@@ -24,7 +24,12 @@ Nuxt 3 SSR — потрібен **запущений Node-процес**, не �
 | `PORT` | `3000` | `3010` |
 | `WORKERS` — копій | `4` | `2` |
 | `NGINX_CACHE` | `/var/cache/nginx-floy` | `/var/cache/nginx-smarket` |
-| шаблон nginx (Hestia) | `node` | `smarket` (`SMARKET/NOTES/nginx/`) |
+| шаблон nginx (Hestia) | `floy` (`FLOY-ADMIN/NOTES/nginx/`; до 28.10.2026 — `node`) | `smarket` (`SMARKET/NOTES/nginx/`) |
+| ключ кешу nginx | `"…$request_uri\|lang=$floy_lang"` | `"…$request_uri\|lang=$smarket_lang"` |
+
+Ключ кешу — адреса + мова з cookie `floy_lang` (лише сторінки; `/img/`, `/_ipx/`, `/_nuxt/`, `/api/` — спільні),
+`Vary` nginx ігнорує; роздільник `|lang=` обов'язковий — `FLOY-ADMIN/NOTES/plans/PLAN-FLOY-VHOST.md` §3. Чистка лише
+картинок (`grep '^KEY: [^/]*/img/'`, нижче) ключем не зачеплена — мова в кінці.
 
 Деплой скрізь однаковий: `cd <тека сайту>` → `bash deploy.sh`. Новий сайт: копія рушія з `upstream`, своя тека
 `brand/` (зокрема `server.env`), свій шаблон nginx — порядок перемикання: `SMARKET/NOTES/plans/PLAN-SITE-SMARKET.md`

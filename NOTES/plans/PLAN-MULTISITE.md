@@ -828,8 +828,11 @@ Print-Case — емоційно, про ідею й подарунок.
   2. **Свій шаблон Hestia** — копія `node` з портом сайту; http і www → `https://<домен>` **одним** 301 у самому шаблоні
      (без `nginx.forcessl.conf` і редиректу панелі — з ними `http://www.` іде двома кроками, як у FLOY), Let's Encrypt на :80
      відповідає напряму. Редирект панелі прибрати **до** зміни шаблону (інакше петля www ↔ без www).
-  3. **Кеш — доповненням `nginx.ssl.conf_cache`** зі своєю зоною (`conf.d`): ключ `$scheme$host$request_uri` + мова з
-     cookie `floy_lang` (map), `proxy_ignore_headers Cache-Control Expires Vary` — переліком цілком: директива замінює
+  3. **Кеш — доповненням `nginx.ssl.conf_cache`** зі своєю зоною (`conf.d`): ключ `"$scheme$host$request_uri|lang=$<мова>"`
+     — мова з cookie `floy_lang` (map), лише для сторінок (`/img/`, `/_ipx/`, `/_nuxt/`, `/api/`, `/fonts/`, `/images/` —
+     спільні); **роздільник `|lang=` обов'язковий** — впритул «/» + uk = «/uk», і 302 на мову лягав у запис `/uk` (вічний
+     редирект для всіх без cookie; знайдено 28.10, `FLOY-ADMIN/NOTES/plans/PLAN-FLOY-VHOST.md`).
+     `proxy_ignore_headers Cache-Control Expires Vary` — переліком цілком: директива замінює
      рядок `nginx.conf` (там `Cache-Control Expires`), а без `Cache-Control` сторінки рушія (`no-cache`) не кешувались би.
      Доповнення (кеш, карта з теки адмінки, лог `floy_log`, ліміти на спільних зонах FLOY) — **після** зміни шаблону.
   4. **Перевірка до сервера** — локальний nginx (`C:\Web-SERVER\modules\http\Nginx_1.21`, шлях без кирилиці й без 8.3)
