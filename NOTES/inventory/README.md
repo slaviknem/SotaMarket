@@ -11,10 +11,10 @@
 Знято 21.10.2026. **Чого ще бракує — даних від власника** (нижче): без них не видно, які адреси
 справді приносять трафік і що вже в індексі поза sitemap (теми, серії, адреси з помилками).
 
-## Як повторити (ПК, PowerShell, `C:\Web-SERVER\domains\FLOY-NEW`)
+## Як повторити (ПК, PowerShell, `C:\Web-SERVER\domains\FLOY`)
 
 ```powershell
-$env:PATH = "C:\Web-SERVER\domains\FLOY-NEW\.node\node-v22.14.0-win-x64;$env:PATH"
+$env:PATH = "C:\Web-SERVER\domains\FLOY\.node\node-v22.14.0-win-x64;$env:PATH"
 node scripts/site-inventory.mjs sotamarket --check     # smarket | printcase | floy (звірка)
 node scripts/site-inventory.mjs smarket --check --fresh   # --fresh — качати sitemap заново
 ```

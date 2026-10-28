@@ -3,10 +3,10 @@
 // віддає 404 на всьому каталозі. Поки команда запуску жила лише в чиїйсь пам'яті
 // й у нотатках, прапорець двічі губився при вставці в термінал — тепер він у файлі.
 //
-// Файл спільний для всіх сайтів рушія (FLOY-NEW і копії: SMARKET…): ім'я процесу, порт і
+// Файл спільний для всіх сайтів рушія (FLOY і копії: SMARKET…): ім'я процесу, порт і
 // кількість копій — з профілю сайту brand/server.env (той самий файл читає deploy.sh).
 //
-// Запуск на сервері, з теки сайту (FLOY — /root/nodeapps/FLOY-PROD, SMARKET — /root/nodeapps/SMARKET-PROD):
+// Запуск на сервері, з теки сайту (FLOY — /root/nodeapps/FLOY, SMARKET — /root/nodeapps/SMARKET):
 //   pm2 delete <APP з brand/server.env>     # перший запуск — без delete
 //   pm2 start ecosystem.config.cjs
 //   pm2 save

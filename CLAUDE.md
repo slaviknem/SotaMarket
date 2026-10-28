@@ -1,8 +1,8 @@
-# FLOY-NEW — стандарти коду
+# FLOY — стандарти коду
 
 Nuxt 3 + Vue 3 (SSR) фронтенд floy.com.ua. Працюй **завжди** за принципами нижче.
 Портативний Node 22 у `.node/` — для будь-яких npm/nuxt команд спершу додай його в PATH
-(`C:\Web-SERVER\domains\FLOY-NEW\.node\node-v22.14.0-win-x64`). Системний Node 16 не чіпати.
+(`C:\Web-SERVER\domains\FLOY\.node\node-v22.14.0-win-x64`). Системний Node 16 не чіпати.
 Залежності встановлювати тільки через `install.cmd` (голий `npm install` під Node 16 ламає `node_modules`).
 
 Загальне правило: **спершу шукай наявний примітив (токен/клас/компонент/composable) і перевикористай його.

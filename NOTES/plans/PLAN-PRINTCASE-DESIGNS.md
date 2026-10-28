@@ -296,7 +296,7 @@ foreach (Storage::disk('public')->directories('images/printcase/designs') as $di
 | `routes/web.php` | редірект `/order/printcase-edit/{id}` | 8 |
 | `Order/FormOrder/ItemProduct.vue` | кнопка-олівець + умова 30 днів | 12 |
 
-**FLOY-NEW — ~270 рядків**
+**FLOY (рушій) — ~270 рядків**
 
 | Файл | Що | ~рядків |
 |---|---|---|

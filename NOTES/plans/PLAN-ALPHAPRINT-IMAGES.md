@@ -8,7 +8,7 @@
 
 ## 0. Як продовжити в новому чаті
 
-Сказати: «Продовжуємо `PLAN-ALPHAPRINT-IMAGES.md` у FLOY-NEW — §2, перший невиконаний пункт».
+Сказати: «Продовжуємо `PLAN-ALPHAPRINT-IMAGES.md` у FLOY — §2, перший невиконаний пункт».
 Спершу прочитати §1а і §2 цього плану, `DEPLOY.md` §6 і копії конфігів nginx у `FLOY-ADMIN/NOTES/nginx/`.
 
 Правила роботи:
@@ -18,7 +18,7 @@
 - Команди для сервера — **по одній**: MobaXterm рве багаторядкові вставки. Якщо в терміналі
   з'явилось `^[[200~` — виконати `printf '\e[?2004l'` (або `reset`) і вставити знову; якщо команда
   «зависла» — Ctrl+C.
-- Сервер: проєкт `/root/nodeapps/FLOY-PROD`, процес pm2 `floy-prod` (4 воркери, node 22),
+- Сервер: проєкт `/root/nodeapps/FLOY`, процес pm2 `floy-prod` (4 воркери, node 22),
   access-лог `/var/log/nginx/floy-access.log` (поля: `$1` час UTC, `$3` статус, `$4` cache=…, `$8` шлях).
 - artisan на сервері — від `wm`, не від root: `cd /home/wm/web/admin.floy.com.ua/public_html`, далі
   `sudo -u wm php artisan …` (PHP-FPM працює від `wm`, створені root-ом лог чи кеш стали б для нього чужими).
@@ -92,7 +92,7 @@
 
 ## 2. Що робити далі — по кроках
 
-### А. Сайт floy: прибрати посилання на файли сховища (FLOY-NEW)
+### А. Сайт floy: прибрати посилання на файли сховища (репозиторій FLOY)
 
 **1. ✅ (викладено 17.10) og:image, JSON-LD, кошик, порівняння, пошук, промоблок → `/img/print`.**
 На проді (curl нижче): og:image — `…/img/print/oneplus-ace-6t/real-madrid.jpg`, у JSON-LD — лише `…-s600.webp`.
@@ -154,10 +154,10 @@ curl -s https://floy.com.ua/iphone-13/chehol-s-printom-krishtianu-ronaldu-dlya-b
 df -h /
 ```
 ```bash
-du -sh /root/nodeapps/FLOY-PROD/.cache/*
+du -sh /root/nodeapps/FLOY/.cache/*
 ```
 ```bash
-find /root/nodeapps/FLOY-PROD/.cache/alphaprint -type f -printf '%f\n' | grep -oE '(s300|s600)\.webp$|og\.jpg$' | sort | uniq -c
+find /root/nodeapps/FLOY/.cache/alphaprint -type f -printf '%f\n' | grep -oE '(s300|s600)\.webp$|og\.jpg$' | sort | uniq -c
 ```
 Норма: ріст сповільнюється (стеля ~27 ГБ); `og.jpg` — сотні, не десятки тисяч. Якщо вільно < 20 ГБ —
 крон 60 → 30 днів:
@@ -325,7 +325,7 @@ pm2 logs floy-prod --lines 200 --nostream | grep -i caseImage
 
 ## 3. Як це влаштовано (довідка)
 
-### Код (FLOY-NEW)
+### Код (репозиторій FLOY)
 
 | Файл | Роль |
 |---|---|
@@ -361,7 +361,7 @@ find /var/cache/nginx-floy -type f -delete
 
 | Рівень | Де | Скільки живе |
 |---|---|---|
-| Кадри на диску сайту | `/root/nodeapps/FLOY-PROD/.cache/neoprint/{модель}/…` — неопрінти, `/root/nodeapps/FLOY-PROD/.cache/alphaprint/{модель}/…` — альфапринти; моделі без маски — `_nomask/` у своїй теці | поки не видалять (крон `-atime +60`, §1); через 30 днів кадр перезбирається при зверненні; переживає рестарт і деплой |
+| Кадри на диску сайту | `/root/nodeapps/FLOY/.cache/neoprint/{модель}/…` — неопрінти, `/root/nodeapps/FLOY/.cache/alphaprint/{модель}/…` — альфапринти; моделі без маски — `_nomask/` у своїй теці | поки не видалять (крон `-atime +60`, §1); через 30 днів кадр перезбирається при зверненні; переживає рестарт і деплой |
 | Шаблони й маски | пам'ять процесу Node | 1 год |
 | nginx | `/var/cache/nginx-floy` (зона `floy_cache`, 1 ГБ, спільна з HTML) | доки запитують хоч раз на добу; `deploy.sh` чистить повністю |
 | Браузер | — | 30 днів |
@@ -371,13 +371,13 @@ find /var/cache/nginx-floy -type f -delete
 Якщо в адмінці замінили шаблони чи маски — **спершу** `pm2 restart floy-prod`, інакше кадри
 перезберуться зі старих, які ще годину в пам'яті. Далі (кожна команда окремо):
 ```bash
-rm -rf /root/nodeapps/FLOY-PROD/.cache/neoprint /root/nodeapps/FLOY-PROD/.cache/alphaprint /root/nodeapps/FLOY-PROD/.cache/print
+rm -rf /root/nodeapps/FLOY/.cache/neoprint /root/nodeapps/FLOY/.cache/alphaprint /root/nodeapps/FLOY/.cache/print
 ```
 ```bash
 grep -rlaZ '^KEY: [^/]*/img/' /var/cache/nginx-floy | xargs -0 -r rm -f
 ```
 ```bash
-du -sh /root/nodeapps/FLOY-PROD/.cache/* 2>/dev/null
+du -sh /root/nodeapps/FLOY/.cache/* 2>/dev/null
 ```
 Друга команда прибирає з кешу nginx лише картинки (HTML лишається), третя — перевірка (порожньо).
 Нічого не ламається: кадри перезберуться на першому показі (+0,1–0,3 с). Краще ввечері.
@@ -449,7 +449,7 @@ webp-прев'ю (§5) — без генерації на запит перед 
   | smarket (StekloMarket) | 39 / 40 (і 74 / 81 в іншій вибірці) | 25 / 40 |
   | sotamarket | 40 / 40 | — |
 
-  Старий рушій (Nuxt 2) бере `thumb/*.jpg`, тож зараз цього не видно. Рушій FLOY-NEW просить
+  Старий рушій (Nuxt 2) бере `thumb/*.jpg`, тож зараз цього не видно. Рушій FLOY просить
   саме `.webp` (`useUrl().productThumb`) — після переїзду такі картки отримали б 302. Бекфіл
   наперед — ≈1,3 млн файлів, ≈9 ГБ і ~10 год конвертації, здебільшого для картинок, які ніхто не відкриє.
 - Генерація ручна (рядок у планувальнику закоментований, запуск через DO-контролер).
@@ -526,7 +526,7 @@ du -sh /root/.pm2/logs
 find /home/wm/web/admin.floy.com.ua -maxdepth 7 -type d -path '*images/products' -exec du -sh {}/big {}/thumb \; 2>/dev/null
 ```
 ```bash
-du -sh /root/nodeapps/FLOY-PROD/.cache/* 2>/dev/null
+du -sh /root/nodeapps/FLOY/.cache/* 2>/dev/null
 ```
 ```bash
 findmnt -no OPTIONS -T /home/wm/web/admin.floy.com.ua
@@ -591,7 +591,7 @@ grep -H 'pm.max_children' /etc/php/*/fpm/pool.d/*admin.floy*.conf
 4. **webp-двійник для будь-якого прев'ю** (не лише альфапринта): промах `products/thumb/*.webp`,
    у якого є jpg-пара, → `ImageH::makeWebpThumb` (уже існує) → віддати. Перевірка в БД не потрібна:
    джерело — наявний файл. Це закриває webp-прогалину StekloMarket і SotaMARKET (§5) для рушія
-   FLOY-NEW без бекфілу наперед.
+   FLOY без бекфілу наперед.
 5. Лог: скільки файлів відновлено за добу (видно навантаження до початку чистки).
 
 **Перевірка:** вручну видалити 5–10 файлів (floy і smarket, big/thumb/webp) → відкрити картки,
@@ -642,7 +642,7 @@ og/JSON-LD floy з 17.10 уже на `/img/print` (§2 п. 1). Старі адр
   коли звільниться диск; тоді й `deploy.sh` перестане чистити картинки;
 - `ETag`/`Last-Modified` для `/img/` (зараз після 30 днів браузер качає кадр заново замість 304).
 
-### Етап 4 — інші сайти на рушії FLOY-NEW
+### Етап 4 — інші сайти на рушії FLOY
 
 Порядок відносно переїзду — §11.
 

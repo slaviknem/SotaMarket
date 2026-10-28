@@ -1,4 +1,4 @@
-# Розгортання FLOY-NEW на сервері (VPS + HestiaCP)
+# Розгортання рушія FLOY на сервері (VPS + HestiaCP)
 
 Nuxt 3 SSR — потрібен **запущений Node-процес**, не статика. nginx (HestiaCP) проксіює
 домен на локальний порт, де крутиться Node під керуванням pm2.
@@ -19,7 +19,7 @@ Nuxt 3 SSR — потрібен **запущений Node-процес**, не �
 | | FLOY | SMARKET |
 |---|---|---|
 | домен | `floy.com.ua` | `steklomarket.com.ua` |
-| тека на сервері | `/root/nodeapps/FLOY-PROD` | `/root/nodeapps/SMARKET-PROD` |
+| тека на сервері | `/root/nodeapps/FLOY` | `/root/nodeapps/SMARKET` |
 | `APP` — процес PM2 | `floy-prod` | `smarket-prod` |
 | `PORT` | `3000` | `3010` |
 | `WORKERS` — копій | `4` | `2` |
@@ -28,8 +28,9 @@ Nuxt 3 SSR — потрібен **запущений Node-процес**, не �
 
 Деплой скрізь однаковий: `cd <тека сайту>` → `bash deploy.sh`. Новий сайт: копія рушія з `upstream`, своя тека
 `brand/` (зокрема `server.env`), свій шаблон nginx — порядок перемикання: `SMARKET/NOTES/plans/PLAN-SITE-SMARKET.md`
-§8 «Сервер: S9». У командах нижче `floy-prod`, `FLOY-PROD`, 3000 і `nginx-floy` — для іншого сайту його значення
-з профілю.
+§8 «Сервер: S9». У командах нижче `floy-prod`, `/root/nodeapps/FLOY`, 3000 і `nginx-floy` — для іншого сайту його значення
+з профілю. До 27–28.10.2026 теки звались `/root/nodeapps/FLOY-PROD` і `SMARKET-PROD`, репозиторій рушія — `FLOY-NEW`
+(старі назви — в історії й логах; як перейменовували — `SMARKET/NOTES/plans/PLAN-RENAME-FLOY.md`).
 
 ---
 
@@ -40,7 +41,7 @@ Nuxt 3 SSR — потрібен **запущений Node-процес**, не �
 | домен | `test.floy.com.ua` | `floy.com.ua` |
 | порт Node | `3000` | `3000` (той самий; тест зупиняємо) |
 | pm2-ім'я | `floy-test` | `floy-prod` |
-| папка | `/root/nodeapps/FLOY-NEW` | `/root/nodeapps/FLOY-PROD` |
+| папка | `/root/nodeapps/FLOY-NEW` (з 27.10.2026 немає) | `/root/nodeapps/FLOY` |
 | `SITE_URL` | `https://test.floy.com.ua` | `https://floy.com.ua` |
 
 Зайняті порти pm2: 3001 Floy(старий), 3002 Smarket, 3003 SotaMarket, 4000/4001 Print-Case, 9999 PL-FILTER.
@@ -76,8 +77,8 @@ v-list-web-domain wm floy.com.ua | grep -Ei 'proxy|ssl|alias'        # шабл�
 ```bash
 nvm use 22
 mkdir -p /root/nodeapps && cd /root/nodeapps
-git clone https://github.com/slaviknem/FLOY-NEW.git FLOY-PROD   # або SSH-ключ
-cd FLOY-PROD
+git clone https://github.com/slaviknem/FLOY.git FLOY            # або SSH-ключ
+cd FLOY
 npm install
 SITE_URL=https://floy.com.ua npx nuxi build                     # НЕ build.cmd (Windows-обгортка)
 ```
@@ -92,7 +93,7 @@ pm2-демон крутиться на node 16, сам додаток — на n
 ```bash
 nvm use 16                       # щоб pm2-команди йшли через робочий демон
 pm2 stop floy-test               # звільняємо 3000; саме stop, не delete
-cd /root/nodeapps/FLOY-PROD
+cd /root/nodeapps/FLOY
 pm2 start ecosystem.config.cjs
 pm2 save
 ```
@@ -107,7 +108,7 @@ PM2 бере node свого демона (16.20.2), а в cluster-режимі 
 Перевірка, що піднялось під тим node:
 
 ```bash
-readlink -f /proc/$(pgrep -f "FLOY-PROD/(cluster\.mjs|\.output/server/index\.mjs)" | head -1)/exe
+readlink -f /proc/$(pgrep -f "/root/nodeapps/FLOY/(cluster\.mjs|\.output/server/index\.mjs)" | head -1)/exe
 ```
 
 Має бути `/root/.nvm/versions/node/v22.23.1/bin/node`. Саме `readlink /proc/<pid>/exe` —
@@ -182,7 +183,7 @@ curl -I https://floy.com.ua                               # знову стар�
 Руками, якщо скрипт недоступний:
 
 ```bash
-cd /root/nodeapps/FLOY-PROD && git pull && nvm use 22 && npm install && \
+cd /root/nodeapps/FLOY && git pull && nvm use 22 && npm install && \
   cp -rp .output/public/_nuxt /tmp/_nuxt-prev 2>/dev/null; \
   npx nuxi build && \
   cp -rpn /tmp/_nuxt-prev/. .output/public/_nuxt/ 2>/dev/null; \
@@ -288,7 +289,7 @@ awk '$3==429 && $8 ~ /^\/img\//' /var/log/nginx/floy-access.log | wc -l   # ма
 
 | Рівень | Де | Скільки живе | Чим чиститься |
 |---|---|---|---|
-| Готові кадри (головний) | `/root/nodeapps/FLOY-PROD/.cache/neoprint/` — неопрінти, `/root/nodeapps/FLOY-PROD/.cache/alphaprint/` — альфапринти | поки не видалять; через 30 днів кадр перезбирається при зверненні | команди нижче, крон |
+| Готові кадри (головний) | `/root/nodeapps/FLOY/.cache/neoprint/` — неопрінти, `/root/nodeapps/FLOY/.cache/alphaprint/` — альфапринти | поки не видалять; через 30 днів кадр перезбирається при зверненні | команди нижче, крон |
 | Шаблони й маски | пам'ять процесу Node, ≤32 МБ на воркер | 1 год (відсутній файл — 10 хв) | `pm2 restart floy-prod` |
 | nginx | `/var/cache/nginx-floy` (спільний з HTML) | доки запитують хоч раз на добу, до 30 днів | `deploy.sh` чистить увесь; лише картинки — нижче |
 | Браузер відвідувача | — | 30 днів | ніяк, лише нова адреса |
@@ -298,20 +299,20 @@ awk '$3==429 && $8 ~ /^\/img\//' /var/log/nginx/floy-access.log | wc -l   # ма
 (`cvetochnyy-gerb-s300.webp`, `cvetochnyy-gerb-s600.webp`, `cvetochnyy-gerb-og.jpg`). Команди — по одній (MobaXterm рве багаторядкові вставки):
 
 ```bash
-du -sh /root/nodeapps/FLOY-PROD/.cache/*                                           # скільки займає кожна тека
-find /root/nodeapps/FLOY-PROD/.cache -type f -atime +60 -delete                    # не запитуване 2 місяці, обидві теки (крон)
-rm -rf /root/nodeapps/FLOY-PROD/.cache/alphaprint                                       # скинути лише альфапринти
-rm -rf /root/nodeapps/FLOY-PROD/.cache/neoprint                                    # скинути лише неопрінти
-rm -rf /root/nodeapps/FLOY-PROD/.cache/alphaprint/xiaomi-poco-x8 /root/nodeapps/FLOY-PROD/.cache/neoprint/xiaomi-poco-x8   # одна модель (перемалювали маску)
-find /root/nodeapps/FLOY-PROD/.cache -type f -regextype egrep -regex '.*/cvetochnyy-gerb-(s300|s600|card2x|card|hero2x|hero|og)\.(webp|jpg)' -delete   # один принт (замінили шаблон)
+du -sh /root/nodeapps/FLOY/.cache/*                                           # скільки займає кожна тека
+find /root/nodeapps/FLOY/.cache -type f -atime +60 -delete                    # не запитуване 2 місяці, обидві теки (крон)
+rm -rf /root/nodeapps/FLOY/.cache/alphaprint                                       # скинути лише альфапринти
+rm -rf /root/nodeapps/FLOY/.cache/neoprint                                    # скинути лише неопрінти
+rm -rf /root/nodeapps/FLOY/.cache/alphaprint/xiaomi-poco-x8 /root/nodeapps/FLOY/.cache/neoprint/xiaomi-poco-x8   # одна модель (перемалювали маску)
+find /root/nodeapps/FLOY/.cache -type f -regextype egrep -regex '.*/cvetochnyy-gerb-(s300|s600|card2x|card|hero2x|hero|og)\.(webp|jpg)' -delete   # один принт (замінили шаблон)
 grep -rlaZ '^KEY: [^/]*/img/' /var/cache/nginx-floy | xargs -0 -r rm -f            # кеш nginx: лише картинки, HTML лишається
 grep -rlaZ '^KEY: [^/]*/img/print/' /var/cache/nginx-floy | xargs -0 -r rm -f      # кеш nginx: лише альфапринти
 ```
 
 У першій викладці (16.10.2026) альфапринти ще лягали в `.cache/neoprint`: файли `*-s300.*` і
 `*-s600.*` там зайві. Їх прибере крон, або одразу:
-`find /root/nodeapps/FLOY-PROD/.cache/neoprint -type f \( -name '*-s300.*' -o -name '*-s600.*' \) -delete`.
-Тека `.cache/print` (проміжна назва, якщо встигла з'явитися) теж зайва: `rm -rf /root/nodeapps/FLOY-PROD/.cache/print`.
+`find /root/nodeapps/FLOY/.cache/neoprint -type f \( -name '*-s300.*' -o -name '*-s600.*' \) -delete`.
+Тека `.cache/print` (проміжна назва, якщо встигла з'явитися) теж зайва: `rm -rf /root/nodeapps/FLOY/.cache/print`.
 
 Видалене перезбирається на першому ж запиті, тож чистка нічого не ламає — лише перші покази
 після неї повільніші на ~0,1 с. Повний скид на живому сайті краще робити ввечері.
@@ -386,7 +387,7 @@ Nuxt 3 падає кожен `$fetch` із `TypeError: Headers is not a construc
 
 ```bash
 # у репозиторії: правка WORKERS → commit → push, далі на сервері:
-cd /root/nodeapps/FLOY-PROD
+cd /root/nodeapps/FLOY
 git pull
 ls -l ecosystem.config.cjs cluster.mjs     # ОБОВ'ЯЗКОВО перед delete, див. нижче
 pm2 delete floy-prod
@@ -411,9 +412,9 @@ PORT=3000 pm2 start .output/server/index.mjs --name floy-prod --interpreter /roo
 ### Перевірка після підйому
 
 ```bash
-pgrep -f "FLOY-PROD/cluster.mjs" | wc -l                    # 5 = головний + 4 копії
+pgrep -f "/root/nodeapps/FLOY/cluster.mjs" | wc -l                    # 5 = головний + 4 копії
 pm2 logs floy-prod --lines 5 --nostream                     # [cluster] node v22.23.1, копій: 4
-readlink -f /proc/$(pgrep -f "FLOY-PROD/cluster\.mjs" | head -1)/exe   # шлях до node 22
+readlink -f /proc/$(pgrep -f "/root/nodeapps/FLOY/cluster\.mjs" | head -1)/exe   # шлях до node 22
 curl -s -o /dev/null -w "%{http_code}\n" "https://floy.com.ua/api/settings?t=1"
 curl -s "https://floy.com.ua/uk?t=1" | grep -c 'грн'
 ```

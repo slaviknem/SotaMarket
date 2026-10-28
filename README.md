@@ -1,7 +1,7 @@
 # Рушій магазинів на Nuxt 3 (FLOY, SMARKET…)
 
 Фронтенд на **Nuxt 3 + Vue 3** з SSR, один рушій для кількох сайтів — кожен сайт окремим проєктом-копією:
-floy.com.ua (FLOY-NEW — `upstream`, заміна старого Nuxt 2) і steklomarket.com.ua (SMARKET, з 27.10.2026).
+floy.com.ua (FLOY — `upstream`, заміна старого Nuxt 2) і steklomarket.com.ua (SMARKET, з 27.10.2026).
 Усе своє в сайту — у теці `brand/`, решта коду однакова.
 Дані — спільна адмінка `https://admin.floy.com.ua/apisite/` (ключ сайту — `brand/site.config.ts`).
 Всі URL збережені 1-в-1 зі старим сайтом, тому заміна безболісна для SEO.
@@ -43,7 +43,7 @@ floy.com.ua (FLOY-NEW — `upstream`, заміна старого Nuxt 2) і ste
 | Сайт | Тека проєкту на ПК | dev (`PORT` з `brand/server.env`) |
 |---|---|---|
 | SMARKET | `C:\Web-SERVER\domains\SMARKET` | http://localhost:3010 |
-| FLOY | `C:\Web-SERVER\domains\FLOY-NEW` | http://localhost:3000 |
+| FLOY | `C:\Web-SERVER\domains\FLOY` | http://localhost:3000 |
 
 У теці проєкту свого сайту (таблиця вище):
 
@@ -67,7 +67,7 @@ node .output\server\index.mjs
 і Nuxt 3 піднімається мертвим — 200 без товарів і 404 на всіх сторінках моделей.
 
 Запуск на сервері описано у **`ecosystem.config.cjs`** (у корені репозиторію), одна команда з теки сайту
-(SMARKET — `/root/nodeapps/SMARKET-PROD`, FLOY — `/root/nodeapps/FLOY-PROD`; ім'я процесу й порт — з профілю):
+(SMARKET — `/root/nodeapps/SMARKET`, FLOY — `/root/nodeapps/FLOY`; ім'я процесу й порт — з профілю):
 
 ```bash
 pm2 start ecosystem.config.cjs
@@ -135,7 +135,7 @@ URL_STORAGE='https://admin.floy.com.ua/storage/'
 
 Свідомо спільне: шаблони FAQ і лідів (`{brand}`/`{domain}` підставляються), ключі сховища `floy_*`
 у браузері (на іншому домені не конфліктують), адмінка `admin.floy.com.ua`. Кожен сайт — окремий проєкт-копія
-рушія з `upstream` = FLOY-NEW (перший — SMARKET, `C:\Web-SERVER\domains\SMARKET`, на проді з 27.10.2026): свій
+рушія з `upstream` = FLOY (перший — SMARKET, `C:\Web-SERVER\domains\SMARKET`, на проді з 27.10.2026): свій
 `brand/`, `.env`, `ecosystem.config.cjs`, `deploy.sh`; порядок і сервер — `NOTES/plans/PLAN-MULTISITE.md` (§11).
 
 ## Що де лежить
@@ -163,8 +163,8 @@ URL_STORAGE='https://admin.floy.com.ua/storage/'
 
 | Сайт | Команда |
 |---|---|
-| SMARKET — steklomarket.com.ua | `cd /root/nodeapps/SMARKET-PROD && bash deploy.sh` |
-| FLOY — floy.com.ua | `cd /root/nodeapps/FLOY-PROD && bash deploy.sh` |
+| SMARKET — steklomarket.com.ua | `cd /root/nodeapps/SMARKET && bash deploy.sh` |
+| FLOY — floy.com.ua | `cd /root/nodeapps/FLOY && bash deploy.sh` |
 
 `deploy.sh` бере процес, порт і кеш nginx із `brand/server.env`: `git pull`, збірка під node 22, рестарт процесу,
 чистка кешу nginx. Докладно — `DEPLOY.md`.

@@ -36,7 +36,7 @@ import { loadBrandConfig } from './lib/brand.mjs'
 const UA = 'Mozilla/5.0 (compatible; floy-url-check/1.0)'
 const MAX_HOPS = 5
 // Як у seo-snapshot.mjs: «floy» поза хостом адмінки й назвами тек-репозиторіїв
-const BRAND_RE = /(?<!admin\.)\bfloy\b(?!-(?:new|prod|admin)\b)/gi
+const BRAND_RE = /(?<!admin\.|(?:domains|nodeapps)[\\/])\bfloy\b(?!-(?:new|prod|admin)\b)/gi
 const file = (name) => join(SNAP_DIR, 'urls', `${name}.json`)
 
 // Службові адреси рушія: [шлях, очікування] — код або адреса, куди має вести 301 одним кроком

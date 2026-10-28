@@ -26,9 +26,10 @@ const SEO_DIR = join(SNAP_DIR, 'seo')
 const file = (name) => join(SEO_DIR, `${name}.json`)
 
 // Згадка бренду: слово «floy» у будь-якому регістрі (і в «floy.com.ua»), крім хоста адмінки —
-// він спільний для всіх сайтів — і назв тек-репозиторіїв (FLOY-NEW, FLOY-PROD у шляхах dev-скриптів
-// і конфігу i18n). Ключі сховища floy_* сюди не потрапляють: «_» — частина слова
-const BRAND_RE = /(?<!admin\.)\bfloy\b(?!-(?:new|prod|admin)\b)/gi
+// він спільний для всіх сайтів — і назв тек у шляхах dev-скриптів і конфігу i18n: `…/domains/FLOY/`,
+// `…/nodeapps/FLOY/` і старі FLOY-NEW, FLOY-PROD (до 28.10.2026, є в старих зліпках). Ключі сховища floy_*
+// сюди не потрапляють: «_» — частина слова
+const BRAND_RE = /(?<!admin\.|(?:domains|nodeapps)[\\/])\bfloy\b(?!-(?:new|prod|admin)\b)/gi
 const SCRIPT_RE = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi
 const LINK_RELS = new Set(['icon', 'apple-touch-icon', 'manifest', 'preconnect', 'dns-prefetch'])
 
