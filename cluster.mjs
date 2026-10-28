@@ -13,7 +13,7 @@
 // на node 22.
 //
 // Запуск (краще через ecosystem.config.cjs — там усе вже прописано):
-//   PORT=3000 FLOY_WORKERS=4 pm2 start cluster.mjs --name floy-prod \
+//   PORT=3000 FLOY_WORKERS=4 pm2 start cluster.mjs --name FLOY \
 //     --interpreter /root/.nvm/versions/node/v22.23.1/bin/node
 //
 // FLOY_WORKERS=1 — без форків узагалі, поводиться як звичайний одиночний процес.

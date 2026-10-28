@@ -20,7 +20,7 @@ Nuxt 3 SSR — потрібен **запущений Node-процес**, не �
 |---|---|---|
 | домен | `floy.com.ua` | `steklomarket.com.ua` |
 | тека на сервері | `/root/nodeapps/FLOY` | `/root/nodeapps/SMARKET` |
-| `APP` — процес PM2 | `floy-prod` | `smarket-prod` |
+| `APP` — процес PM2 | `FLOY` | `SMARKET` |
 | `PORT` | `3000` | `3010` |
 | `WORKERS` — копій | `4` | `2` |
 | `NGINX_CACHE` | `/var/cache/nginx-floy` | `/var/cache/nginx-smarket` |
@@ -33,9 +33,10 @@ Nuxt 3 SSR — потрібен **запущений Node-процес**, не �
 
 Деплой скрізь однаковий: `cd <тека сайту>` → `bash deploy.sh`. Новий сайт: копія рушія з `upstream`, своя тека
 `brand/` (зокрема `server.env`), свій шаблон nginx — порядок перемикання: `SMARKET/NOTES/plans/PLAN-SITE-SMARKET.md`
-§8 «Сервер: S9». У командах нижче `floy-prod`, `/root/nodeapps/FLOY`, 3000 і `nginx-floy` — для іншого сайту його значення
+§8 «Сервер: S9». У командах нижче `FLOY`, `/root/nodeapps/FLOY`, 3000 і `nginx-floy` — для іншого сайту його значення
 з профілю. До 27–28.10.2026 теки звались `/root/nodeapps/FLOY-PROD` і `SMARKET-PROD`, репозиторій рушія — `FLOY-NEW`
-(старі назви — в історії й логах; як перейменовували — `SMARKET/NOTES/plans/PLAN-RENAME-FLOY.md`).
+(старі назви — в історії й логах; як перейменовували — `SMARKET/NOTES/plans/PLAN-RENAME-FLOY.md`). Процеси PM2 до
+28.10.2026 звались `floy-prod` і `smarket-prod` (так — у старих логах `/root/.pm2/logs/` і журналах планів).
 
 ---
 
@@ -45,7 +46,7 @@ Nuxt 3 SSR — потрібен **запущений Node-процес**, не �
 |---|---|---|
 | домен | `test.floy.com.ua` | `floy.com.ua` |
 | порт Node | `3000` | `3000` (той самий; тест зупиняємо) |
-| pm2-ім'я | `floy-test` | `floy-prod` |
+| pm2-ім'я | `floy-test` | `FLOY` |
 | папка | `/root/nodeapps/FLOY-NEW` (з 27.10.2026 немає) | `/root/nodeapps/FLOY` |
 | `SITE_URL` | `https://test.floy.com.ua` | `https://floy.com.ua` |
 
@@ -149,7 +150,7 @@ curl -s 'http://127.0.0.1:3000/api/ukrposhta?pi=36000' | head -c 120
 ```
 
 Якщо `canonical` показує `test.floy.com.ua` — збірка пішла зі старим `SITE_URL`:
-перезібрати з правильним і `pm2 restart floy-prod`.
+перезібрати з правильним і `pm2 restart FLOY`.
 
 ## 5. Перемкнути домен
 
@@ -193,7 +194,7 @@ cd /root/nodeapps/FLOY && git pull && nvm use 22 && npm install && \
   npx nuxi build && \
   cp -rpn /tmp/_nuxt-prev/. .output/public/_nuxt/ 2>/dev/null; \
   find .output/public/_nuxt -type f -mtime +14 -delete; \
-  nvm use 16 && pm2 restart floy-prod && \
+  nvm use 16 && pm2 restart FLOY && \
   sleep 5 && find /var/cache/nginx-floy -type f -delete
 ```
 (`npm install` можна пропустити, якщо залежності не мінялись.)
@@ -275,7 +276,7 @@ curl -sI https://floy.com.ua/_nuxt/<будь-який-чанк>.js | grep -i cac
 curl -sI "https://floy.com.ua/img/print/xiaomi-poco-x8/cvetochnyy-gerb-s300.webp" | grep -iE '^HTTP|content-type|cache-control'
 # 200, image/webp, public, max-age=2592000
 curl -s "https://floy.com.ua/uk/xiaomi-poco-x8" | grep -o '/img/print/[^"]*-s300.webp' | head -3
-pm2 logs floy-prod --lines 50 --nostream | grep -i img/print     # помилок бути не повинно
+pm2 logs FLOY --lines 50 --nostream | grep -i img/print     # помилок бути не повинно
 ```
 
 Сервер, 16.10.2026: `/img/` виключено з `limit_conn` (зони `floy_perip_v2`/`floy_total_v2`;
@@ -295,7 +296,7 @@ awk '$3==429 && $8 ~ /^\/img\//' /var/log/nginx/floy-access.log | wc -l   # ма
 | Рівень | Де | Скільки живе | Чим чиститься |
 |---|---|---|---|
 | Готові кадри (головний) | `/root/nodeapps/FLOY/.cache/neoprint/` — неопрінти, `/root/nodeapps/FLOY/.cache/alphaprint/` — альфапринти | поки не видалять; через 30 днів кадр перезбирається при зверненні | команди нижче, крон |
-| Шаблони й маски | пам'ять процесу Node, ≤32 МБ на воркер | 1 год (відсутній файл — 10 хв) | `pm2 restart floy-prod` |
+| Шаблони й маски | пам'ять процесу Node, ≤32 МБ на воркер | 1 год (відсутній файл — 10 хв) | `pm2 restart FLOY` |
 | nginx | `/var/cache/nginx-floy` (спільний з HTML) | доки запитують хоч раз на добу, до 30 днів | `deploy.sh` чистить увесь; лише картинки — нижче |
 | Браузер відвідувача | — | 30 днів | ніяк, лише нова адреса |
 
@@ -323,7 +324,7 @@ grep -rlaZ '^KEY: [^/]*/img/print/' /var/cache/nginx-floy | xargs -0 -r rm -f   
 після неї повільніші на ~0,1 с. Повний скид на живому сайті краще робити ввечері.
 
 Замінили шаблон чи маску в адмінці і треба показати одразу, а не за 30 днів:
-1. `pm2 restart floy-prod` — або почекати годину: старі шаблон і маска ще в пам'яті воркерів,
+1. `pm2 restart FLOY` — або почекати годину: старі шаблон і маска ще в пам'яті воркерів,
    і без цього кадр перезбереться зі старих;
 2. видалити кадри цього принта чи моделі з `.cache` (команди вище);
 3. почистити картинки в кеші nginx (команди `grep … KEY` вище).
@@ -354,7 +355,7 @@ php artisan images:webp-templates-thumb                  # images/templates/thum
 
 ### Дерево процесів
 
-PM2 бачить **один** застосунок `floy-prod`. Копії форкає `cluster.mjs` уже всередині,
+PM2 бачить **один** застосунок `FLOY`. Копії форкає `cluster.mjs` уже всередині,
 тому в `pm2 list` завжди один рядок — це норма, а не «кластер не піднявся»:
 
 ```
@@ -395,7 +396,7 @@ Nuxt 3 падає кожен `$fetch` із `TypeError: Headers is not a construc
 cd /root/nodeapps/FLOY
 git pull
 ls -l ecosystem.config.cjs cluster.mjs     # ОБОВ'ЯЗКОВО перед delete, див. нижче
-pm2 delete floy-prod
+pm2 delete FLOY
 pm2 start ecosystem.config.cjs
 pm2 save
 find /var/cache/nginx-floy -type f -delete
@@ -407,18 +408,18 @@ find /var/cache/nginx-floy -type f -delete
 
 ⚠️ **`ls` перед `pm2 delete` — не формальність.** 19.09 перемикали до того, як
 коміт доїхав на сервер: `delete` відпрацював, `start` сказав «File not found»,
-а `pm2 save` зафіксував список уже без floy-prod. Сайт ліг на кілька хвилин.
+а `pm2 save` зафіксував список уже без FLOY. Сайт ліг на кілька хвилин.
 Якщо файлу немає — піднімати старим способом:
 
 ```bash
-PORT=3000 pm2 start .output/server/index.mjs --name floy-prod --interpreter /root/.nvm/versions/node/v22.23.1/bin/node
+PORT=3000 pm2 start .output/server/index.mjs --name FLOY --interpreter /root/.nvm/versions/node/v22.23.1/bin/node
 ```
 
 ### Перевірка після підйому
 
 ```bash
 pgrep -f "/root/nodeapps/FLOY/cluster.mjs" | wc -l                    # 5 = головний + 4 копії
-pm2 logs floy-prod --lines 5 --nostream                     # [cluster] node v22.23.1, копій: 4
+pm2 logs FLOY --lines 5 --nostream                     # [cluster] node v22.23.1, копій: 4
 readlink -f /proc/$(pgrep -f "/root/nodeapps/FLOY/cluster\.mjs" | head -1)/exe   # шлях до node 22
 curl -s -o /dev/null -w "%{http_code}\n" "https://floy.com.ua/api/settings?t=1"
 curl -s "https://floy.com.ua/uk?t=1" | grep -c 'грн'
@@ -446,12 +447,12 @@ curl -s "https://floy.com.ua/uk?t=1" | grep -c 'грн'
 
 ### Логи
 
-`/root/.pm2/logs/floy-prod-{out,error}.log`, з мітками часу (`time: true`).
+`/root/.pm2/logs/FLOY-{out,error}.log`, з мітками часу (`time: true`).
 Рядки без мітки — з часів до `ecosystem.config.cjs`, тобто старі.
 
 ```bash
-pm2 logs floy-prod --lines 50 --nostream
-pm2 flush floy-prod            # обнулити, щоб старе не плуталось у розборі
+pm2 logs FLOY --lines 50 --nostream
+pm2 flush FLOY            # обнулити, щоб старе не плуталось у розборі
 ```
 
 19.09 у `/root/.pm2/logs/` лежало 18 ГБ (14 ГБ — один Print-Case FRONT), диск був
@@ -520,7 +521,7 @@ diff <(curl -s https://floy.com.ua/robots.txt) /var/www/floy/robots.txt && echo 
       `NUXT_NOINDEX=1` в оточенні процесу (без перезбірки): `robots.txt` → `Disallow: /`, усі сторінки —
       `X-Robots-Tag: noindex, nofollow` (`server/middleware/noindex.ts`). Перевірка:
       `curl -s http://127.0.0.1:<порт>/robots.txt` і `curl -sI … | grep -i x-robots`.
-- [ ] Перші дні тримати око на `pm2 logs floy-prod --lines 100` і `pm2 describe floy-prod`
+- [ ] Перші дні тримати око на `pm2 logs FLOY --lines 100` і `pm2 describe FLOY`
       (перезапуски, пам'ять).
 
 ## Чекліст безпеки/гігієни

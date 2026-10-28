@@ -76,8 +76,8 @@ pm2 save
 
 Чим сайти відрізняються на сервері — **профіль `brand/server.env`**: процес PM2 (`APP`), порт (`PORT`, він же
 порт dev), кількість копій (`WORKERS`), кеш nginx (`NGINX_CACHE`). Його читають `ecosystem.config.cjs`,
-`deploy.sh` і `nuxt.config.ts`, тож ці файли однакові в усіх копіях рушія. FLOY — `floy-prod`, 3000, 4 копії;
-SMARKET — `smarket-prod`, 3010, 2 копії.
+`deploy.sh` і `nuxt.config.ts`, тож ці файли однакові в усіх копіях рушія. FLOY — `FLOY`, 3000, 4 копії;
+SMARKET — `SMARKET`, 3010, 2 копії.
 
 Копії форкає **`cluster.mjs`**, а не PM2: у cluster-режимі PM2 ігнорує `--interpreter` і копії дістаються
 від його демона на node 16. Тому в `pm2 list` завжди один рядок — це норма.
