@@ -111,7 +111,6 @@
       "PowerShell($ids = 100,500,1000,2000,3000,3500,3661,4000; foreach \\($i in $ids\\) { $row = \"$i\"; foreach \\($p in @\\(\"templates/$i.webp\",\"templates/thumb/$i.webp\",\"templates/$i.jpg\",\"templates/thumb/$i.jpg\"\\)\\) { try { $r = Invoke-WebRequest -Uri \"https://admin.floy.com.ua/storage/images/$p\" -Method Head -UseBasicParsing -TimeoutSec 15; $len = $r.Headers['Content-Length']; if \\(-not $len\\) { $len = 'HTML' } ; $row += \"`t$len\" } catch { $row += \"`t-\" } }; $row })",
       "PowerShell(try { $r = Invoke-WebRequest -Uri 'https://admin.floy.com.ua/apisite/attributes/neo_prints' -UseBasicParsing -TimeoutSec 60; \"status $\\($r.StatusCode\\) len $\\($r.RawContentLength\\)\"; $r.Content.Substring\\(0, [Math]::Min\\(600, $r.Content.Length\\)\\) } catch { \"ERR $\\($_.Exception.Message\\)\" })",
       "PowerShell(foreach \\($u in @\\('https://admin.floy.com.ua/storage/images/printcase/masks/motorola-edge-50-fusion.png','https://admin.floy.com.ua/storage/images/templates/3921.webp','https://admin.floy.com.ua/storage/images/templates/thumb/3921.webp'\\)\\) { try { $r=Invoke-WebRequest -Uri $u -Method Head -UseBasicParsing -TimeoutSec 20; $l=$r.Headers['Content-Length']; \"{0}`t{1}\" -f $\\(if\\($l\\){$l}else{'MISSING\\(html\\)'}\\), $u } catch { \"ERR`t$u\" } })",
-      "PowerShell($env:PATH = \"D:\\\\Web-SERVER\\\\domains\\\\FLOY-NEW\\\\.node\\\\node-v22.14.0-win-x64;$env:PATH\"; Set-Location \"D:\\\\Web-SERVER\\\\domains\\\\FLOY-NEW\"; npx nuxt dev --port 3199 2>&1 | Out-File -FilePath \"C:\\\\Users\\\\slavi\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--Web-SERVER-domains-FLOY-NEW\\\\8ba343e5-dc89-4501-a0f7-2705d00a6406\\\\scratchpad\\\\dev.log\" -Encoding utf8)",
       "Bash(break)",
       "PowerShell(try { $r = Invoke-WebRequest -Uri 'http://127.0.0.1:3199/img/neoprint/motorola-edge-50-fusion/3921-card.webp' -UseBasicParsing -TimeoutSec 180; \"OK $\\($r.StatusCode\\) CT=$\\($r.Headers['Content-Type']\\) len=$\\($r.RawContentLength\\)\" } catch { \"ERR: $\\($_.Exception.Message\\)\" })",
       "Bash(curl -s \"https://admin.floy.com.ua/apisite/banners?lang=uk&site=floy\")",
@@ -126,8 +125,6 @@
       "Bash(curl -s \"https://admin.floy.com.ua/apisite/products/latest/all/3?site=floy&lang=uk\")",
       "Bash(grep -o '\"attributes\":\\\\[.\\\\{0,600\\\\}')",
       "Bash(curl -s \"https://admin.floy.com.ua/apisite/products?site=floy&lang=uk&limit=60\")",
-      "Bash(curl -s 'https://admin.floy.com.ua/apisite/products?site=floy&lang=uk&limit=100' -o C:/Users/slavi/AppData/Local/Temp/claude/d--Web-SERVER-domains-FLOY-NEW/46fbedda-63bf-4fd6-85ae-e7c908a8b79c/scratchpad/p.json)",
-      "Bash(curl -s 'https://admin.floy.com.ua/apisite/products/latest/all/60?site=floy&lang=uk' -o C:/Users/slavi/AppData/Local/Temp/claude/d--Web-SERVER-domains-FLOY-NEW/46fbedda-63bf-4fd6-85ae-e7c908a8b79c/scratchpad/p.json)",
       "Bash(node -e ' *)",
       "Bash(git --no-pager diff --stat)",
       "Bash(git --no-pager diff)",
@@ -137,20 +134,7 @@
     "deny": [],
     "ask": [],
     "defaultMode": "bypassPermissions",
-    "additionalDirectories": [
-      "D:\\Web-SERVER\\domains",
-      "D:\\Web-SERVER\\domains\\FLOY-NEW",
-      "D:\\Web-SERVER\\domains\\FLOY-ADMIN",
-      "D:\\Web-SERVER\\domains\\FLOY",
-      "C:\\Users\\slavi\\AppData\\Local\\Temp\\claude",
-      "d:\\Web-SERVER\\domains\\FLOY-ADMIN\\app\\Actions\\Helpers",
-      "d:\\Web-SERVER\\domains\\FLOY-ADMIN\\app\\Models",
-      "d:\\Web-SERVER\\domains\\FLOY-ADMIN\\app\\Actions\\Generate",
-      "d:\\Web-SERVER\\domains\\FLOY-ADMIN\\app\\Actions\\ImportExport\\Itsell",
-      "d:\\Web-SERVER\\domains\\FLOY-ADMIN\\app\\Http\\Controllers\\DO",
-      "d:\\Web-SERVER\\domains\\FLOY-ADMIN\\app\\Console\\Commands",
-      "d:\\Web-SERVER\\domains\\FLOY-ADMIN\\NOTES"
-    ]
+    "additionalDirectories": []
   },
   "enableAllProjectMcpServers": true,
   "skipDangerousModePermissionPrompt": true,
