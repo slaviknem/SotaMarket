@@ -27,7 +27,7 @@ const INFO_PAGES: { path: string; label: string; footer?: false; feature?: keyof
 	{ path: '/povernennya', label: 'header.topbar.povernennya' },
 	{ path: '/otzyvy-klientov', label: 'header.topbar.otzyvy', feature: 'reviews' },
 	{ path: '/shop/track-order', label: 'header.topbar.trackOrder', footer: false },
-	{ path: '/article', label: 'header.topbar.blog' },
+	{ path: '/article', label: 'header.topbar.blog', feature: 'blog' },
 ]
 
 // Колонка футера «Покупцям»

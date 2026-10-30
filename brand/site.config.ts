@@ -9,17 +9,18 @@ export default {
 	domain: 'sotamarket.com.ua',
 	url: 'https://sotamarket.com.ua',
 
-	// Лічильника поки немає: ID ресурсу GA4 — від власника (PLAN-SITE-SOTAMARKET §3 п. 3)
+	// Ресурс GA4 «SotaMarket» (від власника 30.10); GTM і Meta Pixel не використовуємо
+	analytics: { ga4: 'G-9VLQ4DJWCN' },
 
 	// Стартові значення налаштувань адмінки. Живі — вузли public.common (доставка, політики) і
 	// public.sotamarket (ціни, контакти й графік, соцмережі, аксесуари «в набір») — PLAN-SITE-SOTAMARKET §6;
-	// вузла 30.10 ще немає, тож сайт живе на цих значеннях. Ціни — як у SMARKET (§3 п. 2, чекає
-	// підтвердження), доставка — як public.common, контакти — зі старого сайту (§2, §3 п. 1)
+	// вузла 30.10 ще немає, тож сайт живе на цих значеннях. Ціни — рішення власника 30.10 (§3 п. 2),
+	// доставка — як public.common, контакти — §3 п. 1
 	settingsFallback: {
 		prices: {
-			printcase: 289,
+			printcase: 279,
 			printcase_old: 299,
-			neoprint: 259,
+			neoprint: 269,
 			neoprint_old: 299,
 			prepay_printcase: 50,
 		},
@@ -31,10 +32,11 @@ export default {
 			free_delivery_from: 1000,
 		},
 		contacts: {
-			// Телефону на старому сайті немає — номер дасть власник (§3 п. 1)
+			// Без телефону й без пошти (рішення власника 30.10): зв'язок — чат на сайті й дзвінок менеджера
+			// за замовленням. JSON-LD порожніх полів не виводить; шапка, меню й футер рушія ще показують
+			// порожні tel:/mailto: — їх замінюють власні компоненти (T3)
 			phones: [],
-			// У футері старого сайту — з помилкою (info@sotamaket.com.ua)
-			email: 'info@sotamarket.com.ua',
+			email: '',
 			address: 'м. Львів',
 			address_city: 'Львів',
 			address_street: '',
@@ -68,18 +70,20 @@ export default {
 		productTabs: [{ title: 'product.type.all', category: 'all' }],
 	},
 
-	// Відгуків 0 — сторінки відгуків немає (PLAN-SITE-SOTAMARKET §3 п. 5)
+	// Відгуків і статей 0 — обидва розділи вимкнено (PLAN-SITE-SOTAMARKET §3)
 	features: {
 		reviews: false,
+		blog: false,
 	},
 
 	// 301 зі старого сайту (PLAN-SITE-SOTAMARKET §7); /uk-копії — самі
 	redirects: {
 		'/about/uk': '/uk/about',
 		'/dostavka/uk': '/uk/dostavka',
-		'/article/uk': '/uk/article',
-		// Як на старому сайті (там — на /article, а статей 0)
-		'/otzyvy-klientov': '/chekhly',
+		// Блогу й відгуків немає — у каталог чохлів (старий сайт вів відгуки на порожній /article)
+		'/article/uk/*': '/uk/chekhly',
+		'/article/*': '/chekhly',
+		'/otzyvy-klientov/*': '/chekhly',
 	},
 
 	font: {

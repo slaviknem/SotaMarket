@@ -18,7 +18,8 @@ import { BRAND_DIR, readTheme, loadBrandConfig } from './lib/brand.mjs'
 const W = 1200
 const H = 630
 
-const { bg: BG, accent: ACCENT, logo: LOGO_COLOR } = readTheme()
+// Фон і лого — --og-bg / --og-logo теми, якщо задано (світла тема з темною шапкою), інакше — фон сторінки
+const { ogBg: BG, accent: ACCENT, ogLogo: LOGO_COLOR } = readTheme()
 const { domain } = await loadBrandConfig()
 
 // Лого — brand/public/images/logo.svg: контури й viewBox (ширина × висота)

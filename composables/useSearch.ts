@@ -34,6 +34,7 @@ export function useSearch() {
 	const router = useRouter()
 	const localePath = useLocalePath()
 	const url = useUrl()
+	const { blog } = useFeatures()
 
 	const open = useState('searchOpen', () => false)
 	const query = useState('searchQuery', () => '')
@@ -82,6 +83,8 @@ export function useSearch() {
 
 		try {
 			const res = await shopApi.searchSuggest(q, 8, controller.signal)
+			// Блог вимкнено — статей у підказках немає: їхніх сторінок теж немає
+			if (!blog) res.articles = []
 			cache.set(q, res)
 			// поки летіла відповідь, користувач міг набрати далі — тоді вона вже не актуальна
 			if (query.value.trim() === q) data.value = res

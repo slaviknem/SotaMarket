@@ -88,11 +88,13 @@ useJsonLd(() => [
 		description: t('metaDescription.index'),
 		logo: config.public.siteUrl + '/images/logo.svg',
 		image: config.public.siteUrl + '/images/logo.svg',
-		email: contacts.value.email,
-		telephone: phone.value,
+		// Порожнє поле (магазин без телефону, пошти, вулиці чи соцмереж) не виводимо: undefined JSON
+		// пропускає, а "" пошуковик прочитав би як значення
+		email: contacts.value.email || undefined,
+		telephone: phone.value || undefined,
 		address: {
 			'@type': 'PostalAddress',
-			streetAddress: contacts.value.address_street,
+			streetAddress: contacts.value.address_street || undefined,
 			addressLocality: contacts.value.address_city,
 			addressCountry: 'UA',
 		},
@@ -100,7 +102,7 @@ useJsonLd(() => [
 		currenciesAccepted: 'UAH',
 		// Соцпрофілі: зв'язують сайт із тими самими акаунтами в графі знань
 		// (той самий список, що й в іконках футера — SocialLinks)
-		sameAs: socialLinks.value.map((s) => s.url),
+		sameAs: socialLinks.value.length ? socialLinks.value.map((s) => s.url) : undefined,
 		// Повернення (підтверджено магазином): 14 днів поштою, пересилку назад оплачує покупець,
 		// а брак чи наша помилка — за наш рахунок. Індивідуальний друк перекриває це на своєму
 		// Offer (PrintcasePage) — його не повертають.

@@ -14,16 +14,24 @@ const toHex = (channels) =>
 
 /**
  * Кольори теми як hex: bg і accent — з каналів (--bg-rgb, --accent-rgb), logo — --logo-color.
- * @returns {{ bg: string, accent: string, logo: string }}
+ * Фон і лого прев'ю для соцмереж — необов'язкові --og-bg і --og-logo (без них — bg і logo);
+ * значення var(--x) береться з токена x.
+ * @returns {{ bg: string, accent: string, logo: string, ogBg: string, ogLogo: string }}
  */
 export function readTheme(dir = BRAND_DIR) {
 	const css = readFileSync(join(dir, 'theme.css'), 'utf8')
-	const token = (name) => {
+	const find = (name) => {
 		const value = css.match(new RegExp(`${name}:\\s*([^;]+);`))?.[1].trim()
+		return value?.startsWith('var(') ? find(value.slice(4, -1).trim()) : value
+	}
+	const token = (name) => {
+		const value = find(name)
 		if (!value) throw new Error(`brand/theme.css: немає токена ${name}`)
 		return value
 	}
-	return { bg: toHex(token('--bg-rgb')), accent: toHex(token('--accent-rgb')), logo: token('--logo-color') }
+	const bg = toHex(token('--bg-rgb'))
+	const logo = token('--logo-color')
+	return { bg, accent: toHex(token('--accent-rgb')), logo, ogBg: find('--og-bg') ?? bg, ogLogo: find('--og-logo') ?? logo }
 }
 
 /** Конфіг бренду (TS) у .mjs-скриптах — через jiti, як його читає й сам Nuxt */
