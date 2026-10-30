@@ -14,6 +14,8 @@ import type { SiteSettings } from '../composables/useSiteSettings'
 export interface BrandFeatures {
 	/** Сторінка відгуків /otzyvy-klientov, пункт меню, стрічка відгуків на головній */
 	reviews: boolean
+	/** Блог /article (розділи й статті), пункт меню, статті на головній і в підказках пошуку */
+	blog: boolean
 	/**
 	 * Фільтр «Тип чохла: Фірмові / З принтом» у сайдбарі категорії (API: filters/{…}?case=1, products?case=…).
 	 * Показується, лише коли в категорії є обидва типи

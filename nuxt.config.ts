@@ -17,9 +17,11 @@ const BRAND_DIR = fileURLToPath(new URL('./brand', import.meta.url))
 const BRAND_COMPONENTS = join(BRAND_DIR, 'components')
 // Шрифт, який вантажиться на кожній сторінці: preload з конфігу бренду, без нього — Inter рушія
 const FONT_PRELOAD = brand.font?.preload ?? ['/fonts/inter-cyrillic.woff2', '/fonts/inter-latin.woff2']
-// Сторінки вимкнених розділів (brand → features): адреса без сторінки — 404, або 301 з redirects
+// Сторінки вимкнених розділів (brand → features): сторінка й усі вкладені в неї. Адреса без сторінки — 404,
+// або 301 з redirects
 const FEATURE_PAGES: Record<string, keyof NonNullable<BrandConfig['features']>> = {
 	'/otzyvy-klientov': 'reviews',
+	'/article': 'blog',
 }
 // Кольори теми як hex — для theme-color і site.webmanifest (джерело — brand/theme.css)
 const theme = readTheme(BRAND_DIR)
@@ -170,7 +172,8 @@ export default defineNuxtConfig({
 		// Вимкнений розділ бренду — без сторінки (i18n додає мовні копії вже після цього хука)
 		'pages:extend'(pages) {
 			for (let i = pages.length - 1; i >= 0; i--) {
-				const feature = FEATURE_PAGES[pages[i].path]
+				const section = '/' + pages[i].path.split('/')[1]
+				const feature = FEATURE_PAGES[section]
 				if (feature && brand.features?.[feature] === false) pages.splice(i, 1)
 			}
 		},

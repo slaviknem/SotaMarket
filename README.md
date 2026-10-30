@@ -24,7 +24,7 @@ floy.com.ua (FLOY — `upstream`, заміна старого Nuxt 2) і steklom
 | `/{category}/{product}`                                   | Товар                                                                    |
 | `/{category}/{product}/attr/{attribute}`                  | Товар з вибраним атрибутом (SEO)                                         |
 | `/chekhly` + `/chekhly/filter/...`                        | Всі чохли                                                                |
-| `/article`, `/article/{type}`, `/article/{type}/{alias}`  | Блог                                                                     |
+| `/article`, `/article/{type}`, `/article/{type}/{alias}`  | Блог (вимикає `features.blog` бренду)                                    |
 | `/shop/cart`, `/shop/cart/success`                        | Кошик / успішне замовлення (+ MonoPay)                                   |
 | `/shop/wishlist`, `/shop/compare`, `/shop/track-order`    | Обране / порівняння / трекінг                                            |
 | `/about`, `/dostavka`, `/povernennya`, `/otzyvy-klientov` | Інфо-сторінки (контент з API; відгуки вимикає `features.reviews` бренду) |
