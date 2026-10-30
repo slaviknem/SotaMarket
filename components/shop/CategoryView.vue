@@ -306,7 +306,7 @@ const {
 	align-items: center;
 	gap: 3px;
 	margin-left: 4px;
-	color: var(--accent);
+	color: var(--accent-text);
 	font-weight: 700;
 }
 
@@ -407,7 +407,7 @@ const {
 	border: 1px dashed var(--accent);
 	border-radius: var(--radius);
 	background: var(--accent-soft);
-	color: var(--accent);
+	color: var(--accent-text);
 	transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
 }
 

@@ -1161,7 +1161,7 @@ function openComment() {
 /* Назва моделі в питанні — те, що клієнт мусить звірити, тому контрастніше за решту речення */
 .oc__q-name {
 	font-weight: 800;
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 /* Позиція, про яку крок, — у замовленні з кількома товарами. Рядки ті самі, що у зведенні,
@@ -1219,7 +1219,7 @@ function openComment() {
 	font-size: 12.5px;
 	font-weight: 600;
 	line-height: 1.4;
-	color: var(--accent);
+	color: var(--accent-text);
 	white-space: nowrap;
 }
 
@@ -1730,7 +1730,7 @@ function openComment() {
 
 .oc__next-text b {
 	font-size: 16px;
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .oc__next-text i {
@@ -1742,7 +1742,7 @@ function openComment() {
 .oc__sum-edit {
 	font-size: 12.5px;
 	font-weight: 400;
-	color: var(--accent);
+	color: var(--accent-text);
 	text-decoration: underline;
 	text-underline-offset: 2px;
 }

@@ -648,7 +648,7 @@ onMounted(() => {
 }
 
 .product__attrs-label b {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .product__attrs-list {
@@ -709,7 +709,7 @@ onMounted(() => {
 .attr-chip.is-active {
 	border-color: var(--accent);
 	background: var(--accent-soft);
-	color: var(--accent);
+	color: var(--accent-text);
 	box-shadow: 0 0 0 2px var(--accent-soft);
 }
 
@@ -731,7 +731,7 @@ onMounted(() => {
 .product__price {
 	font-size: 30px;
 	font-weight: 800;
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .product__price-old {
@@ -777,7 +777,7 @@ onMounted(() => {
 	padding: 13px 18px;
 	border-radius: var(--radius-sm);
 	background: var(--accent-soft);
-	color: var(--accent);
+	color: var(--accent-text);
 	font-weight: 700;
 	font-size: 14px;
 	transition: all 0.15s;
@@ -818,7 +818,7 @@ onMounted(() => {
 }
 
 .product-tabs__btn.is-active {
-	color: var(--accent);
+	color: var(--accent-text);
 	border-bottom-color: var(--accent);
 }
 

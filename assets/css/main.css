@@ -229,12 +229,12 @@ ul { padding-left: 1.2em; }
 
 .btn-secondary:hover {
 	border-color: var(--accent);
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .btn-outline {
 	background: transparent;
-	color: var(--accent);
+	color: var(--accent-text);
 	border: 1.5px solid var(--accent);
 }
 
@@ -350,13 +350,13 @@ textarea.form-control {
 .link-btn {
 	margin-top: 6px;
 	font-size: 12.5px;
-	color: var(--accent);
+	color: var(--accent-text);
 	text-decoration: underline;
 	text-underline-offset: 2px;
 }
 
 .link-btn:hover {
-	color: var(--accent-hover);
+	color: var(--accent-text-hover);
 }
 
 /* ---------- Spinner ---------- */
@@ -641,7 +641,7 @@ textarea.form-control {
 }
 
 .p-card__title:hover {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .p-card__bottom {
@@ -669,7 +669,7 @@ textarea.form-control {
 .p-card__price {
 	font-size: 17px;
 	font-weight: 800;
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 /* Кнопка купівлі в картці — спільна для ProductCard і NeoPrintCard.
@@ -785,7 +785,7 @@ img.np-img {
 .chip:hover {
 	background: var(--accent-soft);
 	border-color: var(--accent);
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .chip.is-active {
@@ -847,11 +847,11 @@ img.np-img {
 }
 
 .theme-nav__sublink:hover {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .theme-nav__sublink.is-active {
-	color: var(--accent);
+	color: var(--accent-text);
 	font-weight: 700;
 }
 
@@ -873,7 +873,7 @@ img.np-img {
 /* Підкреслення обов'язкове: у суцільному тексті посилання не можна відрізняти
    самим лише кольором (акцент vs --text-soft дає 1.5:1) */
 .typography a {
-	color: var(--accent);
+	color: var(--accent-text);
 	text-decoration: underline;
 	text-decoration-thickness: 1px;
 	text-underline-offset: 2px;
@@ -976,7 +976,7 @@ img.np-img {
 }
 
 .breadcrumbs a:hover {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .breadcrumbs .sep {
@@ -1152,7 +1152,7 @@ img.np-img {
    тож стиль має бути глобальним — scoped-атрибути на цей <mark> не потрапляють). */
 mark.hl {
 	background: var(--accent-soft);
-	color: var(--accent);
+	color: var(--accent-text);
 	border-radius: 3px;
 	padding: 0 1px;
 	font-weight: 700;
@@ -1223,7 +1223,7 @@ mark.hl {
 }
 
 .cat-card:hover .cat-card__title {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .cat-card__count {

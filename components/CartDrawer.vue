@@ -269,7 +269,7 @@ onUnmounted(() => {
 }
 
 .cart-drawer__item-title:hover {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .cart-drawer__item-attr {
@@ -285,7 +285,7 @@ onUnmounted(() => {
 	margin-top: 3px;
 	font-size: 12px;
 	font-weight: 600;
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .cart-drawer__item-row {
@@ -299,7 +299,7 @@ onUnmounted(() => {
 .cart-drawer__item-total {
 	font-weight: 800;
 	font-size: 15px;
-	color: var(--accent);
+	color: var(--accent-text);
 	white-space: nowrap;
 }
 
@@ -329,7 +329,7 @@ onUnmounted(() => {
 }
 
 .cart-drawer__sum b {
-	color: var(--accent);
+	color: var(--accent-text);
 	font-weight: 700;
 }
 
@@ -345,7 +345,7 @@ onUnmounted(() => {
 .cart-drawer__sum--total b {
 	font-size: 20px;
 	font-weight: 800;
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .cart-drawer__foot .btn:first-of-type {

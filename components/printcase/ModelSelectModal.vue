@@ -349,7 +349,7 @@ function select(model: { id: number; url: string; title: string; brend?: string 
 .model-tree__brand-btn:hover,
 .model-tree__brand-btn.is-open {
 	background: var(--accent-soft);
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .model-tree__brand-btn svg {
@@ -390,6 +390,6 @@ function select(model: { id: number; url: string; title: string; brend?: string 
 
 .model-tree__model:hover {
 	background: var(--bg-elevated);
-	color: var(--accent);
+	color: var(--accent-text);
 }
 </style>

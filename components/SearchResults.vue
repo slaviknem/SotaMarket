@@ -192,7 +192,7 @@ const offArticles = computed(() => offProducts.value + (data.value?.products.len
 }
 
 .sr__clear:hover {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .sr__top {
@@ -287,7 +287,7 @@ const offArticles = computed(() => offProducts.value + (data.value?.products.len
 	gap: 7px;
 	font-size: 13.5px;
 	font-weight: 700;
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .sr__row-old {
@@ -325,7 +325,7 @@ const offArticles = computed(() => offProducts.value + (data.value?.products.len
 .sr__chip:hover {
 	background: var(--accent-soft);
 	border-color: var(--accent);
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .sr__empty {
@@ -363,7 +363,7 @@ const offArticles = computed(() => offProducts.value + (data.value?.products.len
 	border-top: 1px solid var(--border);
 	font-size: 13.5px;
 	font-weight: 600;
-	color: var(--accent);
+	color: var(--accent-text);
 	transition: background 0.14s;
 }
 

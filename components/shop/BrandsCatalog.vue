@@ -135,7 +135,7 @@ const displayBrands = computed(() => {
 }
 
 .brand-block__title a:hover {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .brand-block__series {
@@ -165,7 +165,7 @@ const displayBrands = computed(() => {
 	padding: 0 8px 6px;
 	font-size: 12px;
 	font-weight: 700;
-	color: var(--accent);
+	color: var(--accent-text);
 	text-transform: uppercase;
 	letter-spacing: 0.06em;
 	border-bottom: 1px solid var(--border);
@@ -194,7 +194,7 @@ const displayBrands = computed(() => {
 
 .brand-block__serie li a:hover {
 	background: var(--accent-soft);
-	color: var(--accent);
+	color: var(--accent-text);
 	padding-left: 13px;
 }
 

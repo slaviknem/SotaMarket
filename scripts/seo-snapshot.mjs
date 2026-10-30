@@ -4,6 +4,7 @@
  *
  *   node scripts/seo-snapshot.mjs <ім'я> [база]           зняти (база — http://localhost:3000)
  *        --only=/,/apple   лише ці адреси;  --parallel=3   одночасних запитів
+ *        --site=<json>     адреси іншого сайту на рушії (siteLists у scripts/lib/snapshot.mjs)
  *   node scripts/seo-snapshot.mjs diff <a> <b> [--noise=<c>] [--all]
  *        друкує лише відмінності; --noise — сховати те, що різниться й між a і c
  *        (два знімки «до» підряд = природний шум: новинки, відгуки, лічильники)
@@ -17,7 +18,7 @@
 import { createHash } from 'node:crypto'
 import { join } from 'node:path'
 import {
-	SNAP_DIR, DEFAULT_BASE, PAGES, FILES, parseArgs, onlyFilter, readJson, writeJson, exists,
+	SNAP_DIR, DEFAULT_BASE, siteLists, parseArgs, onlyFilter, readJson, writeJson, exists,
 	sortKeys, deepDiff, noiseKey, show, pool, sleep,
 } from './lib/snapshot.mjs'
 
@@ -179,8 +180,9 @@ async function snap(name, base, opts) {
 	base = base.replace(/\/$/, '')
 	const only = onlyFilter(opts.only)
 	const parallel = Number(opts.parallel) || 3
-	const pages = PAGES.filter((p) => only(p.path))
-	const files = FILES.filter(only)
+	const lists = siteLists(opts.site)
+	const pages = lists.pages.filter((p) => only(p.path))
+	const files = lists.files.filter(only)
 	console.log(`SEO-зліпок «${name}» з ${base}: ${pages.length} адрес, ${files.length} файлів`)
 
 	const out = { meta: { base, date: new Date().toISOString() }, pages: {}, files: {} }
@@ -252,7 +254,7 @@ const { opts, pos } = parseArgs()
 if (pos[0] === 'diff' && pos[1] && pos[2]) diff(pos[1], pos[2], opts)
 else if (pos[0] && pos[0] !== 'diff') await snap(pos[0], pos[1] ?? DEFAULT_BASE, opts)
 else {
-	console.log('Використання:\n  node scripts/seo-snapshot.mjs <ім\'я> [база] [--only=/,/apple] [--parallel=3]')
+	console.log('Використання:\n  node scripts/seo-snapshot.mjs <ім\'я> [база] [--only=/,/apple] [--parallel=3] [--site=<json>]')
 	console.log('  node scripts/seo-snapshot.mjs diff <a> <b> [--noise=<c>] [--all]')
 	process.exitCode = 2
 }

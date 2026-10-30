@@ -139,6 +139,20 @@ export const STATES = [
 /** Товари, якими наповнюємо кошик, обране й порівняння у зліпку стилів */
 export const SEED_PRODUCTS = ['chekhly_1043975', 'chekhly_1044081']
 
+/**
+ * Адреси іншого сайту на рушії: --site=<json> (зразок — NOTES/inventory/ копії). Адреси вище — FLOY; у файлі
+ * { "replace": { "адреса FLOY": "адреса сайту" | null }, "add": [{ "path": …, "styles"?: true }] } — адреса з PAGES,
+ * STATES і FILES замінюється (товар сайту замість товару FLOY) або випадає (null: розділу в сайту немає), add — нові.
+ * Без --site — списки як є
+ */
+export function siteLists(file) {
+	if (!file || file === true) return { pages: PAGES, states: STATES, files: FILES }
+	const { replace = {}, add = [] } = readJson(file)
+	const to = (path) => (path in replace ? replace[path] : path)
+	const keep = (list) => list.flatMap((x) => (to(x.path) ? [{ ...x, path: to(x.path) }] : []))
+	return { pages: [...keep(PAGES), ...add], states: keep(STATES), files: FILES.map(to).filter(Boolean) }
+}
+
 /** --key=value / --flag → { key: value | true }, решта — позиційні */
 export function parseArgs(argv = process.argv.slice(2)) {
 	const opts = {}

@@ -94,7 +94,7 @@ const humanDate = computed(() =>
 }
 
 .prices__table td a:hover {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .prices__price {

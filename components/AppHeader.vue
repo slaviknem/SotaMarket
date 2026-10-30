@@ -584,7 +584,7 @@ onMounted(() => {
 
 .departments__item:hover {
 	background: var(--accent-soft);
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 /* Кружечок-маркер зліва: ледь помітний, на hover — помаранчевий з ореолом */
@@ -688,7 +688,7 @@ onMounted(() => {
 .brands-nav__link.is-open,
 .brands-nav__link.router-link-active {
 	background: var(--accent-soft);
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .brands-nav__link.is-open svg,
@@ -779,7 +779,7 @@ onMounted(() => {
 
 .brand-menu__foot:hover {
 	background: var(--accent-soft);
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .brand-menu__foot svg {
@@ -793,7 +793,7 @@ onMounted(() => {
 .brand-menu__serie-title {
 	font-weight: 700;
 	font-size: 12px;
-	color: var(--accent);
+	color: var(--accent-text);
 	margin: 2px 0 7px;
 	padding: 0 10px 7px;
 	text-transform: uppercase;
@@ -824,7 +824,7 @@ onMounted(() => {
 
 .brand-menu__serie li a:hover {
 	background: var(--accent-soft);
-	color: var(--accent);
+	color: var(--accent-text);
 	padding-left: 15px;
 }
 

@@ -529,7 +529,7 @@ onMounted(() => shopApi.addVisit(category.value.id, 0, activeId.value, activeDes
 .np-prices__now {
 	font-size: 30px;
 	font-weight: 800;
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .np-prices__old {

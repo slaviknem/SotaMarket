@@ -989,7 +989,7 @@ onUnmounted(() => {
 	background: rgba(var(--bg-rgb), 0.9);
 	border: 2px dashed var(--accent);
 	border-radius: var(--radius-lg);
-	color: var(--accent);
+	color: var(--accent-text);
 	font-size: 14px;
 	font-weight: 600;
 	pointer-events: none;

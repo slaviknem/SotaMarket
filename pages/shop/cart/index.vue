@@ -1066,7 +1066,7 @@ async function sendOrder() {
 }
 
 .cart-item__title:hover {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .cart-item__attr {
@@ -1090,7 +1090,7 @@ async function sendOrder() {
 }
 
 .cart-item__edit:hover {
-	color: var(--accent);
+	color: var(--accent-text);
 	border-color: var(--accent);
 }
 
@@ -1119,7 +1119,7 @@ async function sendOrder() {
 .cart-item__total {
 	font-weight: 800;
 	font-size: 15.5px;
-	color: var(--accent);
+	color: var(--accent-text);
 	white-space: nowrap;
 	min-width: 84px;
 	text-align: right;
@@ -1161,7 +1161,7 @@ async function sendOrder() {
 }
 
 .cart-summary__row--total b {
-	color: var(--accent);
+	color: var(--accent-text);
 	font-size: 20px;
 }
 
@@ -1174,7 +1174,7 @@ async function sendOrder() {
 }
 
 .cart-summary__row--prepay b {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .cart-summary__note {
@@ -1254,7 +1254,7 @@ async function sendOrder() {
 	background: var(--accent-soft);
 	font-size: 12.5px;
 	font-weight: 700;
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 /* Примітка йде під галочкою, а не під полем — вирівнюємо з її текстом */
@@ -1378,7 +1378,7 @@ async function sendOrder() {
 	padding-left: 28px;
 	font-size: 12.5px;
 	line-height: 1.45;
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 /* Чекбокс */

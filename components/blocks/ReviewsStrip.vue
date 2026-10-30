@@ -52,7 +52,7 @@ const initial = (name: string) => (name || '?').trim().charAt(0).toUpperCase()
 }
 
 .reviews-strip__all:hover {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .reviews-strip {

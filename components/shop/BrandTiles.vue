@@ -86,7 +86,7 @@ const url = useUrl()
 }
 
 .brand-tile:hover .brand-tile__name {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 @media (max-width: 560px) {

@@ -1920,7 +1920,7 @@ if (!isModelPage.value) {
 	margin-left: auto;
 	font-size: 13px;
 	font-weight: 600;
-	color: var(--accent);
+	color: var(--accent-text);
 	text-decoration: underline;
 }
 
@@ -2104,7 +2104,7 @@ if (!isModelPage.value) {
 }
 
 .ctrl-bg.is-open .ctrl-bg__label {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 /* Прозорість показуємо тим самим шаховим візерунком, що й у графічних редакторах —
@@ -2308,7 +2308,7 @@ if (!isModelPage.value) {
 
 .pc-action:hover {
 	border-color: var(--accent);
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 /* Неактивний інструмент (модель не вибрана): пунктирна «заготовка» замість живої кнопки */
@@ -2381,7 +2381,7 @@ if (!isModelPage.value) {
 }
 
 .pc-action__add:hover {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .pc-action__plus {
@@ -2416,7 +2416,7 @@ if (!isModelPage.value) {
 }
 
 .pc-action__edit:hover {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .pc-action__edit-txt {
@@ -2583,7 +2583,7 @@ if (!isModelPage.value) {
 	height: 23px;
 	border-radius: 50%;
 	background: var(--accent-soft);
-	color: var(--accent);
+	color: var(--accent-text);
 	font-size: 12px;
 	font-weight: 800;
 }
@@ -2615,7 +2615,7 @@ if (!isModelPage.value) {
 .pc-buy__price {
 	font-size: 26px;
 	font-weight: 800;
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .pc-buy__price-old {
@@ -2653,7 +2653,7 @@ if (!isModelPage.value) {
 
 .pc-models__more {
 	font-weight: 700;
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .pc-links {

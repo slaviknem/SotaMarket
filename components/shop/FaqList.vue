@@ -128,7 +128,7 @@ useJsonLd(() => ({
 }
 
 .faq__links a {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .faq__links a:hover {

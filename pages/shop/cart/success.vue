@@ -128,7 +128,7 @@ const { data, status } = await useAsyncData(
 }
 
 .success__num b {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .success__plain .btn {

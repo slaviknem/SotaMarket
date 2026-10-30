@@ -113,7 +113,7 @@ const themeHubs = computed(() =>
 }
 
 a.filter-links__group-title:hover {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .filter-links__group-title--plain {
