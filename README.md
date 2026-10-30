@@ -1,3 +1,25 @@
+# SotaMARKET — sotamarket.com.ua на рушії FLOY
+
+Цей репозиторій — копія рушія FLOY (`upstream` = github.com/slaviknem/FLOY) для сайту **SotaMARKET**: ключ
+API `sotamarket`, домен `https://sotamarket.com.ua` (без www). Проєкт створено **30.10.2026**; до перемикання сайт —
+старий Nuxt 2 на сервері (процес `[3003] SotaMarket`). Дані — та сама адмінка `admin.floy.com.ua` з `?site=sotamarket`.
+План і стан — `NOTES/plans/PLAN-SITE-SOTAMARKET.md` (почати з §0), правила роботи й стандарти коду — `CLAUDE.md`.
+
+| | |
+|---|---|
+| Своє SotaMARKET | лише `brand/`: конфіг (`site.config.ts` — ключ, домен, лічильник, 301-карта), профіль сервера (`server.env` — процес `SOTAMARKET`, порт 3011, 2 копії, кеш nginx), тема C2 «Глибокий синій», лого, тексти, `robots.txt`, `components/`; і `NOTES/` сайту. `.env`, `deploy.sh`, `ecosystem.config.cjs` — спільні з FLOY, не правити |
+| Розробка (ПК) | `.\install.cmd` (раз), далі `npm run dev` або `.\dev.cmd` — http://localhost:3011 (порт з `brand/server.env`; 3000 — FLOY, 3010 — SMARKET). Портативний Node 22 — `C:\Web-SERVER\domains\SOTAMARKET\.node\node-v22.14.0-win-x64` |
+| Сервер (після T8) | `/root/nodeapps/SOTAMARKET`, PM2 `SOTAMARKET` — порт 3011, 2 копії (`cluster.mjs`), кеш nginx `/var/cache/nginx-sotamarket` — усе з `brand/server.env` |
+| Деплой | `cd /root/nodeapps/SOTAMARKET` → `bash deploy.sh` — той самий скрипт, що й у FLOY |
+| Виправлення рушія з FLOY | `git fetch upstream` → `git merge upstream/main` (власник); у конфліктах у `brand/` і в цьому блоці — лишати версію SotaMARKET |
+
+Спільний код рушія «під SotaMARKET» не правити: інший вигляд — копія компонента в `brand/components/`, логіка — загальна
+зміна, яку переносимо у FLOY (журнал §10 плану).
+
+---
+
+Далі — README рушія, однаковий у SotaMARKET, SMARKET і FLOY (так злиття чисте): команди в ньому — для кожного сайту окремо.
+
 # Рушій магазинів на Nuxt 3 (FLOY, SMARKET…)
 
 Фронтенд на **Nuxt 3 + Vue 3** з SSR, один рушій для кількох сайтів — кожен сайт окремим проєктом-копією:

@@ -1,3 +1,38 @@
+# SotaMARKET — сайт sotamarket.com.ua на рушії FLOY
+
+Цей репозиторій — **копія рушія FLOY** (`upstream` = github.com/slaviknem/FLOY) для сайту SotaMARKET
+(ключ API `sotamarket`, домен `sotamarket.com.ua` без www). Дані — та сама адмінка `admin.floy.com.ua` з `?site=sotamarket`.
+План сайту й порядок роботи — `NOTES/plans/PLAN-SITE-SOTAMARKET.md` (почати з §0). Загальний план усіх сайтів —
+`NOTES/plans/PLAN-MULTISITE.md`. Попередній сайт за тим самим рецептом — SMARKET (`C:\Web-SERVER\domains\SMARKET`,
+план `NOTES/plans/PLAN-SITE-SMARKET.md` — там докладно, що і як робилось на кожному етапі).
+
+**Що міняємо тут:** лише `brand/` (конфіг, тема, тексти, лого, robots, `components/` — власні версії видимих
+компонентів, профіль сервера `server.env`) і `NOTES/` сайту. `.env`, `deploy.sh`, `ecosystem.config.cjs` — спільні з
+FLOY. Спільний код рушія «під SotaMARKET» не правимо; якщо загальна зміна потрібна — FLOY з нею має лишитись піксель у
+піксель, і вона йде в журнал §10 плану для перенесення у FLOY.
+
+**Дизайн — окремо, логіка — спільна** (рішення власника 23.10, `PLAN-MULTISITE.md` §4.0): інший вигляд SotaMARKET —
+копія компонента в `brand/components/`, не правка рушія (переносити у FLOY нічого не треба). Загальна зміна рушія —
+лише логіка (API, адмінка, кошик, оформлення, конструктор, чат, SEO, помилки) і токени, без яких спільні екрани не
+працюють у світлій темі; FLOY від неї не змінюється ні на вигляд, ні за швидкістю (без нових залежностей і запитів).
+
+**Правила роботи:**
+- Відповідати українською.
+- **Не комітити й не робити `git add`** — власник переглядає diff і комітить сам (і злиття з upstream теж).
+- **Build не запускати** — dev можна: `npm run dev` або `dev.cmd` — порт 3011 з `brand/server.env` (FLOY займає 3000,
+  SMARKET — 3010).
+- **Локальну БД адмінки не запитувати**; факти — з коду й живого apisite. Зміни даних — лише SQL у
+  `FLOY-ADMIN/NOTES/sql/` для власника (прод — MariaDB 10.6).
+- Команди для власника — завжди з місцем запуску: сервер (bash, `/root/nodeapps/SOTAMARKET`) чи ПК (PowerShell,
+  `C:\Web-SERVER\domains\SOTAMARKET`).
+- `ecosystem.config.cjs` і `cluster.mjs` не «спрощувати» (`DEPLOY.md`).
+
+Далі — стандарти коду рушія (спільні з FLOY). Розділ нижче приходить з upstream без змін (так злиття
+чисте), тому в ньому «FLOY» і «floy.com.ua» читати як цей проєкт: портативний Node —
+`C:\Web-SERVER\domains\SOTAMARKET\.node\node-v22.14.0-win-x64`, сервер — `/root/nodeapps/SOTAMARKET`.
+
+---
+
 # FLOY — стандарти коду
 
 Nuxt 3 + Vue 3 (SSR) фронтенд floy.com.ua. Працюй **завжди** за принципами нижче.
