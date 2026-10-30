@@ -1,0 +1,18 @@
+{
+	"_": "Адреси SotaMARKET для зліпків: node scripts/style-snapshot.mjs <ім'я> http://localhost:3011 --site=NOTES/inventory/sotamarket-snapshot.json (так само seo-snapshot). Товар FLOY — товар Sota (альфапринт iPhone 17 Pro, варіант nayk-logo); аксесуарів, неопрінтів, блогу й відгуків у Sota немає; фільтра-матеріалу немає (301 на модель); файл верифікації GSC FLOY видалено. Перевірено 30.10 на dev — 200.",
+	"replace": {
+		"/iphone-17-pro/filter/silikone-case": null,
+		"/zaryadnye-ustroystva": null,
+		"/uk/zaryadnye-ustroystva": null,
+		"/iphone-17-pro/chekhly_1043975": "/iphone-17-pro/chohol-z-logtipom-nayk-apple-iphone-17-pro",
+		"/iphone-17-pro/chekhly_1043975/attr/black": "/iphone-17-pro/chohol-z-logtipom-nayk-apple-iphone-17-pro/attr/nayk-logo",
+		"/uk/kabelya/accessories_1043808": "/uk/iphone-17-pro/chohol-z-logtipom-nayk-apple-iphone-17-pro",
+		"/article": null,
+		"/article/new": null,
+		"/article/info/kabeli-do-smartfoniv-tipi-osoblivosti-ta-vazhlivist-viboru": null,
+		"/otzyvy-klientov": null,
+		"/uk/otzyvy-klientov": null,
+		"/neoprint/iphone-15/4353": null,
+		"/googleefee091a713c6ef7.html": null
+	}
+}

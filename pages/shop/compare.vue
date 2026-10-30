@@ -137,12 +137,12 @@ usePageSeo({ title: () => t('other.comparison'), noindex: true })
 }
 
 .compare-product:hover span {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .compare-price {
 	font-weight: 800;
-	color: var(--accent);
+	color: var(--accent-text);
 	font-size: 15px;
 }
 

@@ -197,7 +197,7 @@ watch(open, (v: boolean) => {
 	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: 0.07em;
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .mobile-menu__link {
@@ -215,7 +215,7 @@ watch(open, (v: boolean) => {
 .mobile-menu__link:active,
 .mobile-menu__link:hover {
 	background: var(--bg-elevated);
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .mobile-menu__link--btn svg {
@@ -234,7 +234,7 @@ watch(open, (v: boolean) => {
 	padding: 0 8px 6px;
 	font-size: 11.5px;
 	font-weight: 700;
-	color: var(--accent);
+	color: var(--accent-text);
 	text-transform: uppercase;
 	letter-spacing: 0.06em;
 	border-bottom: 1px solid var(--border);
@@ -253,7 +253,7 @@ watch(open, (v: boolean) => {
 }
 
 .mobile-menu__sub-link:hover {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .mobile-menu__phone {
@@ -262,7 +262,7 @@ watch(open, (v: boolean) => {
 	padding: 12px;
 	text-align: center;
 	background: var(--accent-soft);
-	color: var(--accent);
+	color: var(--accent-text);
 	font-weight: 700;
 	border-radius: var(--radius-sm);
 }

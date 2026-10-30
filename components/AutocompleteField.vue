@@ -211,6 +211,6 @@ function clear() {
 .ac__list button:hover,
 .ac__list button.is-active {
 	background: var(--accent-soft);
-	color: var(--accent);
+	color: var(--accent-text);
 }
 </style>

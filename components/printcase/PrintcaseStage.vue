@@ -293,7 +293,7 @@ defineExpose({ displayScale })
 }
 
 .stage__add-hint:hover {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -405,7 +405,7 @@ async function submit() {
 }
 
 .review__model:hover {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 /* Форма: картка, липне під шапкою поки скролиться список */

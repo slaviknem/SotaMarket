@@ -201,7 +201,7 @@ const hasSelected = computed(() => Object.values(props.selected).some((v) => v.l
 	border-radius: var(--radius-sm);
 	font-size: 13px;
 	font-weight: 600;
-	color: var(--accent);
+	color: var(--accent-text);
 	background: var(--accent-soft);
 	transition: background 0.15s, color 0.15s, opacity 0.15s;
 }
@@ -241,7 +241,7 @@ const hasSelected = computed(() => Object.values(props.selected).some((v) => v.l
 }
 
 .filter-group__head:hover {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .filter-group__head svg {
@@ -252,7 +252,7 @@ const hasSelected = computed(() => Object.values(props.selected).some((v) => v.l
 
 /* Назва теми поточної сторінки — підсвічуємо акцентом (стан «ви тут») */
 .filter-group__title.is-active {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 /* Прямий вхід на агрегатну сторінку теми — окремим рядком угорі розкритого блоку */
@@ -264,7 +264,7 @@ const hasSelected = computed(() => Object.values(props.selected).some((v) => v.l
 	padding: 4px 8px;
 	font-size: 12.5px;
 	font-weight: 600;
-	color: var(--accent);
+	color: var(--accent-text);
 	transition: gap 0.15s;
 }
 
@@ -335,7 +335,7 @@ const hasSelected = computed(() => Object.values(props.selected).some((v) => v.l
 
 .filter-item__label:hover,
 .filter-item__label.is-active {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .filter-item.is-checked .filter-item__label {

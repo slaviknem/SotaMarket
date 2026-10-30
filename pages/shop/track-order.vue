@@ -162,11 +162,11 @@ async function track() {
 	align-items: center;
 	gap: 6px;
 	font-weight: 700;
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .track__ttn:hover {
-	color: var(--accent-hover);
+	color: var(--accent-text-hover);
 	text-decoration: underline;
 }
 

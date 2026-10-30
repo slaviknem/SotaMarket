@@ -6,6 +6,7 @@
  *   node scripts/style-snapshot.mjs <ім'я> [база]        зняти (база — http://localhost:3000)
  *        --only=/,/apple   лише ці сторінки (і їхні стани)
  *        --widths=390,1440 лише ці ширини;  --no-shots  без скріншотів;  --no-states  без станів
+ *        --site=<json>     адреси іншого сайту на рушії (siteLists у scripts/lib/snapshot.mjs)
  *   node scripts/style-snapshot.mjs diff <a> <b> [--noise=<c>] [--all] [--tolerance=0] [--strict]
  *        відмінності стилів і пікселів (субпіксельне згладжування не рахується — comparePng; --strict — все);
  *        картинки відмінностей — .snapshots/style/diff_<a>_<b>/
@@ -29,7 +30,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import sharp from 'sharp'
 import {
-	SNAP_DIR, DEFAULT_BASE, PAGES, STATES, WIDTHS, SEED_PRODUCTS, parseArgs, onlyFilter, readJson,
+	SNAP_DIR, DEFAULT_BASE, siteLists, WIDTHS, SEED_PRODUCTS, parseArgs, onlyFilter, readJson,
 	writeJson, exists, slug, show, sleep,
 } from './lib/snapshot.mjs'
 
@@ -489,8 +490,9 @@ async function snap(name, base, opts) {
 	const only = onlyFilter(opts.only)
 	const widths = opts.widths ? WIDTHS.filter((w) => String(opts.widths).split(',').includes(String(w.width))) : WIDTHS
 	const shots = !opts['no-shots']
-	const pages = PAGES.filter((p) => only(p.path) && (shots || p.styles))
-	const states = opts['no-states'] ? [] : STATES.filter((st) => only(st.path) && widths.some((w) => w.width === st.width))
+	const lists = siteLists(opts.site)
+	const pages = lists.pages.filter((p) => only(p.path) && (shots || p.styles))
+	const states = opts['no-states'] ? [] : lists.states.filter((st) => only(st.path) && widths.some((w) => w.width === st.width))
 	const dir = join(STYLE_DIR, name)
 	rmSync(dir, { recursive: true, force: true })
 	mkdirSync(join(dir, 'shots'), { recursive: true })

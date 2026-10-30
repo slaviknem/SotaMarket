@@ -50,7 +50,7 @@ defineProps<{
 .side-menu__item:hover,
 .side-menu__item.is-active {
 	border-color: var(--accent);
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 /* ───────── variant=sidebar — вертикальна картка (як блок фільтрів) ───────── */
@@ -74,7 +74,7 @@ defineProps<{
 }
 
 a.side-menu__head:hover {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .side-menu--sidebar .side-menu__list {
@@ -116,7 +116,7 @@ a.side-menu__head:hover {
 
 .side-menu--sidebar .side-menu__item.is-active {
 	background: var(--accent-soft);
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .side-menu--sidebar .side-menu__item:hover::before,
@@ -157,7 +157,7 @@ a.side-menu__head:hover {
 	.side-menu--sidebar .side-menu__item:hover,
 	.side-menu--sidebar .side-menu__item.is-active {
 		border-color: var(--accent);
-		color: var(--accent);
+		color: var(--accent-text);
 		background: var(--bg-card);
 	}
 }

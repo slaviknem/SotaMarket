@@ -88,7 +88,7 @@ const url = useUrl()
 }
 
 .post-card__type {
-	color: var(--accent);
+	color: var(--accent-text);
 	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: 0.04em;
@@ -105,7 +105,7 @@ const url = useUrl()
 }
 
 .post-card:hover .post-card__title {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 @media (max-width: 900px) {

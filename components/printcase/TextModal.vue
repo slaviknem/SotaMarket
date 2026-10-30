@@ -259,13 +259,13 @@ function save() {
 
 .style-btn:hover {
 	border-color: var(--accent);
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .style-btn.is-on {
 	border-color: var(--accent);
 	background: var(--accent-soft);
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .fonts-list {

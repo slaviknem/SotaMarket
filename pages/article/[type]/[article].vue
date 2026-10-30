@@ -150,7 +150,7 @@ useBreadcrumbsJsonLd(() => {
 }
 
 .post__type {
-	color: var(--accent);
+	color: var(--accent-text);
 	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: 0.04em;

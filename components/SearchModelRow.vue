@@ -143,7 +143,7 @@ const to = computed(() => url.category(props.model.alias))
 .smr__type:hover {
 	background: var(--accent-soft);
 	border-color: var(--accent);
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 /* Тип, що збігся із запитом («айфон 17 BMW» → чип BMW): залитий акцентом */

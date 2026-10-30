@@ -157,7 +157,7 @@ const pages = computed(() => {
 
 .pagination__btn:hover:not(.is-disabled) {
 	border-color: var(--accent);
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .pagination__btn.is-disabled {
@@ -187,7 +187,7 @@ const pages = computed(() => {
 
 .pagination__page:hover:not(.is-current):not(.is-dots) {
 	background: var(--bg-elevated);
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .pagination__page.is-current {
@@ -198,7 +198,7 @@ const pages = computed(() => {
 /* Вже підвантажені (видимі) сторінки — акцентний текст + крапка знизу */
 .pagination__page.is-loaded {
 	position: relative;
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .pagination__page.is-loaded::after {
