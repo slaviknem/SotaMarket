@@ -3,15 +3,7 @@
 	     h1 сторінки, слайдер банерів адмінки й колонка з підбором моделі та конструктором. h1 головної — тут,
 	     тож SEO-блок унизу (blocks/SeoText.vue бренду) — h2. Пропси — як у рушійного BannerSlider -->
 	<section class="hero">
-		<svg class="hero__soty" aria-hidden="true" width="100%" height="100%">
-			<defs>
-				<pattern :id="patternId" width="56" height="100" patternUnits="userSpaceOnUse">
-					<path d="M28 66L0 50L0 16L28 0L56 16L56 50L28 66L28 100" />
-					<path d="M28 0L28 34L0 50L0 84L28 100L56 84L56 50L28 34" />
-				</pattern>
-			</defs>
-			<rect width="100%" height="100%" :fill="`url(#${patternId})`" />
-		</svg>
+		<SotaPattern />
 
 		<div class="container hero__inner">
 			<SectionHead tag="h1" class="hero__head" :eyebrow="t('index.eyebrow.hero')" :title="t('pageTitle.index')">
@@ -132,7 +124,6 @@ const localePath = useLocalePath()
 const brand = useBrand()
 const { prices } = useSiteSettings()
 const modules = [Autoplay, Pagination]
-const patternId = useId()
 
 // Бренди — з меню, яке вже завантажив app.vue (кеш useAsyncData 'menu-{мова}'); хвостовий «ВСІ» — не бренд.
 // Часті моделі — з популярних, які вже взяла сторінка (кеш 'home-models-{мова}'): без запитів
@@ -164,20 +155,6 @@ const onSwiper = (s: SwiperClass) => (swiper.value = s)
 	overflow: hidden;
 	background: var(--bg-deep);
 	color: var(--on-deep);
-}
-
-/* Соти — білим на 5 % */
-.hero__soty {
-	position: absolute;
-	inset: 0;
-	color: rgba(var(--on-overlay-rgb), 0.05);
-	pointer-events: none;
-}
-
-.hero__soty path {
-	fill: none;
-	stroke: currentColor;
-	stroke-width: 1.5;
 }
 
 .hero__inner {

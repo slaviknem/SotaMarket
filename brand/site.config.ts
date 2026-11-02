@@ -72,10 +72,12 @@ export default {
 		themeTabs: true,
 	},
 
-	// Відгуків і статей 0 — обидва розділи вимкнено (PLAN-SITE-SOTAMARKET §3)
+	// Відгуків і статей 0 — обидва розділи вимкнено (PLAN-SITE-SOTAMARKET §3); на сторінці моделі — «Інші
+	// моделі серії» (прототип C2, T5)
 	features: {
 		reviews: false,
 		blog: false,
+		seriesModels: true,
 	},
 
 	// 301 зі старого сайту (PLAN-SITE-SOTAMARKET §7); /uk-копії — самі

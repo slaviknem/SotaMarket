@@ -75,9 +75,34 @@
 	"other": {
 		"wishlist": "Обране"
 	},
+	"category": {
+		"priceFrom": "від {price}",
+		"printsNow": "друкуємо одразу",
+		"designOwn": "Своє фото на {model}",
+		"sortFirst": "Спершу",
+		"sortDefault": "рекомендовані",
+		"sortCheap": "дешевші",
+		"sortDear": "дорожчі",
+		"nearEyebrow": "Поруч",
+		"otherModels": "Інші моделі {series}"
+	},
 	"product": {
 		"type": {
 			"all": "Усі"
+		},
+		"toCart": "В кошик",
+		"prints": {
+			"one": "{n} принт",
+			"few": "{n} принти",
+			"many": "{n} принтів"
+		}
+	},
+	"printcase": {
+		"card": {
+			"titleOwn": "Своє фото на {model}",
+			"note": "Завантаж картинку, додай текст — побачиш результат до замовлення.",
+			"open": "Відкрити конструктор",
+			"openShort": "Створити чохол"
 		}
 	}
 }

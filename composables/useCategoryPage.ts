@@ -14,6 +14,12 @@ import type { IThemeDesign } from '~/composables/useThemeDesigns'
 
 type Get<T> = Readonly<Ref<T>> | ComputedRef<T>
 
+export interface IMenuSeries {
+	title: string
+	url: string
+	children: { title: string; url: string }[]
+}
+
 export interface ICategoryCard {
 	product: any
 	attribute: any | null
@@ -55,6 +61,8 @@ export interface ICategoryPageState {
 	brandTiles: Get<any[]>
 	brands: Get<any[]>
 	brandTree: Get<any[]>
+	/** Серія моделі з усіма її моделями (лише назви й адреси) — features.seriesModels; інакше null */
+	modelSeries: Get<IMenuSeries | null>
 
 	// Сітка
 	pending: Get<boolean>

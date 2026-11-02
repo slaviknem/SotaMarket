@@ -75,9 +75,34 @@
 	"other": {
 		"wishlist": "Избранное"
 	},
+	"category": {
+		"priceFrom": "от {price}",
+		"printsNow": "печатаем сразу",
+		"designOwn": "Своё фото на {model}",
+		"sortFirst": "Сначала",
+		"sortDefault": "рекомендуемые",
+		"sortCheap": "дешёвые",
+		"sortDear": "дорогие",
+		"nearEyebrow": "Рядом",
+		"otherModels": "Другие модели {series}"
+	},
 	"product": {
 		"type": {
 			"all": "Все"
+		},
+		"toCart": "В корзину",
+		"prints": {
+			"one": "{n} принт",
+			"few": "{n} принта",
+			"many": "{n} принтов"
+		}
+	},
+	"printcase": {
+		"card": {
+			"titleOwn": "Своё фото на {model}",
+			"note": "Загрузи картинку, добавь текст — увидишь результат до заказа.",
+			"open": "Открыть конструктор",
+			"openShort": "Создать чехол"
 		}
 	}
 }

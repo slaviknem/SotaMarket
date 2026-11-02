@@ -21,6 +21,11 @@ export interface BrandFeatures {
 	 * Показується, лише коли в категорії є обидва типи
 	 */
 	caseFilter: boolean
+	/**
+	 * Сторінка моделі — ще й усі моделі її серії (поле modelSeries стану сторінки: посилання «Інші моделі
+	 * серії» у вигляді бренду, у HTML). Один запит меню бренду на сторінку моделі, паралельно з товарами
+	 */
+	seriesModels: boolean
 }
 
 export interface BrandConfig {

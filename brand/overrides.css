@@ -1,0 +1,284 @@
+/* ---------- Вигляд спільних екранів рушія, змінений лише стилями (PLAN-SITE-SOTAMARKET §4 «Форма», T5) ----------
+   Підключається з brand/theme.css (@import). Тут — те, чим SotaMARKET відрізняється від FLOY на екранах, що
+   лишаються спільними (сторінка товару, конструктор, крихти, чипи, бокове меню): копія компонента заради кількох
+   правил стилю повторила б логіку рушія (PLAN-MULTISITE §7.1).
+
+   Мова форми SotaMARKET — м'яка й щільна «у темно-синій оправі»: скруглення 10 / 16 / 22 (токени — theme.css),
+   кнопки — м'які прямокутники з жирним Nunito (не пігулки SMARKET і не FLOY-івські 8 px), головна дія —
+   помаранчева, решта — темно-сині; ціна темна, акцентна лише зі знижкою; варіанти товару — заокруглені квадрати
+   з помаранчевим кільцем вибраного; вкладки — сегменти на синьому.
+
+   Специфічність. Scoped-стилі рушія мають +1 клас ([data-v-…]), а порядок підключення в dev до гідратації
+   не гарантований. Тому перекриття компонентів рушія — завжди вищі за правило, яке перекривають: базове правило
+   (.x[data-v] — 0,2,0) — трьома класами, стан (.x.is-active[data-v], .x[data-v]:hover — 0,3,0) — чотирма.
+   Перед перекриттям — прочитати scoped-стилі компонента й порахувати. */
+
+/* ---------- Кнопки: м'які прямокутники, жирні (у FLOY — 8 px і напівжирні) ----------
+   Лише база з main.css (.btn, .btn-lg, .btn-outline); стани (:hover — два «класи») лишаються за рушієм:
+   контурна при наведенні стає помаранчевою */
+.btn,
+.btn-lg {
+	border-radius: calc(var(--radius-sm) + 2px);
+	font-weight: 800;
+}
+
+/* Контурна — темно-синя (у FLOY помаранчева рамка з помаранчевим текстом) */
+.btn-outline {
+	border-color: var(--bg-deep);
+	color: var(--text);
+}
+
+/* ---------- Заголовки секцій рушія (FAQ, ціни, «Популярні фільтри», конструктор) ----------
+   Без градієнтної лінії FLOY праворуч, жирні — як заголовки бренду (SectionHead). Правило main.css глобальне,
+   :root — щоб не залежати від порядку підключення */
+:root .section-title::after {
+	display: none;
+}
+
+:root .section-title h2 {
+	font-weight: 900;
+	letter-spacing: -0.01em;
+}
+
+/* ---------- Чипи (.chip: теги під товаром, «Популярні фільтри», теми конструктора) ----------
+   Білі з рамкою й заокругленими кутами (у FLOY — сірі пігулки). Лише база — наведення й активний (два класи
+   в main.css) лишаються за рушієм */
+.chip {
+	border-color: var(--border-light);
+	border-radius: var(--radius-sm);
+	background: var(--bg-card);
+	font-weight: 700;
+}
+
+/* ---------- Крихти: «›» замість «/» FLOY ----------
+   Символ «/» лишається в розмітці (font-size: 0), «›» — псевдоелементом */
+:root .breadcrumbs .sep {
+	font-size: 0;
+}
+
+:root .breadcrumbs .sep::before {
+	content: '›';
+	font-size: 16px;
+	line-height: 1;
+}
+
+/* ---------- Посилання в текстах — синім (у FLOY — акцентом): помаранчевий на світлому — лише заливки ---------- */
+:root .typography a {
+	color: var(--link);
+}
+
+/* ---------- Сторінки категорії (components/AppPagination.vue) ----------
+   Поточна — темно-синя (у FLOY — помаранчева), номери жирні */
+nav.pagination .pagination__btn,
+nav.pagination .pagination__page {
+	font-weight: 800;
+}
+
+.pagination .pagination__pages .pagination__page.is-current {
+	background: var(--bg-deep);
+	color: var(--on-deep);
+}
+
+/* ---------- Бокове меню (інфо-сторінки) ----------
+   Активний пункт — темно-синій без лівої смужки FLOY (і без акцентного тексту на блідо-помаранчевому). Діє й на
+   вузьких екранах, де меню стає рядком пунктів */
+.side-layout__aside-panel .side-menu.side-menu--sidebar .side-menu__item::before {
+	display: none;
+}
+
+.side-layout__aside-panel .side-menu.side-menu--sidebar .side-menu__item.is-active {
+	border-color: var(--bg-deep);
+	background: var(--bg-deep);
+	color: var(--on-deep);
+}
+
+/* ---------- Конструктор (components/printcase/PrintcasePage.vue) ----------
+   Кнопка моделі — темно-синя (у FLOY — помаранчева плашка), іконки дій — сині квадрати з білою іконкою (у FLOY
+   — помаранчева іконка на блідо-помаранчевому, 2,3:1). Неактивні (модель не вибрана) — сірі, як у рушії */
+.pc-layout .pc-actions-col .pc-model-btn {
+	background: var(--bg-deep);
+	color: var(--on-deep);
+	font-weight: 800;
+}
+
+.pc-layout .pc-actions-col .pc-model-btn:hover {
+	background: var(--accent);
+	color: var(--on-accent);
+}
+
+.pc-actions-col .pc-action .pc-action__icon {
+	background: var(--bg-deep);
+	color: var(--on-deep);
+}
+
+/* ---------- Сторінка товару (components/shop/ProductPage.vue) ---------- */
+
+/* Заголовок — жирний, без градієнтної лінії FLOY */
+.product .product__info .product__title {
+	margin-bottom: 10px;
+	padding-bottom: 0;
+	font-weight: 900;
+	letter-spacing: -0.01em;
+}
+
+.product .product__info .product__title::after {
+	display: none;
+}
+
+/* Варіанти: заокруглені квадрати (у FLOY — 56 px з акцентною рамкою, у SMARKET — кола); вибраний — помаранчеве
+   кільце з білим проміжком (outline повторює скруглення) і назва жирним у підписі над ними */
+.product__attrs .attr-chip.attr-chip--img {
+	width: 60px;
+	height: 60px;
+	padding: 2px;
+	border: 1px solid var(--border-light);
+	border-radius: calc(var(--radius-sm) + 2px);
+}
+
+.product__attrs .attr-chip.attr-chip--img img {
+	border-radius: var(--radius-sm);
+}
+
+.product__attrs .product__attrs-list .attr-chip:hover {
+	border-color: var(--text-muted);
+}
+
+.product__attrs .product__attrs-list .attr-chip.is-active {
+	border-color: var(--bg-card);
+	background: var(--bg-card);
+	box-shadow: none;
+	outline: 2px solid var(--accent);
+	outline-offset: 1px;
+	color: var(--text);
+}
+
+.product .product__attrs .product__attrs-label b {
+	color: var(--text);
+}
+
+/* Картка ціни — темно-синя панель («оправа» C2; у FLOY і SMARKET — біла): ціна біла, зі знижкою — помаранчева
+   (6,9:1 на синьому), «Купити» помаранчева, решта кнопок — світлі контури на синьому */
+.product__info .product__buy.card {
+	border-color: var(--bg-deep);
+	background: var(--bg-deep);
+	color: var(--on-deep);
+}
+
+.product__buy.card .card-body {
+	padding: 20px;
+}
+
+.product__buy.card .product__price {
+	font-size: 32px;
+	font-weight: 900;
+	color: var(--on-deep);
+}
+
+.product__buy.card .product__price-old + .product__price {
+	color: var(--accent);
+}
+
+.product__buy.card .product__price-old {
+	color: var(--on-deep-muted);
+}
+
+.product__buy.card .product__cart-btn {
+	min-height: 52px;
+	font-size: 16px;
+	font-weight: 900;
+}
+
+.product__buy.card .action-square {
+	width: 52px;
+	height: 52px;
+	border: 1px solid var(--border-deep);
+	border-radius: calc(var(--radius-sm) + 2px);
+	background: var(--bg-deep-2);
+	color: var(--on-deep);
+}
+
+.product__buy.card .product__actions .action-square:hover,
+.product__buy.card .product__actions .action-square.is-active {
+	border-color: var(--accent);
+	color: var(--accent);
+}
+
+/* «Швидке замовлення» — світлий контур на синьому; при наведенні — помаранчева, як контурні кнопки рушія */
+.product__buy.card .product__quick .btn-outline {
+	border-width: 1px;
+	border-color: var(--on-deep-muted);
+	color: var(--on-deep);
+}
+
+.product__buy.card .product__quick .btn-outline:hover {
+	border-color: var(--accent);
+	color: var(--on-accent);
+}
+
+/* «Конструктор чохлів» під карткою ціни — біла кнопка з рамкою (у FLOY — блідо-помаранчева плашка);
+   при наведенні — синя, як картка над нею */
+.product .product__info .product__printcase {
+	min-height: 48px;
+	padding: 0 18px;
+	border: 1px solid var(--border-light);
+	border-radius: calc(var(--radius-sm) + 2px);
+	background: var(--bg-card);
+	color: var(--text);
+	font-size: 14.5px;
+	font-weight: 800;
+}
+
+.product .product__info .product__printcase:hover {
+	border-color: var(--bg-deep);
+	background: var(--bg-deep);
+	color: var(--on-deep);
+}
+
+/* Стрілки галереї — білі заокруглені квадрати з тінню (у FLOY — голі помаранчеві шеврони, 2,3:1). Розмір значка
+   Swiper бере з --swiper-navigation-size, саму кнопку задаємо явно; на тач-екранах рушій стрілки ховає */
+.product__gallery.gallery .gallery__main .swiper-button-next,
+.product__gallery.gallery .gallery__main .swiper-button-prev {
+	--swiper-navigation-size: 16px;
+	width: 44px;
+	height: 44px;
+	margin-top: -22px;
+	border: 1px solid var(--border);
+	border-radius: calc(var(--radius-sm) + 2px);
+	background: var(--bg-card);
+	box-shadow: var(--shadow-card);
+	color: var(--text);
+	transform: none;
+	transition: background 0.15s, color 0.15s;
+}
+
+.product__gallery.gallery .gallery__main .swiper-button-next:hover,
+.product__gallery.gallery .gallery__main .swiper-button-prev:hover {
+	background: var(--bg-deep);
+	color: var(--on-deep);
+}
+
+/* Вкладки опису — сегменти на синьому смузі картки (у FLOY — підкреслення, у SMARKET — пігулки на білому):
+   неактивні — світлі на синьому, активна — біла */
+.container .product-tabs .product-tabs__nav {
+	gap: 4px;
+	padding: 6px;
+	border-bottom: 0;
+	background: var(--bg-deep);
+}
+
+.product-tabs .product-tabs__nav .product-tabs__btn {
+	padding: 10px 18px;
+	border-bottom: 0;
+	border-radius: var(--radius-sm);
+	color: var(--on-deep-soft);
+	font-weight: 800;
+}
+
+.product-tabs .product-tabs__nav .product-tabs__btn:hover {
+	color: var(--on-deep);
+}
+
+.product-tabs .product-tabs__nav .product-tabs__btn.is-active {
+	background: var(--bg-card);
+	color: var(--text);
+}

@@ -29,6 +29,8 @@
 </template>
 
 <script setup lang="ts">
+import { pluralForm } from '#brand/plural'
+
 withDefaults(
 	defineProps<{
 		title: string
@@ -43,13 +45,8 @@ const url = useUrl()
 const localePath = useLocalePath()
 const titleId = useId()
 
-// «1 дизайн / 2 дизайни / 5 дизайнів» — правило множини однакове для uk і ru
-function designs(n: number) {
-	const d = n % 10,
-		h = n % 100
-	const form = d === 1 && h !== 11 ? 'one' : d >= 2 && d <= 4 && (h < 12 || h > 14) ? 'few' : 'many'
-	return t(`index.designs.${form}`, { n })
-}
+// «1 дизайн / 2 дизайни / 5 дизайнів»
+const designs = (n: number) => t(`index.designs.${pluralForm(n)}`, { n })
 </script>
 
 <style scoped>

@@ -10,6 +10,7 @@
 
 <script setup lang="ts">
 import type { IThemeDesign } from '~/composables/useThemeDesigns'
+import type { IMenuSeries } from '~/composables/useCategoryPage'
 
 const props = defineProps<{
 	categoryAlias: string
@@ -255,6 +256,17 @@ const hasFilterQuery = computed(() =>
 	Object.keys(route.query).some((k) => k.startsWith('filter_'))
 )
 
+// Інші моделі серії (features.seriesModels): серія моделі з меню її бренду. Запит іде паралельно з
+// товарами (чекаємо його після них); сайт без перемикача його не робить і ключа в payload не має.
+// Модель поза серіями (або збій меню) — блоку просто немає
+const modelSeriesRequest =
+	useFeatures().seriesModels && !props.filterAlias && category.value.type === 'model' && category.value.brend?.alias
+		? useAsyncData('model-series-' + keySuffix.value, async () => {
+				const series = menuSeries(await shopApi.getMenuBrend(category.value.brend.alias).catch(() => null))
+				return series.find((s) => s.children.some((m: any) => m.url === props.categoryAlias)) ?? false
+			})
+		: null
+
 const { data: productsData, pending: productsPending, error: productsError } = await useAsyncData(
 	'cat-products-' + keySuffix.value,
 	() => shopApi.getProductsList(options.value, apiFilters.value),
@@ -268,6 +280,9 @@ throwIfApiDown(productsError.value, 'Products')
 
 const products = computed(() => productsData.value?.data || [])
 const total = computed(() => productsData.value?.meta?.total || 0)
+
+const modelSeriesData = modelSeriesRequest ? (await modelSeriesRequest).data : ref(false)
+const modelSeries = computed<IMenuSeries | null>(() => modelSeriesData.value || null)
 
 // ---------- Режим «дизайни»: модель без товарів ----------
 // Модель, на яку друкуємо, але товарів у неї немає (нова модель; на сайті лише з дизайнами —
@@ -815,7 +830,7 @@ const { categoryAlias, filterAlias, brandsLanding } = toRefs(props)
 provideCategoryPage({
 	categoryAlias, filterAlias, brandsLanding, category, filterPage, names, pageTitle, pageLead, breadcrumbs, minPrice,
 	displayTree, selectedForSidebar, mobileFiltersOpen, toggleFilter, resetFilters, options, changeSort,
-	total, displayTotal, productsCount, brandTiles, brands, brandTree,
+	total, displayTotal, productsCount, brandTiles, brands, brandTree, modelSeries,
 	pending, hasItems, products, displayItems, gridModifier, showPrintcaseCard, designsMode, designsTotal, displayDesigns,
 	currentPage, lastPage, hasMorePages, showButton, isLoadingMore, loadedPages, autoOn, scrollSentinel, pageLink, loadMore,
 	showNeoPrints, neoprints, neoprintsTitle, visibleNeoprints, hasMoreNeoprints, showMoreNeoprints, scrollToNeoprints,
