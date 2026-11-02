@@ -46,6 +46,12 @@ export interface BrandConfig {
 	home: {
 		/** Вкладки каруселі новинок: ключ i18n назви й alias категорії в API */
 		productTabs: { title: string; category: string }[]
+		/**
+		 * Карусель головної — «хіти» найпопулярнішої моделі з вкладками-темами (фільтри адмінки type theme)
+		 * замість новинок із вкладками productTabs: для магазину, де асортимент — чохли з картинками.
+		 * Без поля — новинки (productTabs)
+		 */
+		themeTabs?: boolean
 	}
 	/** Перемикачі розділів; без поля — усе увімкнено */
 	features?: Partial<BrandFeatures>

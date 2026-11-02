@@ -7,10 +7,10 @@
 				<div v-if="tabs?.length" class="tabs">
 					<button
 						v-for="tab in tabs"
-						:key="tab.categoryAlias"
+						:key="tabKey(tab)"
 						class="tabs__item"
-						:class="{ 'is-active': tab.categoryAlias === activeTab }"
-						@click="changeTab(tab.categoryAlias)"
+						:class="{ 'is-active': tabKey(tab) === activeTab }"
+						@click="changeTab(tab)"
 					>
 						{{ tab.name }}
 					</button>
@@ -29,37 +29,17 @@
 </template>
 
 <script setup lang="ts">
+import type { ProductTab } from '~/composables/useProductTabs'
+
 const props = defineProps<{
 	title: string
 	initialProducts: any[] | null
-	tabs?: { name: string; categoryAlias: string }[]
+	tabs?: ProductTab[]
 	limit?: number
 }>()
 
-const shopApi = useShopApi()
-
-const activeTab = ref(props.tabs?.[0]?.categoryAlias || 'all')
-const products = ref<any[]>(props.initialProducts || [])
-const loading = ref(false)
-
-watch(
-	() => props.initialProducts,
-	(v) => {
-		if (v && activeTab.value === (props.tabs?.[0]?.categoryAlias || 'all')) products.value = v
-	}
-)
-
-async function changeTab(alias: string) {
-	if (alias === activeTab.value) return
-	activeTab.value = alias
-	loading.value = true
-	try {
-		products.value = await shopApi.getLatestProducts({ category: alias, limit: props.limit || 10 })
-	} catch {
-		products.value = []
-	}
-	loading.value = false
-}
+// Вкладки й товари — логіка в useProductTabs (її бере й карусель бренду)
+const { activeTab, products, loading, changeTab } = useProductTabs(props)
 </script>
 
 <style scoped>

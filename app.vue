@@ -155,7 +155,7 @@ useJsonLd(() => [
 // Меню. У SSR (а отже, в payload КОЖНОЇ сторінки) — лише верхній рівень: бренди й категорії.
 // Повне дерево бренд → серії → моделі (880 моделей, ~90 КБ) малюють тільки мегаменю при
 // наведенні й мобільне меню після відкриття — у HTML його й раніше не було, воно лише
-// роздувало payload. Тож дерево дотягуємо на клієнті (loadMenuTree), коли браузер простоює.
+// роздувало payload. Тож дерево дотягуємо на клієнті (useMenuTree), коли браузер простоює.
 // categories лишаються повністю — їх читає ще й useProductTags через useNuxtData
 const shopApi = useShopApi()
 const { data: menuShell } = await useAsyncData('menu-' + locale.value, () => shopApi.getMenu(10), {
@@ -167,28 +167,9 @@ const { data: menuShell } = await useAsyncData('menu-' + locale.value, () => sho
 	}),
 })
 
-const menuTree = shallowRef<any[] | null>(null)
-let menuTreeRequest: Promise<void> | null = null
-
-function loadMenuTree() {
-	if (!import.meta.client || menuTree.value || menuTreeRequest) return
-	const lang = locale.value
-	menuTreeRequest = shopApi
-		.getMenu(10)
-		.then((m: any) => {
-			// Поки йшов запит, мову могли перемкнути — чуже дерево не підставляємо
-			if (lang === locale.value && Array.isArray(m?.brends)) menuTree.value = m.brends
-		})
-		.catch(() => {})
-		.finally(() => (menuTreeRequest = null))
-}
-
-// Назви серій і моделей локалізовані — після зміни мови дерево вантажимо заново
-watch(locale, () => {
-	menuTree.value = null
-	menuTreeRequest = null
-	loadMenuTree()
-})
+// Дерево — спільний стан (його беруть і блоки сторінок, напр. підбір моделі бренду)
+const { tree: menuTree, load: loadMenuTree, reload: reloadMenuTree } = useMenuTree()
+watch(locale, reloadMenuTree)
 
 const menu = computed(() => (menuTree.value ? { ...menuShell.value, brends: menuTree.value } : menuShell.value))
 
