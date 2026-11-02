@@ -1,13 +1,13 @@
 # SotaMARKET на рушії FLOY — план сайту (проєкт `SOTAMARKET`)
 
-> **Стан на 30.10.2026:** **T0 зроблено** — проєкт `C:\Web-SERVER\domains\SOTAMARKET` створено (клон FLOY з
+> **Стан на 02.11.2026:** **T0 зроблено** — проєкт `C:\Web-SERVER\domains\SOTAMARKET` створено (клон FLOY з
 > історією, `upstream` = FLOY, `origin` = SOTAMARKET; §0 крок 1), dev на 3011 — 0 помилок консолі й гідратації. Перший
 > коміт і push — власник. **T1 зроблено** (§9 T1): конфіг бренду (ключ `sotamarket`, стартові значення, 301), тема C2,
 > шрифт Nunito, лого «SotaMARKET», фавікони й og, тексти про магазин; у рушії — перемикач `features.blog`, JSON-LD без
 > порожніх контактів, og на фоні з теми (перенесено у FLOY з доказом, §10). **Відповіді власника 30.10 — у §3** (ціни
 > 279/269, без телефону й пошти, лого латиницею, блог і відгуки вимкнено); банер намальовано (`NOTES/banners/`), SQL вад
-> даних готовий (§6). **T2 (світла тема) — майже зроблено** (30.10): у Sota все, у FLOY лишився доказ «після» — §9 T2
-> «Лишилось у T2». План переписано 30.10 зі старої чернетки (21–22.10, під
+> даних готовий (§6). **T2 (світла тема) зроблено** (30.10–02.11): акцент як текст — токен рушія `--accent-text`, доказ
+> «FLOY піксель у піксель» і описка `ru.json` — §9 T2; далі — T3. План переписано 30.10 зі старої чернетки (21–22.10, під
 > задум «тека `sites/sotamarket/` в одному репо») за досвідом SMARKET: етапи T0–T9 повторюють S0–S9
 > (`../../../SMARKET/NOTES/plans/PLAN-SITE-SMARKET.md`), але механізми рушія вже готові — §0 «Що вже є».
 > Ключ API — `sotamarket`, домен — `sotamarket.com.ua` (без www), назва — **SotaMARKET**.
@@ -53,9 +53,8 @@
 **Сказати в новому чаті (VS Code у SOTAMARKET):** «Продовжуємо `NOTES/plans/PLAN-SITE-SOTAMARKET.md` за §0» (або назвати
 етап з §9). Етапи — по черзі, стан — позначки ✅ у §9. Перед кожним етапом перечитати §1 і §10 і відповідний етап SMARKET
 (`../../../SMARKET/NOTES/plans/PLAN-SITE-SMARKET.md` §9 S1–S9 — там «що зламалось і як виправили»).
-**Наступне (з 30.10):** дозавершити T2 — §9 T2 «Лишилось у T2» (доказ FLOY «після», описка в `ru.json`, журнал), далі
-T3; паралельно власник — §3 «Відкриті»
-(банер, SQL, Search Console), коміт SOTAMARKET і злиття в SMARKET (§10, «Від власника»).
+**Наступне (з 02.11):** T3 — шапка, мобільне меню, футер (§9 T3; зразок — SMARKET S3); паралельно власник — §3
+«Відкриті» (банер, SQL, Search Console) і коміти T2 у FLOY, SMARKET і SOTAMARKET (§10, «Від власника (T2)»).
 
 ### Що вже є (через це Sota швидше за SMARKET)
 
@@ -377,7 +376,7 @@ og — темно-синій фон, лого, домен (`--og-bg` / `--og-log
   світлої теми вже є (SMARKET S2) — очікувано лише токени бренду. **Крім акценту як тексту:** рушій фарбує текст
   `--accent` у 133 місцях (40 файлів: ціни, посилання, активні стани). Помаранчевий Sota на білому — 2,3:1 (червоний
   SMARKET — 5,3:1, тому там не вилізло; видно вже на знімку T1 — ціни карток). Лікування — загальний токен
-  `--accent-text` (у FLOY і SMARKET = `var(--accent)`, піксель у піксель). ◐ 30.10 — у Sota зроблено, доказ FLOY не дознято
+  `--accent-text` (у FLOY і SMARKET = `var(--accent)`, піксель у піксель). ✅ 02.11
 
   **Зроблено 30.10:**
   - **Свій список адрес для зліпків** — загальна зміна скриптів (§10): `--site=<json>` у `seo-snapshot` і
@@ -410,19 +409,35 @@ og — темно-синій фон, лого, домен (`--og-bg` / `--og-log
     `.snapshots/style/`). **SMARKET** — у `brand/theme.css` додано псевдоніми (не закомічено; без них після злиття
     з FLOY текст, що був червоним, втратив би колір).
 
-  **Лишилось у T2** (по черзі):
-  1. **Доказ FLOY «після»** (прогін 30.10 обірвався на 43/83 — сесія закінчилась; dev-сервери зупинено). ПК:
-     dev FLOY на 3020 — `cd C:\Web-SERVER\domains\FLOY`, `.node\node-v22.14.0-win-x64` у PATH, `npx nuxt dev --port 3020`
-     (FLOY уже зі змінами); з SOTAMARKET: `node scripts/style-snapshot.mjs t2-floy-after http://localhost:3020
-     --widths=390,1440` (без `--site`!), потім `node scripts/style-snapshot.mjs diff t2-floy-before t2-floy-after
-     --noise=t2-floy-noise`. Очікування: стилі — без відмінностей (псевдонім дає той самий обчислений колір);
-     скріншоти — лише шум (чат, новинки, «Супутні товари» — пам'ять Claude `floy-proof-via-clone.md`). Будь-яка
-     відмінність стилю — розібрати, не списувати на шум. Тека `t2-floy-after` зараз неповна — скрипт перезапише.
-  2. **Описка рушія** «Полезная нформация:» → «Полезная информация:» (`i18n/locales/ru.json`, ключ
-     `footer.information`; видно у футері й мобільному меню FLOY і Sota, ru) — у SOTAMARKET і FLOY однаково, **після**
-     доказу (FLOY змінюється свідомо — одне слово); SMARKET не зачіпає (там власні компоненти).
-  3. §10 — позначити рядки T2 ✅; T2 ✅; власнику — команди комітів (FLOY; SMARKET: тема + `merge upstream/main`;
-     SOTAMARKET).
+  **Зроблено 02.11 (доказ FLOY, описка):**
+  - Власник закомітив T2 30.10: FLOY `c90e9a1` (на GitHub), SOTAMARKET `3d4b74b`. Закомічені файли рушія FLOY і
+    SOTAMARKET однакові (`git ls-tree` без `brand/` і `NOTES/` — різняться лише шапки `CLAUDE.md`/`README.md`; розділ
+    рушія в `CLAUDE.md` — той самий).
+  - **Статично:** `git diff 5553191 c90e9a1` у FLOY поза `CLAUDE.md`, `brand/`, `scripts/` — 96 рядків, і кожен — лише
+    заміна `var(--accent)` → `var(--accent-text)` (94) або `var(--accent-hover)` → `var(--accent-text-hover)` (2);
+    `--accent*` ніде, крім `brand/theme.css`, локально не перевизначається — тож псевдонім з `:root` дає той самий колір
+    у кожному місці.
+  - **Зліпки.** «Після» `t2-floy-after` (FLOY на 3020) проти «до» 30.10 для доказу не годиться: за три дні змінились
+    дані (популярні моделі, новинки, наявність, ціни) — 40 з 83 скріншотів різні, а `--noise` того дня їх не відсіює
+    (усі зміни кольору — у картках, де змінився товар або з'явилась/зникла стара ціна). Тому «до» знято заново
+    **одночасно** з «після»: клон FLOY на `5553191` у scratchpad (`node_modules` — robocopy, dev на 3021 з повного
+    шляху) і FLOY на 3020, прогони паралельно — `t2-floy-before2` / `t2-floy-after2`; шум — `t2-floy-noise3` (клон, лише
+    сторінки з відмінностями, `--only`; повний `t2-floy-noise2` завис на `/uk/printcase/iphone-15@1440` — там само, де
+    обірвався прогін 30.10, — зупинено й видалено). **Результат:** стилі — 182 відмінності, усі в «Супутніх товарах»
+    сторінок товару (щоразу інший набір; поза ними — 0), і порт в адресі маски конструктора (3021 ↔ 3020); скріншоти —
+    9 з 83: ті самі «Супутні товари» (червоне — лише в цій секції) і dev-оверлей Nuxt на 404 (стек зі шляхом клону).
+    **FLOY — піксель у піксель.**
+  - **Описка рушія** «Полезная нформация:» → «Полезная информация:» (`i18n/locales/ru.json`, `footer.information` —
+    футер і мобільне меню рушія, ru) — у SOTAMARKET і FLOY (файли однакові); dev FLOY — у футері «Полезная
+    информация:», uk без змін. SMARKET отримає злиттям (його власні компоненти ключ не беруть).
+  - **Злиття перевірено на клонах** (scratchpad; реальні репозиторії не чіпали): SMARKET (тема з псевдонімами — комітом)
+    ← FLOY з опискою — один конфлікт, `brand/theme.css` (обидві сторони дописали кожна свою тему) → `--ours`; після —
+    рушій SMARKET = FLOY, розділ рушія `CLAUDE.md` однаковий, `brand/README.md` — FLOY + рядок SMARKET про
+    `overrides.css`. SOTAMARKET ← FLOY — так само: конфлікт лише `brand/theme.css` → `--ours`. Команди — §10 «Від
+    власника (T2)».
+  - Зліпки — SOTAMARKET `.snapshots/style/t2-floy-*`, `diff_t2-floy-before2_t2-floy-after2` (поза git).
+
+  T2 ✅ 02.11.
 
   **Помічено на обході, не тема (на потім):** заголовок головної «Новинки мобильных аксессуаров» (`index.latestProducts`
   — у Sota аксесуарів немає; T4/T6); `/povernennya` — 404 (T6); у картках товару кнопка «в кошик» — блідо-помаранчева
@@ -466,10 +481,10 @@ SMARKET — `merge upstream/main`, власник).
 | 30.10 | `app.vue`, `composables/useSiteSettings.ts` | JSON-LD `OnlineStore`: порожні `email`, `telephone`, `streetAddress` і `sameAs: []` не виводяться (`undefined`); `phoneExample` — умовний `067 123 45 67`, коли телефону немає. **FLOY — без змін** (усі поля заповнені) | ✅ 30.10 |
 | 30.10 | `scripts/lib/brand.mjs`, `scripts/gen-og.mjs` | `readTheme()` — ще й `ogBg` / `ogLogo` з необов'язкових `--og-bg` / `--og-logo` (значення `var(--x)` береться з токена x); `gen-og` малює на них, без них — як було (фон сторінки, `--logo-color`). **FLOY — без змін** | ✅ 30.10 |
 | 30.10 | `brand/README.md`, `README.md` (рядок маршрутів блогу) | опис `features.blog` і токенів og | ✅ 30.10 |
-| 30.10 (T2) | `assets/css/main.css` і 31 компонент/сторінка (`AppHeader`, `AppPagination`, `AutocompleteField`, `CartDrawer`, `ChatWidget`, `MobileMenu`, `SearchModelRow`, `SearchResults`, `blocks/PostsGrid`, `ReviewsStrip`, `SideMenu`, `printcase/ModelSelectModal`, `PrintcasePage`, `PrintcaseStage`, `TextModal`, `shop/BrandTiles`, `BrandsCatalog`, `CategoryView`, `FaqList`, `FilterLinks`, `FiltersSidebar`, `OrderConfirm`, `PriceTable`, `ProductPage`, `ReviewsBlock`, `pages/article/[type]/[article]`, `neoprint/[category]/[id]`, `shop/cart/index`, `cart/success`, `compare`, `track-order`) | акцент як **текст** — `--accent-text` (94 рядки), текстові наведення з `--accent-hover` — `--accent-text-hover` (2); іконки, рамки, заливки — `--accent` як були. Нові токени теми — у кожному `brand/theme.css` (FLOY, SMARKET — псевдоніми `var(--accent)` / `var(--accent-hover)`). **FLOY — без змін** (доказ — §9 T2 «Лишилось», п. 1) | ◐ скопійовано у FLOY 30.10, доказ «після» не знято; SMARKET — тема готова, злиття — власник |
-| 30.10 (T2) | `scripts/lib/snapshot.mjs`, `scripts/seo-snapshot.mjs`, `scripts/style-snapshot.mjs` | `--site=<json>` — адреси іншого сайту на рушії (`siteLists()`); без прапорця списки як були | ◐ скопійовано у FLOY 30.10 |
-| 30.10 (T2) | `CLAUDE.md` (розділ рушія, «Чинні токени»), `brand/README.md` («Світла тема») | опис `--accent-text` / `--accent-text-hover` | ◐ скопійовано у FLOY 30.10 (у SMARKET прийде злиттям) |
-| — (T2, після доказу) | `i18n/locales/ru.json` (`footer.information`) | описка «Полезная нформация:» → «Полезная информация:». **FLOY змінюється свідомо** — одне слово у футері й мобільному меню | ще не зроблено |
+| 30.10 (T2) | `assets/css/main.css` і 31 компонент/сторінка (`AppHeader`, `AppPagination`, `AutocompleteField`, `CartDrawer`, `ChatWidget`, `MobileMenu`, `SearchModelRow`, `SearchResults`, `blocks/PostsGrid`, `ReviewsStrip`, `SideMenu`, `printcase/ModelSelectModal`, `PrintcasePage`, `PrintcaseStage`, `TextModal`, `shop/BrandTiles`, `BrandsCatalog`, `CategoryView`, `FaqList`, `FilterLinks`, `FiltersSidebar`, `OrderConfirm`, `PriceTable`, `ProductPage`, `ReviewsBlock`, `pages/article/[type]/[article]`, `neoprint/[category]/[id]`, `shop/cart/index`, `cart/success`, `compare`, `track-order`) | акцент як **текст** — `--accent-text` (94 рядки), текстові наведення з `--accent-hover` — `--accent-text-hover` (2); іконки, рамки, заливки — `--accent` як були. Нові токени теми — у кожному `brand/theme.css` (FLOY, SMARKET — псевдоніми `var(--accent)` / `var(--accent-hover)`). **FLOY — без змін** (доказ — §9 T2 «Зроблено 02.11») | ✅ 30.10 (FLOY `c90e9a1`), доказ 02.11; SMARKET — тема готова, злиття — власник |
+| 30.10 (T2) | `scripts/lib/snapshot.mjs`, `scripts/seo-snapshot.mjs`, `scripts/style-snapshot.mjs` | `--site=<json>` — адреси іншого сайту на рушії (`siteLists()`); без прапорця списки як були | ✅ 30.10 (FLOY `c90e9a1`) |
+| 30.10 (T2) | `CLAUDE.md` (розділ рушія, «Чинні токени»), `brand/README.md` («Світла тема») | опис `--accent-text` / `--accent-text-hover` | ✅ 30.10 (FLOY `c90e9a1`; у SMARKET прийде злиттям) |
+| 02.11 (T2) | `i18n/locales/ru.json` (`footer.information`) | описка «Полезная нформация:» → «Полезная информация:». **FLOY змінюється свідомо** — одне слово у футері й мобільному меню | ✅ 02.11 (у робочій копії FLOY, коміт — власник) |
 
 **Доказ (T1, 30.10)** — на самому FLOY (`03ef59a`, dev на 3020): «до» двічі (`t1-floy-before`, `t1-floy-noise`) → ті
 самі файли скопійовано з SOTAMARKET (`README.md` — лише рядок маршрутів, бо шапки різні) → перезапуск dev → «після»
@@ -492,6 +507,41 @@ SMARKET — `merge upstream/main`, власник).
 (поза git). Злиті самі (`useSearch`, `useSiteMenus`, `gen-og`, `lib/brand.mjs`) — однакові з FLOY. Команди — у чаті
 30.10; після коміту злиття наступні підуть від нової бази, без цих конфліктів. **SOTAMARKET** — після коміту T1
 `merge upstream/main` конфліктує лише в цьому плані (копія FLOY заморожена) — лишати версію SOTAMARKET (`--ours`).
+
+**Від власника (T2, 02.11)** — по черзі: FLOY першим (SMARKET і SOTAMARKET зливають саме його); `NOTES/README.md` в усіх
+трьох змінено однаково (рядок плану Sota), тож при злитті він не конфліктує. Конфлікт у SMARKET і SOTAMARKET — лише
+`brand/theme.css` (перевірено пробним злиттям на клонах), лишати свою (`--ours`).
+1. FLOY (ПК, PowerShell):
+   ```powershell
+   cd C:\Web-SERVER\domains\FLOY
+   git add i18n/locales/ru.json NOTES/README.md
+   git commit -m "Описка: Полезная информация (з SotaMARKET T2)"
+   git push
+   ```
+2. SMARKET (ПК, PowerShell):
+   ```powershell
+   cd C:\Web-SERVER\domains\SMARKET
+   git add brand/theme.css NOTES/README.md
+   git commit -m "Тема: псевдоніми --accent-text (з SotaMARKET T2)"
+   git fetch upstream
+   git merge upstream/main
+   git checkout --ours brand/theme.css
+   git add brand/theme.css
+   git commit --no-edit
+   git push
+   ```
+3. SOTAMARKET (ПК, PowerShell):
+   ```powershell
+   cd C:\Web-SERVER\domains\SOTAMARKET
+   git add i18n/locales/ru.json NOTES/README.md NOTES/plans/PLAN-SITE-SOTAMARKET.md
+   git commit -m "T2: доказ FLOY, описка ru"
+   git fetch upstream
+   git merge upstream/main
+   git checkout --ours brand/theme.css
+   git add brand/theme.css
+   git commit --no-edit
+   git push
+   ```
 
 ## 11. Критерії готовності
 
