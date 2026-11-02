@@ -34,9 +34,50 @@
 	"index": {
 		"discount": "Звіримо перед друком",
 		"discountInfo": "Менеджер подзвонить і уточнить макет",
-		"deliveryNovaInfo": "1–2 дні по всій Україні"
+		"deliveryNovaInfo": "1–2 дні по всій Україні",
+		"eyebrow": {
+			"hero": "Каталог · 1 100+ моделей",
+			"models": "Моделі",
+			"hits": "Хіти",
+			"perks": "Чому {brand}"
+		},
+		"lead": "Готові дизайни для 1 100+ моделей — або твоє фото",
+		"popularModels": "Популярні зараз",
+		"allModels": "Усі моделі",
+		"designs": {
+			"one": "{n} дизайн",
+			"few": "{n} дизайни",
+			"many": "{n} дизайнів"
+		},
+		"hitsFor": "Для {model}",
+		"hitsAll": "Усі дизайни для {model}",
+		"hitsAllTheme": "Усі дизайни «{theme}» для {model}",
+		"picker": {
+			"title": "Підбір за телефоном",
+			"brand": "Бренд",
+			"model": "Модель",
+			"choose": "Обери модель",
+			"loading": "Завантажуємо…",
+			"submit": "Показати дизайни",
+			"often": "Часто:"
+		},
+		"printcase": {
+			"price": "від {price} ₴",
+			"title": "Своє фото на чохол",
+			"cta": "Відкрити конструктор"
+		},
+		"perkDays": "Доставка за {from}–{to} дні",
+		"perkDaysInfo": "Новою поштою по всій Україні",
+		"seoTitle": "Чохли з картинками в {brand}",
+		"readMore": "Читати далі",
+		"readLess": "Згорнути"
 	},
 	"other": {
 		"wishlist": "Обране"
+	},
+	"product": {
+		"type": {
+			"all": "Усі"
+		}
 	}
 }

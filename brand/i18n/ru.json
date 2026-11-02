@@ -34,9 +34,50 @@
 	"index": {
 		"discount": "Сверим перед печатью",
 		"discountInfo": "Менеджер позвонит и уточнит макет",
-		"deliveryNovaInfo": "1–2 дня по всей Украине"
+		"deliveryNovaInfo": "1–2 дня по всей Украине",
+		"eyebrow": {
+			"hero": "Каталог · 1 100+ моделей",
+			"models": "Модели",
+			"hits": "Хиты",
+			"perks": "Почему {brand}"
+		},
+		"lead": "Готовые дизайны для 1 100+ моделей — или твоё фото",
+		"popularModels": "Популярные сейчас",
+		"allModels": "Все модели",
+		"designs": {
+			"one": "{n} дизайн",
+			"few": "{n} дизайна",
+			"many": "{n} дизайнов"
+		},
+		"hitsFor": "Для {model}",
+		"hitsAll": "Все дизайны для {model}",
+		"hitsAllTheme": "Все дизайны «{theme}» для {model}",
+		"picker": {
+			"title": "Подбор по телефону",
+			"brand": "Бренд",
+			"model": "Модель",
+			"choose": "Выбери модель",
+			"loading": "Загружаем…",
+			"submit": "Показать дизайны",
+			"often": "Часто:"
+		},
+		"printcase": {
+			"price": "от {price} ₴",
+			"title": "Своё фото на чехол",
+			"cta": "Открыть конструктор"
+		},
+		"perkDays": "Доставка за {from}–{to} дня",
+		"perkDaysInfo": "Новой почтой по всей Украине",
+		"seoTitle": "Чехлы с картинками в {brand}",
+		"readMore": "Читать далее",
+		"readLess": "Свернуть"
 	},
 	"other": {
 		"wishlist": "Избранное"
+	},
+	"product": {
+		"type": {
+			"all": "Все"
+		}
 	}
 }

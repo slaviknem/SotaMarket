@@ -16,10 +16,11 @@
 			variant="models"
 		/>
 
+		<!-- Новинки з вкладками розділів або (home.themeTabs) хіти популярної моделі з вкладками-темами -->
 		<BlocksProductsCarousel
-			:title="t('index.latestProducts')"
-			:initial-products="latestProducts"
-			:tabs="productTabs"
+			:title="hits ? t('index.hitsFor', { model: catTitle(hits.model) }) : t('index.latestProducts')"
+			:initial-products="hits ? hits.products : latestProducts"
+			:tabs="hits ? hitTabs : productTabs"
 			:limit="10"
 		/>
 
@@ -45,6 +46,8 @@
 </template>
 
 <script setup lang="ts">
+import type { BrandConfig } from '~/types/brand'
+
 const { t, locale } = useI18n()
 const shopApi = useShopApi()
 const config = useRuntimeConfig()
@@ -53,22 +56,57 @@ const url = useUrl()
 const features = useFeatures()
 
 // Вкладки каруселі новинок — з конфігу бренду (категорії в кожного магазину свої)
+const brand = useBrand()
 const productTabs = computed(() =>
-	useBrand().home.productTabs.map((tab) => ({ name: t(tab.title), categoryAlias: tab.category }))
+	brand.home.productTabs.map((tab) => ({ name: t(tab.title), categoryAlias: tab.category }))
 )
 
+// Хіти замість новинок (home.themeTabs): найпопулярніша модель, її теми (фільтри type theme) і товари.
+// Перемикач — з конфігу бренду, сталий для збірки: без нього запиту й ключа в payload немає зовсім.
+// Через BrandConfig — у конфігу без поля (satisfies лишає вузький тип) звернення не пройшло б перевірку
+type Theme = { title: string; alias: string; value: string }
+type Hits = { model: any; themes: Theme[]; products: any[] } | false
+const themeTabs = !!(brand as BrandConfig).home.themeTabs
+const { expandAliasForApi } = useFilters()
+async function loadHits(): Promise<Hits> {
+	const [model] = await shopApi.getPopularCategory({ type: 'model', limit: 1 })
+	if (!model) return false
+	const [filters, list] = await Promise.all([
+		shopApi.getFilters(model.alias),
+		shopApi.getProductsList({ limit: 10 }, { category: model.alias }),
+	])
+	const themes = (filters || [])
+		.filter((f: any) => f.type === 'theme')
+		.map((f: any) => ({ title: f.title, alias: f.alias, value: expandAliasForApi(filters, f.alias).value }))
+	return { model, themes, products: list?.data || [] }
+}
+
 // Дані головної (SSR, паралельно)
-const [{ data: banners }, { data: popularModels }, { data: latestProducts }, { data: popularCategories }, { data: posts }, { data: latestReviews }, { data: article }] =
+const [{ data: banners }, { data: popularModels }, { data: latestProducts }, { data: popularCategories }, { data: posts }, { data: latestReviews }, { data: article }, { data: hits }] =
 	await Promise.all([
 		useAsyncData('home-banners-' + locale.value, () => shopApi.getBanners()),
 		useAsyncData('home-models-' + locale.value, () => shopApi.getPopularCategory({ type: 'model', limit: 8 })),
-		useAsyncData('home-latest-' + locale.value, () => shopApi.getLatestProducts({ category: 'all', limit: 10 })),
+		// Хіти замість новинок — новинок не просимо
+		useAsyncData('home-latest-' + locale.value, async () => (themeTabs ? [] : shopApi.getLatestProducts({ category: 'all', limit: 10 }))),
 		useAsyncData('home-cats-' + locale.value, () => shopApi.getPopularCategory({ type: 'category', limit: 6 })),
 		// Розділ бренду вимкнено (блог, відгуки) — блоку немає, тож і запиту теж
 		useAsyncData('home-posts-' + locale.value, async () => (features.blog ? shopApi.getLatestArticles({ type: 'all', limit: 3 }) : [])),
 		useAsyncData('home-reviews-' + locale.value, async () => (features.reviews ? shopApi.getLatestReviews(10, 4) : [])),
 		useAsyncData('home-article-' + locale.value, async () => (await shopApi.getArticleByAlias('index')) ?? false),
+		themeTabs ? useAsyncData<Hits>('home-hits-' + locale.value, loadHits) : { data: ref<Hits>(false) },
 	])
+
+// Вкладки хітів: «Усі» (уся модель) і теми; theme.value — аліаси підтем для API товарів
+const hitTabs = computed(() => {
+	const h = hits.value
+	if (!h) return []
+	return [{ title: t('product.type.all'), alias: '', value: '' }, ...h.themes].map((theme: Theme) => ({
+		name: theme.title,
+		categoryAlias: h.model.alias,
+		categoryTitle: catTitle(h.model),
+		theme: { alias: theme.alias, value: theme.value },
+	}))
+})
 
 // SEO
 usePageSeo({
