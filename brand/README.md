@@ -7,6 +7,7 @@
 |---|---|---|
 | `site.config.ts` | обличчя й будова сайту: ключ API, назва, домен, адреса, вкладки головної; необов'язкові — `features` (перемикачі розділів), `redirects` (301-карта), `font` (preload шрифту), `analytics` (ID лічильників GA4 / GTM / Meta Pixel), `printcaseImage` (og:image конструктора); `settingsFallback` — стартові значення налаштувань адмінки | `useBrand()`, `useFeatures()`; ключ, назва й адреса — ще й `runtimeConfig.public` (`site`, `siteName`, `siteUrl`); `redirects` — `server/middleware/brand-redirects.ts`; `features`, `font` і `analytics` — ще й `nuxt.config.ts`; `settingsFallback` — `useSiteSettings()` |
 | `theme.css` | палітра: канали `--*-rgb`, кольори, тіні, затемнення, `--logo-color`, `--select-arrow`; за потреби — шрифт (`@font-face` + `--font`) і структурні токени | підключається після `main.css`; `theme-color`, кольори manifest, генератори |
+| `overrides.css` (необов'язковий) | вигляд спільних екранів рушія, змінений лише стилями (кнопки, заголовки секцій, сторінка товару) — коли копія компонента повторила б його логіку; правила — на клас специфічніші за scoped-стилі рушія | `@import` на початку `theme.css` |
 | `public/` | фавікони, `images/logo.svg`, `images/og-default.jpg`, шрифт бренду (`fonts/`), файл верифікації Google | віддаються з кореня сайту, як і `public/` |
 | `components/` | власні версії компонентів рушія з тими самими іменами | перекривають `components/` (`components/README.md`) |
 | `server.env` | профіль сервера: процес PM2 (`APP`), порт Node і dev (`PORT`), копії (`WORKERS`), кеш nginx (`NGINX_CACHE`); `KEY=value` | `deploy.sh` (bash), `ecosystem.config.cjs` (PM2), `nuxt.config.ts` (порт dev) — через `scripts/lib/server-env.cjs` |
@@ -45,7 +46,8 @@
      `main.css` (так їх збирає dev-сервер), тож перевизначений шрифт видно після гідратації; у збірці
      порядок правильний (`main.css` → `theme.css`);
    - `features` — вимкнути розділи, яких у магазині немає (`reviews`, `blog`: сторінки зникають з маршрутів і меню), або
-     увімкнути додаткове (`caseFilter` — фільтр «Тип чохла: Фірмові / З принтом» у сайдбарі категорії);
+     увімкнути додаткове (`caseFilter` — фільтр «Тип чохла: Фірмові / З принтом» у сайдбарі категорії;
+     `seriesModels` — на сторінці моделі ще й усі моделі її серії, поле `modelSeries` у `useCategoryPage()`);
      `redirects` — 301 зі старих адрес;
    - `public/favicon.svg` — джерело всіх растрових іконок;
    - `public/googleXXXX.html` — файл верифікації свого ресурсу в Search Console (старий видалити);
