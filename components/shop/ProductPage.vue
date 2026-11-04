@@ -20,7 +20,7 @@
 					<!-- Зведений рейтинг біля H1. Google показує зірочки лише тоді, коли оцінка
 					     з мікророзмітки видима на сторінці — таб «Відгуки» нижче для цього
 					     недостатньо очевидний. Клік веде саме туди. -->
-					<button v-if="stats.ratedCount" class="product__rating" @click="openReviews()">
+					<button v-if="withReviews && stats.ratedCount" class="product__rating" @click="openReviews()">
 						<RatingStars :value="stats.avg" :size="15" />
 						<span class="product__rating-val">{{ stats.avg }}</span>
 						<span class="text-muted">({{ stats.ratedCount }})</span>
@@ -196,7 +196,7 @@
 					<p class="text-muted product-tabs__disclaimer">{{ t('product.specificationDisclaimer') }}</p>
 				</div>
 
-				<div v-show="activeTab === 'reviews'">
+				<div v-if="withReviews" v-show="activeTab === 'reviews'">
 					<ShopReviewsBlock :reviews="product.reviews || []" type="product" :target-id="product.id" />
 				</div>
 			</div>
@@ -475,10 +475,13 @@ function preOrder() {
 const stats = computed(() => reviewsStats(product.value?.reviews))
 
 // ---------- Таби ----------
+// Розділ відгуків вимкнено (features.reviews) — ні вкладки, ні рейтингу біля H1, ні відгуків у розмітці
+const withReviews = useFeatures().reviews
+
 const tabs = computed(() => [
 	{ key: 'description', title: t('product.description') },
 	{ key: 'specification', title: t('product.specification') },
-	{ key: 'reviews', title: `${t('product.reviews')} (${product.value?.reviews?.length || 0})` },
+	...(withReviews ? [{ key: 'reviews', title: `${t('product.reviews')} (${product.value?.reviews?.length || 0})` }] : []),
 ])
 
 const activeTab = ref('description')
@@ -486,6 +489,7 @@ const activeTab = ref('description')
 // Якір #reviews. Блок відгуків тут усередині таба, тобто display:none — браузер до
 // прихованого якоря не доскролить, тож таб спершу відкриваємо самі.
 async function openReviews() {
+	if (!withReviews) return
 	activeTab.value = 'reviews'
 	await nextTick()
 	document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth', block: 'start' })

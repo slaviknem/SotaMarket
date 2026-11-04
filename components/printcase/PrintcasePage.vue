@@ -454,6 +454,7 @@
 		     з відгуками всіх моделей. Мова не розділяє список: відгук про послугу один для
 		     укр- і рос-версій. page-url — бо на цій сторінці адресу переписує replaceState. -->
 		<ShopReviewsBlock
+			v-if="withReviews"
 			:reviews="reviews"
 			type="printcase"
 			:target-id="model?.id || 0"
@@ -510,6 +511,8 @@ const { openCart } = useCartDrawer()
 const { openPreOrder } = usePreOrder()
 const { notify } = useNotify()
 const url = useUrl()
+// Розділ відгуків вимкнено (features.reviews) — ні блоку, ні запиту відгуків, ні рейтингу в розмітці
+const withReviews = useFeatures().reviews
 // Макет: маніфест + фото клієнта (сервер) і чернетка (браузер)
 const design = usePrintcaseDesign()
 const draft = usePrintcaseDraft()
@@ -544,7 +547,7 @@ async function fetchModelBundle(alias: string) {
 		// тримаємо коротким: лише alias/title/id тем і підтем (лічильники тут не потрібні).
 		shopApi.getFilters(alias).catch(() => []),
 		// Відгуки про друк саме на цю модель (type=printcase, category_id=модель)
-		shopApi.getPrintcaseReviews(alias).catch(() => []),
+		withReviews ? shopApi.getPrintcaseReviews(alias).catch(() => []) : [],
 	])
 
 	if (!category?.id || category.type !== 'model') return null
@@ -600,7 +603,7 @@ async function fetchHubBundle() {
 		shopApi.getArticleByAlias('printcase'),
 		shopApi.getPopularCategory({ type: 'model', limit: 8 }),
 		// Хаб збирає відгуки про конструктор з усіх моделей — тут вони всі разом
-		shopApi.getPrintcaseReviews().catch(() => []),
+		withReviews ? shopApi.getPrintcaseReviews().catch(() => []) : [],
 	])
 
 	return {
