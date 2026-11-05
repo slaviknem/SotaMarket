@@ -457,8 +457,10 @@ const showDesignsSeo = computed(() => designsMode.value && currentPage.value ===
 
 // Відгуки: сторінки моделі та її фільтрів (відгуки прив'язані до категорії).
 // Лише 1-ша сторінка без ?filter_* — щоб той самий текст не дублювався на URL пагінації/комбінацій.
+// Вимкнений розділ відгуків (features.reviews) ховає й цей блок
 const showReviews = computed(
 	() =>
+		useFeatures().reviews &&
 		!props.brandsLanding &&
 		(category.value?.type === 'model' || !!props.filterAlias) &&
 		!hasFilterQuery.value &&
