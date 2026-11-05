@@ -142,7 +142,8 @@ function redirectMap(brand) {
 }
 
 function probes(brand, target) {
-	const out = PROBES.map(([path, expect]) => ({ path, type: 'probe', expect }))
+	// Службову адресу, яку перекриває карта бренду (вимкнений блог: /article → /chekhly), перевіряє проба карти нижче
+	const out = PROBES.filter(([path]) => !target(path)).map(([path, expect]) => ({ path, type: 'probe', expect }))
 	for (const from of Object.keys(brand?.redirects ?? {})) {
 		const src = from.endsWith('/*') ? from.slice(0, -2) : from
 		for (const path of [src, '/uk' + src]) out.push({ path, type: 'probe:301', expect: target(path) })
@@ -236,7 +237,9 @@ function inspect(html) {
 
 // ---------- Оцінка ----------
 
-const LISTING = new Set(['model', 'brand', 'category', 'model~поза-меню'])
+// Сторінки-списки (мають картки товарів); `model~…` — модель поза меню чи поза старим sitemap
+const LISTING = new Set(['model', 'brand', 'category', 'theme@model'])
+const isListing = (type) => LISTING.has(type.split('~')[0])
 function strip(p) {
 	return p.split('?')[0]
 }
@@ -280,7 +283,7 @@ function verdict(u, chain, info, site, target) {
 	if (info.canonical !== site + strip(end.path)) issues.push(`canonical ${info.canonical}`)
 	if (info.h1.length !== 1) issues.push(`h1 × ${info.h1.length}`)
 	if (info.floy) issues.push(`floy × ${info.floy}`)
-	if (LISTING.has(u.type) && !info.cards) issues.push('без товарів')
+	if (isListing(u.type) && !info.cards) issues.push('без товарів')
 	return { issues, notes }
 }
 
