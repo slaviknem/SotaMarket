@@ -76,18 +76,16 @@
 лишився сервер).**
 
 **Власник — до нового чату:**
-- **SQL «Еxpected» і порожніх серій** — §10 «Від власника (T8)», **п. 10** (виконати, «Очистити кеш», результат — у чат);
-- **усі коміти** — там же, **п. 11**, саме в тому порядку: FLOY → SMARKET (злиття) → SOTAMARKET (коміт, потім злиття)
-  → FLOY-ADMIN (два SQL-файли);
+- **SQL серій, порожніх лише для Sota**, кеш адмінки з правами й два коміти — §10 «Від власника (T8)», **п. 12**;
 - деплой FLOY і SMARKET — **коли зручно**, для Sota не потрібен. Видно клієнтам лише поле телефону в опитувальнику
   (зараз на обох сайтах обрізана остання цифра, коли номер підозрілий); решта перенесеного з Sota на вигляд FLOY не
-  міняє. Зняті порожні серії й латинська «E» — дані адмінки, діють на всіх сайтах одразу після «Очистити кеш».
-- ~~SQL опису серій~~ ✅ 06.11 (п. 9); ~~тестові розмови чату~~ ✅ 06.11 (§3 п. 9.5); ~~§3 п. 10~~ ✅ рішення 06.11.
+  міняє. Зняті серії й латинська «E» — дані адмінки, діють на всіх сайтах одразу після очищення кешу.
+- ~~SQL опису серій~~ ✅, ~~SQL «Еxpected»~~ ✅ (14 серій), ~~усі коміти~~ ✅, ~~тестові розмови чату~~ ✅ — 06.11.
 
 **Сказати в новому чаті:** «Продовжуємо `NOTES/plans/PLAN-SITE-SOTAMARKET.md` за §0» (+ що з переліку вище зроблено).
 Claude по черзі:
-1. **Після SQL «Еxpected»** (п. 10 власника) — ззовні: `apisite/categories/menu_brend/{apple,meizu,zte}` трьох сайтів —
-   без порожніх серій, «Samsung Expected» — латиницею; `/chekhly` на dev — без «Еxpected».
+1. **Після п. 12 власника** — ззовні: `menu_brend` усіх брендів трьох сайтів — 0 серій без моделей, 0 кириличних «Е»
+   («Samsung Expected» — латиницею); `/meizu-m-series` на dev — 404, на floy.com.ua — 200 з товарами; `/chekhly` на dev.
 2. **T8 на сервері** (§8): клон `/root/nodeapps/SOTAMARKET` зі своїм deploy key, `.env`, PM2 `SOTAMARKET` на 3011
    (2 копії) і прогін `NOTES/inventory/sotamarket-check.tsv` (574, підтеми вже після SQL T8) з
    `--host=sotamarket.com.ua` — **по одній** (`--parallel=1`); команди — як `PLAN-SITE-SMARKET.md` §8 «Сервер: S8».
@@ -279,6 +277,15 @@ Claude по черзі:
     синтетичні таблиці, два прогони, відкат до байта. Сторінка знятої серії за прямою адресою лишається 200 порожньою
     (apisite і рушій `publish` не дивляться), але посилань на неї й місця в карті немає. Виконати — §10 «Від власника
     (T8)» п. 10.
+    **06.11 виконано** (власник): знято **14** серій — «Expected» Apple, Google Pixel, Huawei, Infinix, Motorola, OPPO
+    (`oppo-enjoy-series`), Realme, TCL, TECNO, Xiaomi, ZTE Blade і `realme-q`, `realme-v`, `tecno-tecno`; «Samsung
+    Expected» — латиницею, `publish` 1, 1 модель. Решта 10 не порожні глобально — **на FLOY і SMARKET у них товари** (по
+    24 картки), порожні лише в Sota (моделей Sota немає). Для них — другий SQL
+    **`FLOY-ADMIN/NOTES/sql/series-empty-per-site-t8.sql`**: серії, порожній для сайту X (floy / smarket / sotamarket),
+    знімається лише позначка `site_X` — меню X її не покаже, сторінка на X — 404; інші сайти не чіпаються. Перевірено на
+    MySQL 8.0 (синтетичні таблиці): знято рівно потрібні позначки, два прогони однакові, відкат до байта. Виконати —
+    §10 «Від власника (T8)» п. 12. Адмінка позначку серії сама не ставить: модель Sota, додана згодом у таку серію,
+    потребує ввімкнути `sotamarket` у самій серії.
 
 ## 4. Дизайн — C2 «Вітрина+», «Глибокий синій»
 
@@ -1007,7 +1014,10 @@ og — темно-синій фон, лого, домен (`--og-bg` / `--og-log
       iPhone 18 Pro Max, iPhone Duo, Galaxy XCover7 Pro…) і порожні серії (`meizu-m-series` «M», `zte-zte-series`
       «ZTE», `motorola-one-series`, `samsung-galaxy-j-series`…): сторінка — 200, «Meizu M - Series», 0 товарів, без
       опису й без `noindex`; конструктор на тих самих адресах — 404 (правильно). Ті самі 24 вузли — у `menu_brend`
-      FLOY і SMARKET (05.11, apisite), `floy.com.ua/meizu-m-series` — 200 так само. У карті Sota з них лише
+      FLOY і SMARKET (05.11, apisite), `floy.com.ua/meizu-m-series` — 200. **Уточнення 06.11:** 05.11 перевірено лише
+      присутність вузлів у меню, не порожнечу — 14 серій порожні на всіх сайтах («Еxpected» і кілька інших), а 10
+      («Samsung Galaxy J», «Motorola Z / One», «Sony Xperia L», «ZTE / L / Z», «Meizu U / Pro / M») порожні **лише в
+      Sota**: на FLOY і SMARKET у них по 24 картки (§3 п. 10). У карті Sota з них лише
       `/apple-iphone-duo` (модель «iPhone Duo» без товарів); решту генератор і так не бере. Рішення — за власником
       (§3 п. 10).
   - **Старий сайт проти нового** (`t8-compare`, 05.11, по 15 адрес кожного типу, 145, по одній): 0 × 500; проблеми — лише
@@ -1331,33 +1341,28 @@ SOTAMARKET однаковий); у SOTAMARKET ще `brand/i18n` (привіта�
 9. ~~SQL опису серій Sota~~ ✅ 06.11 (власник виконав `sotamarket-series-meta-t8.sql`; ззовні — apisite uk/ru і dev:
    «Чохли з картинками для Samsung Galaxy M — усі моделі серії» + опис, «Nokia Nokia» → «Nokia»). Файл закомітити —
    п. 11.
-10. **SQL «Еxpected» і порожніх серій** (06.11, §3 п. 10): phpMyAdmin, прод —
-    `FLOY-ADMIN/NOTES/sql/series-expected-empty-t8.sql` цілком → «Очистити кеш» → у чат — результат п. 3 SQL
-    (`cyrillic_left_*` мають бути 0 і 0; список знятих ≈ 23; «Samsung Expected» — `publish` 1).
-11. **Усі коміти — 06.11, по черзі** (ПК, PowerShell). Порядок важливий: FLOY → SMARKET → SOTAMARKET (у Sota спершу
-    коміт, потім злиття — `OrderConfirm.vue` змінено з обох боків однаково, злиття чисте); FLOY-ADMIN — будь-коли.
-    `--no-edit` — щоб злиття не відкривало редактор повідомлення.
+10. ~~SQL «Еxpected» і порожніх серій~~ ✅ 06.11 (власник): знято 14 серій, «Samsung Expected» — латиницею й
+    опублікована (§3 п. 10). Решта 10 порожніх у Sota — п. 12.
+11. ~~Усі коміти~~ ✅ 06.11: FLOY `15c079b` (поле телефону), SMARKET — злиття `b0f7d71`, SOTAMARKET — `de7b1a9` + злиття
+    `65e1018`, FLOY-ADMIN `f3dbc941` (два SQL); усі чотири — `main...origin/main`, робочі дерева чисті.
+12. **SQL серій, порожніх для окремого сайту** (06.11, §3 п. 10): phpMyAdmin, прод —
+    `FLOY-ADMIN/NOTES/sql/series-empty-per-site-t8.sql` цілком → кеш адмінки **з правами** (06.11 меню брендів на
+    apisite частково ще з кешу: показує вже зняті серії й кириличну «Е» — «Очистити кеш» знову не дочистив). Сервер
+    (bash, root):
+    ```bash
+    cd /home/wm/web/admin.floy.com.ua/public_html && chown -R --reference=storage/framework storage/framework/cache && sudo -u wm php artisan cache:clear
+    ```
+    У чат — результат перевірки SQL (перелік: ≈ 10 серій з `sotamarket` у `cleared`; `left_empty` — 0). Потім (ПК,
+    PowerShell):
     ```powershell
-    cd C:\Web-SERVER\domains\FLOY
-    git add components/shop/OrderConfirm.vue NOTES/README.md
-    git commit -m "Опитувальник: поле телефону в символах (14ch) — номер не обрізається; на телефоні — на всю ширину"
-    git push
-
-    cd C:\Web-SERVER\domains\SMARKET
-    git fetch upstream
-    git merge upstream/main --no-edit
+    cd C:\Web-SERVER\domains\FLOY-ADMIN
+    git add NOTES/sql/series-empty-per-site-t8.sql
+    git commit -m "T8: серії, порожні для сайту, — без позначки цього сайту"
     git push
 
     cd C:\Web-SERVER\domains\SOTAMARKET
     git add -A
-    git commit -m "T8: поле телефону — у рушії, прогін dev, підтеми, карта, серії, план"
-    git fetch upstream
-    git merge upstream/main --no-edit
-    git push
-
-    cd C:\Web-SERVER\domains\FLOY-ADMIN
-    git add NOTES/sql/sotamarket-series-meta-t8.sql NOTES/sql/series-expected-empty-t8.sql
-    git commit -m "T8: опис серій Sota; «Еxpected» з латинською E, порожні серії — з публікації"
+    git commit -m "T8: порожні серії — підсумок, план"
     git push
     ```
 
