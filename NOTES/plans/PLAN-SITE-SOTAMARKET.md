@@ -89,10 +89,10 @@ Claude по черзі:
    (2 копії) і прогін `NOTES/inventory/sotamarket-check.tsv` (574, підтеми вже після SQL T8) з
    `--host=sotamarket.com.ua` — **по одній** (`--parallel=1`). **Команди готові — §8 «Сервер: T8»** (06.11; `.env` не
    правимо — адреса й GA4 з `brand/`); Lighthouse — після перемикання на бойовому домені (як SMARKET).
-   **Власник (06.11):** (а) ПК, PowerShell — закомітити й запушити (`cd C:\Web-SERVER\domains\SOTAMARKET`, `git add -A`,
-   `git commit -m "T8: команди сервера; T9: NOTES/nginx"`, `git push`) — клон на сервері має взяти `NOTES/nginx/`;
-   (б) сервер, bash — §8 «Сервер: T8» по одній; (в) у чат — `/root/sotamarket-check.txt`, `/root/t9-state.txt` і вивід
-   перевірок.
+   **Власник (06.11):** ключ ✅; (а) ПК, PowerShell — закомітити й запушити (`cd C:\Web-SERVER\domains\SOTAMARKET`,
+   `git add -A`, `git commit -m "T8: скрипт сервера; T9: NOTES/nginx"`, `git push`) — клон на сервері має взяти
+   `NOTES/nginx/`; (б) сервер, bash — §8 «Сервер: T8» п. 1–3: deploy key у GitHub, клон одним рядком, скрипт
+   `t8-server.sh`; (в) три файли з `/root/` → `.snapshots\server\` на ПК.
 3. Далі — **T9** (перемикання, §9 T9; за зразком SMARKET S9). **Підготовлено 06.11:** `NOTES/nginx/` — копія рецепта
    SMARKET (шаблон Hestia `sotamarket` — тіло рядок у рядок `smarket`, порт 3011; зона `sotamarket_cache`, ключ з
    `|lang=`; карта, лог, ліміти; білий список — в `OFF/`), скрипти `t9-state.sh` (знімок, у кроці 2), `t9-check.sh`
@@ -433,60 +433,43 @@ og — темно-синій фон, лого, домен (`--og-bg` / `--og-log
   звільниться старий (~500 МБ і цикл падінь, що їсть CPU).
 
 **Сервер: T8 — підняти `SOTAMARKET` на 3011 і прогнати адреси** (06.11, за `PLAN-SITE-SMARKET.md` §8 «Сервер: S8»).
-Сервер, bash; команди — **по одній** (MobaXterm рве багаторядкові вставки; після Ctrl+C іноді вставляє `^[[200~` —
-`bind 'set enable-bracketed-paste off'`). Процес, порт, копії, кеш — з `brand/server.env`; адреса сайту й GA4 — з
-`brand/site.config.ts`, тож `.env` не правимо. Старий сайт ця частина не чіпає: nginx на 3011 ще не дивиться, а ззовні
-порти Node закриті (06.11: `138.199.205.230:3010` SMARKET з ПК — тайм-аут).
+Сервер, bash. MobaXterm рве багаторядкові вставки (після Ctrl+C іноді ще вставляє `^[[200~` —
+`bind 'set enable-bracketed-paste off'`), тож усе після клону — **одним скриптом** `NOTES/nginx/t8-server.sh` (рішення
+власника 06.11: «по одній — дуже довго»): на сервері — два рядки замість ~30 команд. Процес, порт, копії, кеш — з
+`brand/server.env`; адреса сайту й GA4 — з `brand/site.config.ts`, тож `.env` не правимо. Старий сайт ця частина не чіпає:
+nginx на 3011 ще не дивиться, а ззовні порти Node закриті (06.11: `138.199.205.230:3010` SMARKET з ПК — тайм-аут).
 
-Доступ до GitHub — свій deploy key (один ключ на два репозиторії GitHub не приймає), прописаний у `core.sshCommand`
-клону, тож `git pull` у `deploy.sh` бере його сам:
+1. **Ключ GitHub** — свій deploy key (один ключ на два репозиторії GitHub не приймає), прописаний у `core.sshCommand`
+   клону, тож `git pull` у `deploy.sh` бере його сам. ✅ 06.11 ключ створено (власник):
+   ```bash
+   ssh-keygen -t ed25519 -f /root/.ssh/sotamarket_deploy -N "" -C "sotamarket-prod" && cat /root/.ssh/sotamarket_deploy.pub
+   ```
+   Рядок `ssh-ed25519 … sotamarket-prod` — **останній рядок виводу, від `cat`** (рядок `SHA256:…` вище — лише відбиток,
+   не ключ; публічний ключ не секретний) → GitHub → **SOTAMARKET** → Settings → Deploy keys → Add deploy key (назва
+   `server`, **без** «Allow write access»).
+2. **Push з ПК** (клон має взяти `NOTES/nginx/`), далі **клон** — один рядок:
+   ```bash
+   cd /root/nodeapps && GIT_SSH_COMMAND="ssh -i /root/.ssh/sotamarket_deploy -o IdentitiesOnly=yes" git clone git@github.com:slaviknem/SOTAMARKET.git SOTAMARKET && git -C /root/nodeapps/SOTAMARKET config core.sshCommand "ssh -i /root/.ssh/sotamarket_deploy -o IdentitiesOnly=yes" && cd /root/nodeapps/SOTAMARKET && git log --oneline -1
+   ```
+   Очікувано — `Cloning into 'SOTAMARKET'…` і рядок останнього коміту; `Permission denied (publickey)` — ключ не додано.
+3. **Решта — скрипт** (~10–15 хв, з них прогін адрес 5–10):
+   ```bash
+   bash /root/nodeapps/SOTAMARKET/NOTES/nginx/t8-server.sh 2>&1 | tee /root/t8-server.txt
+   ```
+   Що робить по черзі (рядки ✓/✗ на екрані): профіль `server.env` (`SOTAMARKET` / 3011 / 2; інший — стоп); порт 3011
+   вільний (зайнятий чужим — стоп); `free -m`; `nvm use 22`, `npm install`, `npx nuxi build` (впала — стоп, старий сайт не
+   зачеплено); `nvm use 16`, `pm2 start ecosystem.config.cjs` (уже є в PM2 — `pm2 restart`, тож повторний запуск після
+   обриву зв'язку безпечний), `pm2 save`; перевірки — процесів 3 (головний + 2 копії), node
+   `/root/.nvm/versions/node/v22.23.1/bin/node`, лог «[cluster] node v22.23.1, копій: 2, порт 3011», `api/settings` 200,
+   GA4 у HTML, canonical `https://sotamarket.com.ua/`; пам'ять копій (`rss`) до й після прогону (SMARKET — 86–102 → 126 МБ);
+   прогін `url-check` — 574 адреси списку + 18 проб, **по одній** (`--parallel=1`: 04.11 чотири паралельні сторінки з
+   холодним кешем apisite забили адмінку, з якої живуть FLOY і SMARKET; §9 T8), на екрані — прогрес кожні 200 і рядок
+   «Проблеми: N з 592» (чекаємо 0, жодного 503, `canonical` скрізь `https://sotamarket.com.ua/…`); останнім — знімок для T9
+   (`t9-state.sh`, лише читає).
+4. **Три файли — на ПК SFTP-панеллю MobaXterm:** `/root/t8-server.txt` (усе з екрана), `/root/sotamarket-check.txt`
+   (прогін), `/root/t9-state.txt` (знімок) → `C:\Web-SERVER\domains\SOTAMARKET\.snapshots\server\` (поза git; Claude
+   читає звідти сам).
 
-```bash
-ssh-keygen -t ed25519 -f /root/.ssh/sotamarket_deploy -N "" -C "sotamarket-prod"
-cat /root/.ssh/sotamarket_deploy.pub
-```
-
-Рядок `ssh-ed25519 … sotamarket-prod` → GitHub → **SOTAMARKET** → Settings → Deploy keys → Add deploy key (назва
-`server`, **без** «Allow write access»). Далі:
-
-```bash
-cd /root/nodeapps
-GIT_SSH_COMMAND="ssh -i /root/.ssh/sotamarket_deploy -o IdentitiesOnly=yes" git clone git@github.com:slaviknem/SOTAMARKET.git SOTAMARKET
-git -C /root/nodeapps/SOTAMARKET config core.sshCommand "ssh -i /root/.ssh/sotamarket_deploy -o IdentitiesOnly=yes"
-cd /root/nodeapps/SOTAMARKET
-git log --oneline -1
-grep -E "^(APP|PORT|WORKERS)=" brand/server.env
-ss -lntp | grep -E ':3011\b'
-free -m
-nvm use 22
-npm install
-npx nuxi build
-nvm use 16
-pm2 start ecosystem.config.cjs
-pm2 save
-pgrep -f "/root/nodeapps/SOTAMARKET/cluster.mjs" | wc -l
-readlink -f /proc/$(pgrep -f "/root/nodeapps/SOTAMARKET/cluster\.mjs" | head -1)/exe
-pm2 logs SOTAMARKET --lines 5 --nostream
-curl -s -o /dev/null -w "%{http_code}\n" "http://127.0.0.1:3011/api/settings?t=1"
-curl -s -H "Host: sotamarket.com.ua" http://127.0.0.1:3011/ | grep -c "G-9VLQ4DJWCN"
-curl -s -H "Host: sotamarket.com.ua" http://127.0.0.1:3011/ | grep -oE '<link[^>]*rel="canonical"[^>]*>'
-ps -o pid,rss,args -p $(pgrep -d, -f "/root/nodeapps/SOTAMARKET/cluster.mjs")
-nvm use 22
-node scripts/url-check.mjs http://127.0.0.1:3011 NOTES/inventory/sotamarket-check.tsv --probes --host=sotamarket.com.ua --parallel=1 --out=t8-server > /root/sotamarket-check.txt 2>&1
-tail -45 /root/sotamarket-check.txt
-ps -o pid,rss,args -p $(pgrep -d, -f "/root/nodeapps/SOTAMARKET/cluster.mjs")
-bash /root/nodeapps/SOTAMARKET/NOTES/nginx/t9-state.sh > /root/t9-state.txt 2>&1
-```
-
-Очікувано: `git log` — коміт з `NOTES/nginx/`; `server.env` — `APP=SOTAMARKET`, `PORT=3011`, `WORKERS=2`; `ss` — порожньо
-(порт вільний; інакше — зупинитись і сказати в чаті); збірка — «Build complete!» (впала — далі не йти, старий сайт не
-зачеплено); `pgrep … | wc -l` — 3 (головний + 2 копії); `readlink` — `/root/.nvm/versions/node/v22.23.1/bin/node`; лог —
-«[cluster] node v22.23.1, копій: 2, порт 3011»; `api/settings` — 200; GA4 — ≥ 1; canonical — `https://sotamarket.com.ua/`.
-Прогін — 574 адреси списку + 18 проб, **по одній** (`--parallel=1`: 04.11 чотири паралельні сторінки з холодним кешем
-apisite забили адмінку, з якої живуть FLOY і SMARKET; §9 T8), ~5–10 хв — «Проблеми: 0», жодного 503, `canonical` скрізь
-`https://sotamarket.com.ua/…`. Пам'ять копій (`rss`, КБ) до й після прогону — порівняти (SMARKET — 86–102 → 126 МБ). Останній
-рядок — знімок для T9 (`NOTES/nginx/t9-state.sh`, лише читає). **В чат — два файли SFTP-панеллю MobaXterm:**
-`/root/sotamarket-check.txt` і `/root/t9-state.txt`, і вивід команд від `git log` до першого `ps` (можна текстом).
 `pm2` видно лише після `nvm use 16` (у новій сесії — «command not found»). Далі оновлення — `bash deploy.sh` у теці
 `/root/nodeapps/SOTAMARKET`. Lighthouse збірки — після перемикання на бойовому домені (як SMARKET S9): ззовні процес на
 3011 недоступний, а через тунель цифри швидкості не показові.
