@@ -4,7 +4,7 @@
 #
 # Запуск (сервер, bash) — одним рядком:
 #   git -C /root/nodeapps/SOTAMARKET pull && bash /root/nodeapps/SOTAMARKET/NOTES/nginx/t9-switch.sh 2>&1 | tee /root/t9-switch.txt
-# Відкат (~1 хв) — NOTES/nginx/t9-rollback.sh (копія старого вхоста — /root/t9-backup-sotamarket).
+# Перемкнено 06.11; старий сайт прибрано (t9-cleanup.sh) — відкату на нього вже немає.
 #
 # Порядок — як SMARKET 27.10 (PLAN-SITE-SMARKET.md §8 «Сервер: S9», крок 2), за знімком t9-state 06.11:
 #   0) перевірки: процес SOTAMARKET на 3011 живий, домен ще на шаблоні default;
@@ -75,10 +75,10 @@ if [ "$P" = default ]; then
 	fi
 
 	sec "3. Домен → шаблон sotamarket (з цієї миті — рушій)"
-	v-change-web-domain-proxy-tpl $U $D sotamarket || stop "v-change-web-domain-proxy-tpl впав — перевірте шаблон: v-list-web-domain $U $D; відкат — t9-rollback.sh"
+	v-change-web-domain-proxy-tpl $U $D sotamarket || stop "v-change-web-domain-proxy-tpl впав — перевірте шаблон: v-list-web-domain $U $D"
 	P=$(proxy_tpl)
-	[ "$P" = sotamarket ] && ok "шаблон домену — sotamarket" || stop "шаблон домену '$P' (чекали sotamarket) — відкат — t9-rollback.sh"
-	grep -q "proxy_pass http://127.0.0.1:3011" "$C/nginx.ssl.conf" && ok "nginx.ssl.conf — proxy_pass 3011" || stop "у згенерованому nginx.ssl.conf немає proxy_pass 3011 — відкат — t9-rollback.sh"
+	[ "$P" = sotamarket ] && ok "шаблон домену — sotamarket" || stop "шаблон домену '$P' (чекали sotamarket)"
+	grep -q "proxy_pass http://127.0.0.1:3011" "$C/nginx.ssl.conf" && ok "nginx.ssl.conf — proxy_pass 3011" || stop "у згенерованому nginx.ssl.conf немає proxy_pass 3011"
 fi
 
 sec "4. Доповнення вхоста: кеш, карта, лог, ліміти"
@@ -89,7 +89,7 @@ else
 	mkdir -p "$C/OFF-t9"
 	for f in cache sitemap log limits; do mv -f "$C/nginx.ssl.conf_$f" "$C/OFF-t9/" 2>/dev/null; done
 	nginx -t && systemctl reload nginx
-	stop "доповнення не пройшли nginx -t — перенесено в $C/OFF-t9/; сайт на рушії без кешу й карти (робочий). Відкат — t9-rollback.sh"
+	stop "доповнення не пройшли nginx -t — перенесено в $C/OFF-t9/; сайт на рушії без кешу й карти (робочий)"
 fi
 
 sec "Стан"
