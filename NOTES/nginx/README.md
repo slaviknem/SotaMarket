@@ -19,15 +19,17 @@
 
 | Файл (тут і на сервері) | Що | Стан |
 |---|---|---|
-| `/etc/nginx/conf.d/sotamarket-cache.conf` | зона `sotamarket_cache` (`/var/cache/nginx-sotamarket`, доба, 1 ГБ) і `$sotamarket_lang` — мова з cookie для ключа кешу замість `Vary: Cookie`, лише для сторінок (`/img/`, `/_ipx/`, `/_nuxt/`, `/api/`… — спільні) | ☐ T9 |
-| `/usr/local/hestia/data/templates/web/nginx/sotamarket.tpl`, `.stpl` | шаблон Hestia — копія `smarket`: порт 3011, www і http → `https://sotamarket.com.ua` одним кроком, Let's Encrypt на :80 напряму | ☐ T9 |
-| `…/sotamarket.com.ua/nginx.ssl.conf_cache` | кеш сторінок, як у FLOY і SMARKET: зона `sotamarket_cache`, ключ `"…$request_uri\|lang=$sotamarket_lang"` (роздільник обов'язковий — `PLAN-MULTISITE.md` §11 п. 3), `proxy_ignore_headers Cache-Control Expires Vary` | ☐ T9 |
-| `…/sotamarket.com.ua/nginx.ssl.conf_sitemap` | `/sitemap.xml` і `/sitemaps/` з теки адмінки `storage/app/public/sitemap/sotamarket/` | ☐ T9 |
-| `…/sotamarket.com.ua/nginx.ssl.conf_log` | access-лог `/var/log/nginx/sotamarket-access.log` (формат `floy_log`) | ☐ T9 |
-| `…/sotamarket.com.ua/nginx.ssl.conf_limits` | стеля з'єднань і гальмо на `/img/`, `/_ipx/` (зони FLOY) | ☐ T9 |
+| `/etc/nginx/conf.d/sotamarket-cache.conf` | зона `sotamarket_cache` (`/var/cache/nginx-sotamarket`, доба, 1 ГБ) і `$sotamarket_lang` — мова з cookie для ключа кешу замість `Vary: Cookie`, лише для сторінок (`/img/`, `/_ipx/`, `/_nuxt/`, `/api/`… — спільні) | ✅ ПК 06.11, ☐ сервер |
+| `/usr/local/hestia/data/templates/web/nginx/sotamarket.tpl`, `.stpl` | шаблон Hestia — копія `smarket`: порт 3011, www і http → `https://sotamarket.com.ua` одним кроком, Let's Encrypt на :80 напряму | ✅ ПК 06.11, ☐ сервер |
+| `…/sotamarket.com.ua/nginx.ssl.conf_cache` | кеш сторінок, як у FLOY і SMARKET: зона `sotamarket_cache`, ключ `"…$request_uri\|lang=$sotamarket_lang"` (роздільник обов'язковий — `PLAN-MULTISITE.md` §11 п. 3), `proxy_ignore_headers Cache-Control Expires Vary` | ✅ ПК 06.11, ☐ сервер |
+| `…/sotamarket.com.ua/nginx.ssl.conf_sitemap` | `/sitemap.xml` і `/sitemaps/` з теки адмінки `storage/app/public/sitemap/sotamarket/` | ✅ ПК 06.11, ☐ сервер |
+| `…/sotamarket.com.ua/nginx.ssl.conf_log` | access-лог `/var/log/nginx/sotamarket-access.log` (формат `floy_log`) | ✅ ПК 06.11, ☐ сервер |
+| `…/sotamarket.com.ua/nginx.ssl.conf_limits` | стеля з'єднань і гальмо на `/img/`, `/_ipx/` (зони FLOY) | ✅ ПК 06.11, ☐ сервер |
 | `…/sotamarket.com.ua/OFF/nginx.ssl.conf_allow` | білий список України, як у FLOY — **вимкнено** (рішення власника 30.10, план §3); увімкнути — копія з `OFF/` у теку вхоста | — |
 
-Доповнення кладуться **після** зміни шаблону, а редирект панелі (якщо є) прибирається **до** — порядок і відкат у плані.
+Доповнення кладуться **після** зміни шаблону (редиректу панелі на sotamarket немає — знімок 06.11) — порядок у
+`t9-switch.sh`, відкат — `t9-rollback.sh`, пояснення — план §8 «Сервер: T9». **Перевірено на ПК 06.11** (план, там же
+п. 2): вхост зібрано з шаблону, як це робить Hestia, nginx 1.21 перед dev рушія — `t9-check.sh` 0 проблем.
 
 ⚠️ Як і у FLOY: **суфікс `.off` файл не вимикає** — `include …/nginx.ssl.conf_*` ловить і `nginx.ssl.conf_allow.off`.
 Вимикати — перенесенням у `/home/wm/conf/web/sotamarket.com.ua/OFF/`. Згенеровані панеллю `nginx.conf`,
@@ -40,5 +42,7 @@
 |---|---|---|
 | `t8-server.sh` | сервер | T8 одним запуском (план §8 «Сервер: T8», п. 3): збірка, PM2 `SOTAMARKET` на 3011, перевірки процесу ✓/✗, прогін `url-check` по одній, знімок `t9-state.sh`. Повторний запуск безпечний (restart, а не другий процес) |
 | `t9-state.sh` | сервер | знімок перед перемиканням: домен у Hestia, шаблони, конфіги вхостів (і steklomarket — зразок), сертифікат, зони кешу, процеси (і старий `[3003] SotaMarket`), карта, логи старого сайту. Лише читає |
-| `t9-check.sh` | ПК (Git Bash) або сервер | ззовні: 301 з www і http одним кроком, рушій, 301-карта бренду, robots з Node, карта, кеш (HIT з `_ga`, 302 мови не в спільний кеш), сертифікат. Вміст сторінок — `scripts/url-check.mjs` |
+| `t9-switch.sh` | сервер | **перемикання** (змінює nginx): копія старого вхоста, зона й тека кешу, шаблон, домен → `sotamarket`, доповнення; на кожну помилку — стоп. Повторний запуск безпечний |
+| `t9-rollback.sh` | сервер | **відкат** (~1 хв): шаблон → `default`, кеш і карта → `OFF/`, ручний `nginx.ssl.conf` старого сайту з копії |
+| `t9-check.sh` | ПК (Git Bash) або сервер | ззовні: 301 з www і http одним кроком, рушій, 301-карта бренду, robots з Node, карта, кеш (HIT з `_ga`, 302 мови не в спільний кеш), сертифікат; `T9_CURL` — ключі curl для стенду. Вміст сторінок — `scripts/url-check.mjs` |
 | `sotamarket-health.sh` | сервер | моніторинг після перемикання: копії й пам'ять, коди, кеш, 404/5xx, Googlebot — з access-логу |

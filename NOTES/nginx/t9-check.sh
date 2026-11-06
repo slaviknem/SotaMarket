@@ -14,11 +14,19 @@
 # 302 на обрану мову не дістається іншим), сертифікат. Вміст сторінок (коди, canonical,
 # товари) — url-check зі списком NOTES/inventory/sotamarket-check.tsv.
 # Наприкінці — «Проблем: N»; код виходу 1, якщо N > 0.
+#
+# Стенд (перевірка вхоста до сервера, PLAN-MULTISITE.md §11 п. 4): T9_CURL — додаткові ключі curl,
+# напр. локальний nginx на 18080/18443 з самопідписаним сертифікатом:
+#   T9_CURL="-k --connect-to sotamarket.com.ua:443:127.0.0.1:18443 --connect-to www.sotamarket.com.ua:443:127.0.0.1:18443
+#            --connect-to sotamarket.com.ua:80:127.0.0.1:18080 --connect-to www.sotamarket.com.ua:80:127.0.0.1:18080" bash NOTES/nginx/t9-check.sh
+# Тоді сертифікат не перевіряється (він на стенді свій). Без T9_CURL — як є, бойовий домен.
 # ============================================================================
 
 SITE=${1:-https://sotamarket.com.ua}
 HOST=${SITE#https://}
 N=0
+CX=(${T9_CURL:-})
+curl() { command curl "${CX[@]}" "$@"; }
 ok() { echo "✓ $*"; }
 bad() { echo "✗ $*"; N=$((N + 1)); }
 
@@ -102,12 +110,14 @@ for i in 1 2; do
 done
 
 echo "--- сертифікат"
+if [ -n "${T9_CURL:-}" ]; then echo "— стенд (T9_CURL): пропущено"; else
 end=$(echo | openssl s_client -connect "$HOST:443" -servername "$HOST" 2>/dev/null | openssl x509 -noout -enddate 2>/dev/null | cut -d= -f2)
 if [ -n "$end" ]; then
 	days=$(( ($(date -d "$end" +%s) - $(date +%s)) / 86400 ))
 	if [ "$days" -gt 20 ]; then ok "сертифікат — ще $days дн."; else bad "сертифікат — лишилось $days дн. (Let's Encrypt не поновився?)"; fi
 else
 	bad "сертифікат не прочитано"
+fi
 fi
 
 echo
