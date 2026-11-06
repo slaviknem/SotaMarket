@@ -1628,8 +1628,13 @@ function openComment() {
 	color: var(--text-muted);
 }
 
+/* Ширина — у символах, а не в px: 13 знаків маски «099-000-00-00» у будь-якому шрифті бренду
+   (найширша цифра — «0», дефіси вужчі, тож 14ch покривають і розрядку, і курсор). 150 px
+   обрізали останню цифру в Inter, Manrope і Nunito. content-box — відступи й рамка
+   .form-control додаються зверху і не з'їдають місце цифр */
 .oc__phone-input {
-	width: 150px;
+	box-sizing: content-box;
+	width: 14ch;
 	font-size: 17px;
 	letter-spacing: 0.04em;
 }
@@ -1974,6 +1979,17 @@ function openComment() {
 	.oc__cta {
 		margin: 16px -14px -14px;
 		padding: 12px 14px 14px;
+	}
+
+	/* Номер великими цифрами з кнопкою в рядок не вміщується: поле — на всю ширину смуги,
+	   «Готово» — під ним (а не поле з порожнечею праворуч) */
+	.oc__phone-field {
+		flex: 1 1 100%;
+	}
+
+	.oc__phone-input {
+		flex: 1 1 auto;
+		min-width: 0;
 	}
 }
 </style>
