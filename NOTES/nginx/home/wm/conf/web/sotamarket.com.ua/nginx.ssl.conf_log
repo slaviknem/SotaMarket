@@ -1,0 +1,15 @@
+# ============================================================================
+# Access-лог sotamarket.com.ua.
+#
+# Куди класти:  /home/wm/conf/web/sotamarket.com.ua/nginx.ssl.conf_log
+# Контекст:     server (include .../nginx.ssl.conf_*)
+# Формат:       floy_log з /etc/nginx/conf.d/floy-log.conf — уже на сервері, спільний:
+#               час, адреса, код, cache=, rt=, ut=, запит, User-Agent
+#               (awk '{print $3}' — коди, $4 — стан кешу; FLOY-ADMIN/NOTES/SERVER.md).
+# Читає:        NOTES/nginx/sotamarket-health.sh — моніторинг після перемикання (T9).
+#
+# Ротація — штатна: /etc/logrotate.d/nginx ловить /var/log/nginx/*.log; окремий запис
+# у logrotate не заводити (другий запис на той самий файл зупиняє ротацію).
+# ============================================================================
+
+access_log /var/log/nginx/sotamarket-access.log floy_log buffer=64k flush=5s;

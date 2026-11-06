@@ -1,0 +1,21 @@
+# ============================================================================
+# Карта сайту sotamarket.com.ua — з теки адмінки, повз Node (як nginx.ssl.conf_sitemap FLOY).
+#
+# Куди класти:  /home/wm/conf/web/sotamarket.com.ua/nginx.ssl.conf_sitemap
+# Контекст:     server (include .../nginx.ssl.conf_*)
+# Пише карту:   адмінка, SitemapGenerator('sotamarket') — крон 05:01 і /do/generate_sitemap;
+#               індекс sitemap.xml + частини sitemaps/sitemap-N.xml.
+#
+# Рушій карти не віддає (Nuxt 3 не роздає файли, що з'явились після збірки), а robots.txt
+# (brand/robots.txt) на неї посилається. Саме віддаємо, а не редиректимо на адмінку —
+# карта мусить бути на тому ж хості, що й адреси в ній, інакше Search Console її не прийме.
+# `^~` — щоб регулярні location (статика за розширенням) не перехопили .xml.
+# ============================================================================
+
+location = /sitemap.xml {
+    root /home/wm/web/admin.floy.com.ua/public_html/storage/app/public/sitemap/sotamarket;
+}
+
+location ^~ /sitemaps/ {
+    root /home/wm/web/admin.floy.com.ua/public_html/storage/app/public/sitemap/sotamarket;
+}

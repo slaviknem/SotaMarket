@@ -1,0 +1,30 @@
+# ============================================================================
+# Кеш сторінок sotamarket.com.ua — як nginx.ssl.conf_cache FLOY, зі своєю зоною.
+#
+# Куди класти:  /home/wm/conf/web/sotamarket.com.ua/nginx.ssl.conf_cache
+# Контекст:     server (include .../nginx.ssl.conf_*)
+# Зона і мова:  /etc/nginx/conf.d/sotamarket-cache.conf (sotamarket_cache, $sotamarket_lang).
+#               БЕЗ НЬОГО nginx -t впаде: "unknown zone" / "unknown variable".
+# Чистка:       deploy.sh після рестарту SOTAMARKET.
+#
+# Відмінності від FLOY:
+# - ключ: + $sotamarket_lang (мова з cookie floy_lang), а Vary ігнорується — інакше nginx
+#   тримав би варіант на кожен рядок Cookie і відвідувач з `_ga` завжди йшов би повз кеш;
+# - `|lang=` між адресою й мовою — ОБОВ'ЯЗКОВИЙ (виправлено 28.10). Впритул
+#   (`$request_uri$sotamarket_lang`, 27.10) «/» + uk = «/uk» + порожньо: 302 на /uk для людини
+#   з cookie лягав у запис адреси /uk, і всі без cookie (Googlebot теж) ловили б на /uk
+#   вічний редирект на добу (стенд FLOY 28.10). З роздільником кінець ключа — «=», «uk» чи
+#   «ru», тож різні пари адреса+мова збігтися не можуть;
+# - proxy_ignore_headers переліком ЦІЛКОМ: директива тут ЗАМІНЮЄ рядок з nginx.conf
+#   (`Cache-Control Expires`), а не доповнює. Без Cache-Control у переліку сторінки
+#   рушія (cache-control: no-cache, server/middleware/no-cache-html.ts) не кешувались би.
+# ============================================================================
+
+proxy_cache sotamarket_cache;
+proxy_cache_key "$scheme$host$request_uri|lang=$sotamarket_lang";
+proxy_ignore_headers Cache-Control Expires Vary;
+proxy_cache_lock on;
+proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
+proxy_cache_background_update on;
+proxy_cache_valid 200 301 302 1d;
+proxy_cache_valid 404 5m;

@@ -1,0 +1,28 @@
+# ============================================================================
+# Білий список на sotamarket.com.ua: Україна + перелічені боти, решта — 403.
+# ВИМКНЕНО — рішення власника 30.10 (план §3: «без нього, як SMARKET»): сайт відкритий для всіх, як старий; вмикати,
+# якщо почнуться проблеми з ботами (sotamarket-health.sh: MISS у рази більше за HIT, черга до Node).
+#
+# Лежить в OFF/ — тут і на сервері. Увімкнути (сервер, bash):
+#   cp /root/nodeapps/SOTAMARKET/NOTES/nginx/home/wm/conf/web/sotamarket.com.ua/OFF/nginx.ssl.conf_allow /home/wm/conf/web/sotamarket.com.ua/
+#   nginx -t && systemctl reload nginx
+#
+# Куди класти:  /home/wm/conf/web/sotamarket.com.ua/nginx.ssl.conf_allow
+# Контекст:     server (include .../nginx.ssl.conf_*)
+# Змінна:       $floy_deny з /etc/nginx/conf.d/floy-allow.conf — уже на сервері, спільна з
+#               FLOY: ті самі списки (ua.conf, goodbots.conf, PageSpeed), бан датацентрів і
+#               виняток для /.well-known/ (Let's Encrypt). Пояснення — FLOY-ADMIN/NOTES/SERVER.md,
+#               «Білий список України».
+#
+# ⚠️ IPv4 only: запис AAAA у sotamarket.com.ua дав би 403 кожному з IPv6, і Googlebot теж
+#    (06.11 AAAA немає ні в sotamarket.com.ua, ні у www; A — той самий сервер, що й steklomarket).
+#
+# Відкат — НЕ суфікс .off (include ловить і його), а перенесення з теки:
+#   mkdir -p /home/wm/conf/web/sotamarket.com.ua/OFF
+#   mv /home/wm/conf/web/sotamarket.com.ua/nginx.ssl.conf_allow /home/wm/conf/web/sotamarket.com.ua/OFF/
+#   nginx -t && systemctl reload nginx
+# ============================================================================
+
+if ($floy_deny) {
+    return 403;
+}

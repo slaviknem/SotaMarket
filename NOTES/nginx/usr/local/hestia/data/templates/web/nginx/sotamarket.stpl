@@ -1,0 +1,52 @@
+#=========================================================================#
+# SotaMARKET (sotamarket.com.ua) — https. Шаблон Hestia, копія smarket. #
+# Джерело: репозиторій SOTAMARKET, NOTES/nginx/usr/local/hestia/data/...  #
+# Правити там і копіювати сюди; v-change-web-domain-proxy-tpl / rebuild   #
+# перегенерують вхост із цього файлу.                                     #
+#=========================================================================#
+#
+# Відмінності від node (як у smarket і floy):
+# - порт 3011 — процес SOTAMARKET (brand/server.env; smarket — 3010, рештою рядок у рядок);
+# - www → https://%domain_idn% тут, на рівні server (редирект панелі на домені прибрано);
+# - без ssl_stapling: у сертифікатів Let's Encrypt з 2025 немає OCSP (як у default.stpl
+#   Hestia) — у node він лише дає попередження в nginx -t;
+# - без location ^~ /.well-known/acme-challenge/: Let's Encrypt перевіряє на :80
+#   (sotamarket.tpl відповідає токеном напряму).
+# Кеш, карта, лог, ліміти — доповненнями nginx.ssl.conf_* у теці вхоста (як у FLOY).
+
+server {
+    listen      %ip%:443 ssl;
+    server_name %domain_idn% %alias_idn%;
+    error_log   /var/log/%web_system%/domains/%domain%.error.log error;
+
+    ssl_certificate     %ssl_pem%;
+    ssl_certificate_key %ssl_key%;
+
+    include %home%/%user%/conf/web/%domain%/nginx.hsts.conf*;
+
+    if ($host != "%domain_idn%") {
+        return 301 https://%domain_idn%$request_uri;
+    }
+
+    location ~ /\.(?!well-known\/|file) {
+        deny all;
+        return 404;
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:3011;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /error/ {
+        alias %home%/%user%/web/%domain%/document_errors/;
+    }
+
+    proxy_hide_header Upgrade;
+
+    include %home%/%user%/conf/web/%domain%/nginx.ssl.conf_*;
+}

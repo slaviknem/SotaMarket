@@ -1,0 +1,24 @@
+# ============================================================================
+# Ліміти навантаження sotamarket.com.ua — ВМИКАННЯ (зони — спільні з FLOY).
+#
+# Куди класти:  /home/wm/conf/web/sotamarket.com.ua/nginx.ssl.conf_limits
+# Контекст:     server (include .../nginx.ssl.conf_*)
+# Зони:         /etc/nginx/conf.d/floy-limits.conf — уже на сервері; ключі за адресою
+#               клієнта й $server_name, тож стеля «200 на вхост» у SotaMARKET своя.
+# Пояснення чисел — FLOY-ADMIN/NOTES/nginx/home/wm/conf/web/floy.com.ua/nginx.ssl.conf_limits.
+#
+# Навіщо: у SOTAMARKET 2 копії Node, а в карті — 70 тис. адрес (06.11); натовп
+# краулерів без стелі забив би черги копій. Зайві з'єднання отримують 429 від nginx.
+# ============================================================================
+
+# Биті адреси картинок (рядок srcset цілком, %20 і кома) — 404 від nginx, до Node не доходять
+if ($request_uri ~ "^/(img|_media)/.*(%20|,)") {
+    return 404;
+}
+
+# Стеля одночасних з'єднань; картинки /img/ не рахуються (HTTP/2 — запит = з'єднання)
+limit_conn floy_perip_v2 20;
+limit_conn floy_total_v2 200;
+
+# Гальмо лише на дорогих шляхах (/img/, /_ipx/, /neoprint/ — ключ $floy_heavy_key)
+limit_req zone=floy_heavy burst=200 nodelay;
