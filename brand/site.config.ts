@@ -93,4 +93,8 @@ export default {
 	font: {
 		preload: ['/fonts/nunito-cyrillic.woff2', '/fonts/nunito-latin.woff2'],
 	},
+
+	// og:image сторінок конструктора — та сама картинка, що на картці конструктора в сітці («фото → чохол» із сотами),
+	// на білому; без поля рушій дав би фото FLOY
+	printcaseImage: '/images/printcase/sota-card.jpg',
 } satisfies BrandConfig

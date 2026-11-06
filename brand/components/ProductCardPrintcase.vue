@@ -1,37 +1,47 @@
 <template>
-	<!-- Картка конструктора в сітці моделі (C2): синя, віяло з трьох чохлів (одна картинка з прозорим фоном —
-	     brand/public/images/printcase/c2-fan.webp), «Своє фото на …», підказка, ціна й помаранчева «Відкрити
-	     конструктор». Пропси — як у рушійної; клас .p-card лишається — за ним сітка моделі рахує ширину плитки -->
+	<!-- Картка конструктора в сітці моделі (C2): будова — як у картки товару бренду (ProductCard.vue), щоб стояти з
+	     сусідами врівень: біла, одна квадратна картинка «твоє фото → на чохлі» з сотами (brand/public/images/printcase/
+	     sota-card.webp), плашка «Конструктор», «Своє фото на …», ціна й помаранчева «Відкрити
+	     конструктор» на всю ширину (у товарів — темна «В кошик»). Картинка 500×500 уже на --bg-soft (без прозорості —
+	     удвічі легша; файл з brand/public IPX не бачить, тож віддається як є). Пропси — як у рушійної; клас .p-card
+	     лишається — за ним сітка моделі рахує ширину плитки -->
 	<article class="p-card pc-card" :class="stockCardClass(stock)">
-		<div class="pc-card__media">
-			<AppImage
-				src="/images/printcase/c2-fan.webp"
-				alt=""
-				:width="260"
-				:height="200"
-				:loading="eager ? 'eager' : 'lazy'"
-				:fetchpriority="eager ? 'high' : undefined"
-				:preload="eager"
-			/>
+		<div class="p-card__media pc-card__media">
+			<div class="p-card__img-link pc-card__img">
+				<AppImage
+					src="/images/printcase/sota-card.webp"
+					alt=""
+					:width="280"
+					:height="280"
+					:loading="eager ? 'eager' : 'lazy'"
+					:fetchpriority="eager ? 'high' : undefined"
+					:preload="eager"
+				/>
+			</div>
+
+			<div class="p-card__badges pc-card__badges">
+				<span class="pc-card__badge">{{ t('printcase.card.badge') }}</span>
+				<!-- Друк на цю модель — лише під передзамовлення -->
+				<span v-if="stock === 'pre_order'" class="badge badge-pre-order">{{ t('product.preOrder') }}</span>
+			</div>
 		</div>
 
-		<!-- Друк на цю модель — лише під передзамовлення -->
-		<span v-if="stock === 'pre_order'" class="badge badge-pre-order pc-card__pre">{{ t('product.preOrder') }}</span>
+		<div class="p-card__body pc-card__body">
+			<!-- Єдине посилання картки: накладка ::after робить клікабельною всю її площу (і «кнопку» нижче) -->
+			<NuxtLink :to="link" class="p-card__title pc-card__title">{{ title }}</NuxtLink>
 
-		<!-- Єдине посилання картки: накладка ::after робить клікабельною всю її площу (і «кнопку» нижче) -->
-		<NuxtLink :to="link" class="pc-card__title">{{ title }}</NuxtLink>
-		<p class="pc-card__note">{{ t('printcase.card.note') }}</p>
+			<div class="pc-card__prices">
+				<span class="pc-card__price" :class="{ 'is-sale': isSale }">{{ formatPrice(prices.printcase) }}</span>
+				<span v-if="isSale" class="pc-card__price-old">{{ formatPrice(prices.printcase_old) }}</span>
+			</div>
 
-		<div class="pc-card__prices">
-			<span class="pc-card__price">{{ formatPrice(prices.printcase) }}</span>
-			<span v-if="isSale" class="pc-card__price-old">{{ formatPrice(prices.printcase_old) }}</span>
+			<!-- На телефоні (картка ~170 px) — коротший підпис, щоб не переносився -->
+			<span class="pc-card__go" aria-hidden="true">
+				<AppIcon name="upload" :size="18" :stroke-width="2.3" />
+				<span class="pc-card__go-full">{{ t('printcase.card.open') }}</span>
+				<span class="pc-card__go-short">{{ t('printcase.card.openShort') }}</span>
+			</span>
 		</div>
-
-		<!-- На телефоні (картка ~170 px) — коротший підпис, щоб не переносився -->
-		<span class="pc-card__go" aria-hidden="true">
-			<span class="pc-card__go-full">{{ t('printcase.card.open') }}</span>
-			<span class="pc-card__go-short">{{ t('printcase.card.openShort') }}</span>
-		</span>
 	</article>
 </template>
 
@@ -56,50 +66,67 @@ const stock = computed(() => printStockState(props.category))
 </script>
 
 <style scoped>
-/* База .p-card — у main.css; тут синя картка C2 з тією ж будовою колонкою, що й у картки товару */
+/* База .p-card — у main.css; розміри, скруглення й підкладка фото — ті самі, що в ProductCard бренду */
 .pc-card {
 	position: relative;
 	gap: 10px;
-	padding: 18px;
-	border-color: var(--bg-deep-2);
+	padding: 10px;
 	border-radius: calc(var(--radius) + 2px);
-	background: var(--bg-deep-2);
-	color: var(--on-deep);
-	transition: box-shadow 0.15s ease, transform 0.15s ease;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .pc-card:hover {
-	border-color: var(--bg-deep-2);
-	box-shadow: 0 12px 28px rgba(var(--shade-rgb), 0.22);
+	border-color: var(--border-light);
+	box-shadow: 0 12px 28px rgba(var(--shade-rgb), 0.12);
 	transform: translateY(-2px);
 }
 
 .pc-card__media {
-	display: block;
-	margin: -4px -8px 0;
+	border-radius: calc(var(--radius) - 3px);
+	overflow: hidden;
 }
 
-.pc-card__media img {
-	display: block;
-	width: 100%;
-	height: auto;
-	transition: transform 0.25s ease;
+/* Підкладка та сама, що під фото товарів (і в самій картинці) */
+.pc-card__img {
+	background: var(--bg-soft);
 }
 
-.pc-card:hover .pc-card__media img {
-	transform: scale(1.04);
+.pc-card:hover .pc-card__img img {
+	transform: scale(1.03);
 }
 
-.pc-card__pre {
-	position: absolute;
-	top: 12px;
-	left: 12px;
+.pc-card__badges {
+	top: 10px;
+	left: 10px;
+}
+
+/* Помаранчева, як «HIT» і знижка на картках товарів */
+.pc-card__badge {
+	padding: 4px 10px;
+	border-radius: var(--radius-pill);
+	background: var(--accent);
+	color: var(--on-accent);
+	font-size: 11.5px;
+	font-weight: 900;
+	line-height: 1.2;
+}
+
+.pc-card__body {
+	gap: 8px;
+	padding: 0 4px;
 }
 
 .pc-card__title {
-	font-size: 19px;
-	font-weight: 900;
-	line-height: 1.2;
+	min-height: 2.7em;
+	font-size: 14.5px;
+	font-weight: 800;
+	line-height: 1.35;
+	color: var(--text);
+}
+
+.pc-card__title:hover {
+	color: var(--link);
+	text-decoration: underline;
 }
 
 /* Накладка посилання на всю картку — клік будь-де веде в конструктор */
@@ -107,44 +134,47 @@ const stock = computed(() => printStockState(props.category))
 	content: '';
 	position: absolute;
 	inset: 0;
-}
-
-.pc-card__note {
-	margin: 0;
-	color: var(--on-deep-muted);
-	font-size: 13.5px;
-	line-height: 1.45;
+	z-index: 1;
 }
 
 .pc-card__prices {
 	display: flex;
 	align-items: baseline;
-	gap: 8px;
-	margin-top: auto;
+	flex-wrap: wrap;
+	gap: 2px 8px;
 }
 
 .pc-card__price {
-	font-size: 20px;
+	font-size: 22px;
 	font-weight: 900;
+	line-height: 1.2;
+	color: var(--text);
+}
+
+.pc-card__price.is-sale {
+	color: var(--accent-text);
 }
 
 .pc-card__price-old {
-	color: var(--on-deep-muted);
 	font-size: 14px;
+	color: var(--text-muted);
 	text-decoration: line-through;
 }
 
+/* Помаранчева на всю ширину (у товарів — темна «В кошик»): дія тут — «створити», притиснута до низу картки */
 .pc-card__go {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	gap: 8px;
 	height: 46px;
+	margin-top: auto;
+	padding: 0 10px;
 	border-radius: calc(var(--radius-sm) + 2px);
 	background: var(--accent);
 	color: var(--on-accent);
 	font-size: 15px;
 	font-weight: 900;
-	text-align: center;
 	transition: background 0.15s;
 }
 
@@ -156,30 +186,23 @@ const stock = computed(() => printStockState(props.category))
 	display: none;
 }
 
-/* Три колонки й вужче — підказку ховаємо, щоб картка не була вищою за сусідні */
-@media (max-width: 1180px) {
-	.pc-card__note {
-		display: none;
-	}
-}
-
-/* Телефон: дві колонки по ~170 px */
 @media (max-width: 640px) {
 	.pc-card {
 		gap: 8px;
-		padding: 10px;
+		padding: 8px;
 	}
 
-	.pc-card__media {
-		margin: 0 -4px;
+	.pc-card__body {
+		gap: 6px;
+		padding: 0 2px;
 	}
 
 	.pc-card__title {
-		font-size: 15.5px;
+		font-size: 13.5px;
 	}
 
 	.pc-card__price {
-		font-size: 18px;
+		font-size: 19px;
 	}
 
 	.pc-card__go {
@@ -187,6 +210,8 @@ const stock = computed(() => printStockState(props.category))
 		font-size: 14px;
 	}
 
+	/* Картка ~170 px: з іконкою «Створити чохол» переноситься */
+	.pc-card__go :deep(svg),
 	.pc-card__go-full {
 		display: none;
 	}

@@ -5,8 +5,8 @@
 
    Мова форми SotaMARKET — м'яка й щільна «у темно-синій оправі»: скруглення 10 / 16 / 22 (токени — theme.css),
    кнопки — м'які прямокутники з жирним Nunito (не пігулки SMARKET і не FLOY-івські 8 px), головна дія —
-   помаранчева, решта — темно-сині; ціна темна, акцентна лише зі знижкою; варіанти товару — заокруглені квадрати
-   з помаранчевим кільцем вибраного; вкладки — сегменти на синьому.
+   помаранчева, решта — темно-сині; ціна темна, акцентна лише зі знижкою; соти (--hex-mask) — варіанти товару з
+   помаранчевою сотою вибраного, обране й порівняння, плашка знижки; вкладки — сегменти на синьому.
 
    Специфічність. Scoped-стилі рушія мають +1 клас ([data-v-…]), а порядок підключення в dev до гідратації
    не гарантований. Тому перекриття компонентів рушія — завжди вищі за правило, яке перекривають: базове правило
@@ -125,113 +125,247 @@ nav.pagination .pagination__page {
 	display: none;
 }
 
-/* Варіанти: заокруглені квадрати (у FLOY — 56 px з акцентною рамкою, у SMARKET — кола); вибраний — помаранчеве
-   кільце з білим проміжком (outline повторює скруглення) і назва жирним у підписі над ними */
+/* Варіанти-принти — соти (у FLOY — квадрати 56 px з акцентною рамкою, у SMARKET — кола): шестикутник вершиною догори
+   маскою --hex-mask (theme.css), рамка — фон самої соти, що видно у відступі навколо картинки. Відступ згори й знизу
+   більший у 1/cos 30° — тоді рамка однакової товщини на всіх шести гранях. Вибраний — помаранчева рамка впритул до
+   картинки, і вся сота більша на 10 % (transform — сусіди не зсуваються, проміжку 4 px вистачає): картинка
+   вибраного більша, ніж у сусідів, а не менша, і без білого зазору (outline і box-shadow маска зрізала б). Соти
+   стоять щільним рядком */
+.product__attrs .product__attrs-list {
+	gap: 6px 4px;
+}
+
 .product__attrs .attr-chip.attr-chip--img {
-	width: 60px;
-	height: 60px;
-	padding: 2px;
-	border: 1px solid var(--border-light);
-	border-radius: calc(var(--radius-sm) + 2px);
+	width: 58px;
+	height: 67px;
+	padding: 1.7px 1.5px;
+	border: 0;
+	border-radius: 0;
+	background: var(--border-light);
+	-webkit-mask: var(--hex-mask) center / 100% 100% no-repeat;
+	mask: var(--hex-mask) center / 100% 100% no-repeat;
 }
 
 .product__attrs .attr-chip.attr-chip--img img {
-	border-radius: var(--radius-sm);
+	border-radius: 0;
+	-webkit-mask: var(--hex-mask) center / 100% 100% no-repeat;
+	mask: var(--hex-mask) center / 100% 100% no-repeat;
 }
 
-.product__attrs .product__attrs-list .attr-chip:hover {
-	border-color: var(--text-muted);
+.product__attrs .product__attrs-list .attr-chip.attr-chip--img:hover {
+	background: var(--text-muted);
 }
 
-.product__attrs .product__attrs-list .attr-chip.is-active {
-	border-color: var(--bg-card);
-	background: var(--bg-card);
+/* Фокус з клавіатури — сота синя (кільце фокуса маска теж зрізала б) */
+.product__attrs .product__attrs-list .attr-chip.attr-chip--img:focus-visible {
+	outline: 0;
+	background: var(--link);
+}
+
+.product__attrs .product__attrs-list .attr-chip.attr-chip--img.is-active {
+	padding: 2.9px 2.5px;
+	background: var(--accent);
 	box-shadow: none;
-	outline: 2px solid var(--accent);
-	outline-offset: 1px;
-	color: var(--text);
+	transform: scale(1.1);
 }
 
 .product .product__attrs .product__attrs-label b {
 	color: var(--text);
 }
 
-/* Картка ціни — темно-синя панель («оправа» C2; у FLOY і SMARKET — біла): ціна біла, зі знижкою — помаранчева
-   (6,9:1 на синьому), «Купити» помаранчева, решта кнопок — світлі контури на синьому */
+/* ---------- Картка ціни: світла, у два ряди (у FLOY — ціна, «Купити» з двома квадратами, широке «Швидке
+   замовлення» стовпчиком; у SMARKET — усе в рядок з колами) ----------
+   Ряд 1 — ціна (зі знижкою — коричнево-помаранчева, як на картках, стара ціна поруч і плашка-сота «−7 %»), праворуч
+   обране й порівняння — соти. Ряд 2 — «Купити» (помаранчева, ширша) і «Швидке замовлення» (темно-синя) поруч; на
+   телефоні — одна під одною. Кнопки рушія — у .product__actions разом із сотами, тож обгортка розчиняється
+   (display: contents), а кнопки стають у сітку картки. Без «Швидкого замовлення» (товару немає / передзамовлення)
+   «Купити» — на всю ширину (:has; без нього — у своїй колонці) */
 .product__info .product__buy.card {
-	border-color: var(--bg-deep);
-	background: var(--bg-deep);
-	color: var(--on-deep);
+	border-color: var(--border);
+	border-radius: var(--radius-lg);
+	background: var(--bg-card);
+	box-shadow: var(--shadow-card);
 }
 
 .product__buy.card .card-body {
-	padding: 20px;
+	display: grid;
+	grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto auto;
+	align-items: center;
+	gap: 18px 8px;
+	padding: 18px 20px 20px;
+}
+
+.product__buy.card .product__prices {
+	grid-area: 1 / 1 / 2 / 3;
+	flex-wrap: wrap;
+	gap: 4px 12px;
+	margin: 0;
 }
 
 .product__buy.card .product__price {
+	order: -1;
 	font-size: 32px;
 	font-weight: 900;
-	color: var(--on-deep);
+	line-height: 1.1;
+	color: var(--text);
+	font-variant-numeric: tabular-nums;
 }
 
 .product__buy.card .product__price-old + .product__price {
-	color: var(--accent);
+	color: var(--accent-text);
 }
 
 .product__buy.card .product__price-old {
-	color: var(--on-deep-muted);
+	font-size: 16px;
 }
 
-.product__buy.card .product__cart-btn {
-	min-height: 52px;
+/* Знижка — помаранчева витягнута сота (як плашки знижки на картках, у FLOY — червона) */
+.product__buy.card .product__prices .badge-sale {
+	padding: 5px 14px;
+	border-radius: 0;
+	background: var(--accent);
+	color: var(--on-accent);
+	font-size: 13px;
+	font-weight: 900;
+	clip-path: polygon(9px 0, calc(100% - 9px) 0, 100% 50%, calc(100% - 9px) 100%, 9px 100%, 0 50%);
+}
+
+.product__buy.card .product__actions {
+	display: contents;
+}
+
+.product__buy.card .product__actions .product__cart-btn {
+	grid-area: 2 / 1 / 3 / 2;
+	min-height: 54px;
 	font-size: 16px;
 	font-weight: 900;
 }
 
+.product__buy.card .card-body:not(:has(.product__quick)) .product__cart-btn {
+	grid-column: 1 / -1;
+}
+
+/* Обране й порівняння — соти на тон від картки; при наведенні — сині, додане — помаранчева */
 .product__buy.card .action-square {
-	width: 52px;
-	height: 52px;
-	border: 1px solid var(--border-deep);
-	border-radius: calc(var(--radius-sm) + 2px);
+	width: 46px;
+	height: 53px;
+	border: 0;
+	border-radius: 0;
+	background: var(--bg-elevated);
+	color: var(--text);
+	-webkit-mask: var(--hex-mask) center / 100% 100% no-repeat;
+	mask: var(--hex-mask) center / 100% 100% no-repeat;
+}
+
+.product__buy.card .product__actions .action-square:nth-child(2) {
+	grid-area: 1 / 3;
+}
+
+.product__buy.card .product__actions .action-square:nth-child(3) {
+	grid-area: 1 / 4;
+}
+
+.product__buy.card .product__actions .action-square:hover,
+.product__buy.card .product__actions .action-square:focus-visible {
+	outline: 0;
+	background: var(--bg-deep);
+	color: var(--on-deep);
+}
+
+.product__buy.card .product__actions .action-square.is-active {
+	background: var(--accent);
+	color: var(--on-accent);
+}
+
+/* «Швидке замовлення» — суцільна темно-синя (другорядні дії Sota — сині; у FLOY — помаранчевий контур) */
+.product__buy.card .product__quick {
+	grid-area: 2 / 2 / 3 / 5;
+}
+
+.product__buy.card .product__quick .btn-outline {
+	min-height: 54px;
+	padding: 0 14px;
+	border: 0;
+	background: var(--bg-deep);
+	color: var(--on-deep);
+	font-size: 15px;
+}
+
+.product__buy.card .product__quick .btn-outline:hover {
 	background: var(--bg-deep-2);
 	color: var(--on-deep);
 }
 
-.product__buy.card .product__actions .action-square:hover,
-.product__buy.card .product__actions .action-square.is-active {
-	border-color: var(--accent);
-	color: var(--accent);
+/* До 1180 (вузька колонка інфо поруч із галереєю, планшет, телефон) поруч не вміщуються: «Купити» й «Швидке
+   замовлення» — одна під одною на всю ширину */
+@media (max-width: 1180px) {
+	.product__buy.card .product__actions .product__cart-btn {
+		grid-column: 1 / -1;
+	}
+
+	.product__buy.card .product__quick {
+		grid-area: 3 / 1 / 4 / -1;
+		margin-top: -8px;
+	}
 }
 
-/* «Швидке замовлення» — світлий контур на синьому; при наведенні — помаранчева, як контурні кнопки рушія */
-.product__buy.card .product__quick .btn-outline {
-	border-width: 1px;
-	border-color: var(--on-deep-muted);
-	color: var(--on-deep);
-}
-
-.product__buy.card .product__quick .btn-outline:hover {
-	border-color: var(--accent);
-	color: var(--on-accent);
-}
-
-/* «Конструктор чохлів» під карткою ціни — біла кнопка з рамкою (у FLOY — блідо-помаранчева плашка);
-   при наведенні — синя, як картка над нею */
+/* «Конструктор чохлів» під карткою ціни — темно-синя смуга зі стрілкою в помаранчевій соті праворуч (у FLOY —
+   блідо-помаранчева плашка, у SMARKET — пігулка поруч зі «Швидким замовленням»). Сота — ::before, шеврон — ::after
+   (дві грані повернутого квадрата) поверх неї: вершина шеврона праворуч, тож квадрат зсунуто на 2–3 px правіше центру */
 .product .product__info .product__printcase {
-	min-height: 48px;
-	padding: 0 18px;
-	border: 1px solid var(--border-light);
-	border-radius: calc(var(--radius-sm) + 2px);
-	background: var(--bg-card);
-	color: var(--text);
-	font-size: 14.5px;
-	font-weight: 800;
+	position: relative;
+	justify-content: flex-start;
+	min-height: 56px;
+	margin-top: 12px;
+	padding: 0 70px 0 20px;
+	border: 0;
+	border-radius: var(--radius);
+	background: var(--bg-deep);
+	color: var(--on-deep);
+	font-size: 15px;
+	font-weight: 900;
+}
+
+.product .product__info .product__printcase::before,
+.product .product__info .product__printcase::after {
+	content: '';
+	position: absolute;
+	top: 50%;
+	transition: transform 0.15s;
+}
+
+.product .product__info .product__printcase::before {
+	right: 14px;
+	width: 38px;
+	height: 44px;
+	margin-top: -22px;
+	background: var(--accent);
+	-webkit-mask: var(--hex-mask) center / 100% 100% no-repeat;
+	mask: var(--hex-mask) center / 100% 100% no-repeat;
+}
+
+.product .product__info .product__printcase::after {
+	right: 30px;
+	width: 10px;
+	height: 10px;
+	margin-top: -5px;
+	border: solid var(--on-accent);
+	border-width: 3px 3px 0 0;
+	border-radius: 1px;
+	transform: rotate(45deg);
 }
 
 .product .product__info .product__printcase:hover {
-	border-color: var(--bg-deep);
-	background: var(--bg-deep);
+	background: var(--bg-deep-2);
 	color: var(--on-deep);
+}
+
+.product .product__info .product__printcase:hover::before {
+	transform: translateX(3px);
+}
+
+.product .product__info .product__printcase:hover::after {
+	transform: translateX(3px) rotate(45deg);
 }
 
 /* Стрілки галереї — білі заокруглені квадрати з тінню (у FLOY — голі помаранчеві шеврони, 2,3:1). Розмір значка

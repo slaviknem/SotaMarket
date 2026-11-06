@@ -171,7 +171,9 @@ const prints = computed(() => (props.attribute ? 0 : (props.product.attributes |
 	color: var(--on-accent);
 }
 
-/* Сердечко — завжди; порівняння — при наведенні (і коли вже додане) */
+/* Сердечко — завжди; порівняння — при наведенні (і коли вже додане). Кнопки — білі соти (--hex-mask, як обране й
+   порівняння на сторінці товару). Тінь і кільце фокуса маска зрізала б: тінь — drop-shadow обгортки (повторює
+   контур сот), фокус з клавіатури — синя сота */
 .c2-card__actions {
 	position: absolute;
 	top: 6px;
@@ -179,23 +181,30 @@ const prints = computed(() => (props.attribute ? 0 : (props.product.attributes |
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
+	filter: drop-shadow(0 2px 5px rgba(var(--shade-rgb), 0.16));
 }
 
 .c2-card__icon {
 	display: grid;
 	place-items: center;
 	width: 44px;
-	height: 44px;
-	border-radius: 50%;
+	height: 51px;
 	background: var(--bg-card);
-	box-shadow: 0 2px 10px rgba(var(--shade-rgb), 0.12);
 	color: var(--text);
-	transition: color 0.15s, opacity 0.15s;
+	-webkit-mask: var(--hex-mask) center / 100% 100% no-repeat;
+	mask: var(--hex-mask) center / 100% 100% no-repeat;
+	transition: color 0.15s, background 0.15s, opacity 0.15s;
 }
 
 .c2-card__icon:hover,
 .c2-card__icon.is-active {
 	color: var(--accent-text);
+}
+
+.c2-card__icon:focus-visible {
+	outline: 0;
+	background: var(--bg-deep);
+	color: var(--on-deep);
 }
 
 .c2-card__icon--compare {

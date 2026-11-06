@@ -187,6 +187,35 @@ URL_STORAGE='https://admin.floy.com.ua/storage/'
 |---|---|
 | SMARKET — steklomarket.com.ua | `cd /root/nodeapps/SMARKET && bash deploy.sh` |
 | FLOY — floy.com.ua | `cd /root/nodeapps/FLOY && bash deploy.sh` |
+| SotaMARKET — sotamarket.com.ua | `cd /root/nodeapps/SOTAMARKET && bash deploy.sh` |
 
 `deploy.sh` бере процес, порт і кеш nginx із `brand/server.env`: `git pull`, збірка під node 22, рестарт процесу,
 чистка кешу nginx. Докладно — `DEPLOY.md`.
+
+### Кеш картинок чохлів: альфапринти й неопрінти
+
+Кадри `/img/print/…` (альфапринти) і `/img/neoprint/…` (неопрінти) кожен сайт збирає сам і тримає в своїй теці на
+сервері — `.cache/alphaprint` і `.cache/neoprint` (деплой їх не чистить, кадр перезбирається сам через 30 днів), копія —
+у кеші nginx сайту. Замінили шаблон чи маску в адмінці й треба показати одразу — на сервері (bash), один рядок: рестарт
+(шаблони й маски годину тримаються в пам'яті, без нього кадри зберуться зі старих) → видалити кадри → прибрати картинки
+з кешу nginx (HTML лишається). Краще ввечері: рестарт — як при деплої, кадри перезберуться на першому показі.
+Сусідню `.cache/settings` не видаляти.
+
+```bash
+# SMARKET — steklomarket.com.ua: альфапринти / неопрінти / обидва
+cd /root/nodeapps/SMARKET && pm2 restart SMARKET && rm -rf .cache/alphaprint && grep -rlaZ '^KEY: [^/]*/img/print/' /var/cache/nginx-smarket | xargs -0 -r rm -f
+cd /root/nodeapps/SMARKET && pm2 restart SMARKET && rm -rf .cache/neoprint && grep -rlaZ '^KEY: [^/]*/img/neoprint/' /var/cache/nginx-smarket | xargs -0 -r rm -f
+cd /root/nodeapps/SMARKET && pm2 restart SMARKET && rm -rf .cache/alphaprint .cache/neoprint && grep -rlaZ '^KEY: [^/]*/img/' /var/cache/nginx-smarket | xargs -0 -r rm -f
+
+# FLOY — floy.com.ua: альфапринти / неопрінти / обидва
+cd /root/nodeapps/FLOY && pm2 restart FLOY && rm -rf .cache/alphaprint && grep -rlaZ '^KEY: [^/]*/img/print/' /var/cache/nginx-floy | xargs -0 -r rm -f
+cd /root/nodeapps/FLOY && pm2 restart FLOY && rm -rf .cache/neoprint && grep -rlaZ '^KEY: [^/]*/img/neoprint/' /var/cache/nginx-floy | xargs -0 -r rm -f
+cd /root/nodeapps/FLOY && pm2 restart FLOY && rm -rf .cache/alphaprint .cache/neoprint && grep -rlaZ '^KEY: [^/]*/img/' /var/cache/nginx-floy | xargs -0 -r rm -f
+
+# SotaMARKET — sotamarket.com.ua: альфапринти / неопрінти / обидва
+cd /root/nodeapps/SOTAMARKET && pm2 restart SOTAMARKET && rm -rf .cache/alphaprint && grep -rlaZ '^KEY: [^/]*/img/print/' /var/cache/nginx-sotamarket | xargs -0 -r rm -f
+cd /root/nodeapps/SOTAMARKET && pm2 restart SOTAMARKET && rm -rf .cache/neoprint && grep -rlaZ '^KEY: [^/]*/img/neoprint/' /var/cache/nginx-sotamarket | xargs -0 -r rm -f
+cd /root/nodeapps/SOTAMARKET && pm2 restart SOTAMARKET && rm -rf .cache/alphaprint .cache/neoprint && grep -rlaZ '^KEY: [^/]*/img/' /var/cache/nginx-sotamarket | xargs -0 -r rm -f
+```
+
+Скільки займає — `du -sh /root/nodeapps/<САЙТ>/.cache/*`; одна модель чи один принт — `DEPLOY.md` §6.

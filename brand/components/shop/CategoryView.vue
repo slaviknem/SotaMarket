@@ -315,20 +315,22 @@ const seriesName = computed(() => serieTitle(modelSeries.value?.title || ''))
 	gap: 18px 24px;
 }
 
-/* Фото моделі — на білому квадраті (знімки на білому) */
+/* Фото моделі — на білій соті (знімки на білому; --hex-mask, як варіанти товару). Знімок менший за соту з запасом:
+   кути квадрата зрізали б похилі грані, а телефон у кадрі вузький і по центру */
 .cat-hero__img {
 	display: grid;
 	place-items: center;
 	flex-shrink: 0;
-	width: 104px;
-	height: 104px;
-	border-radius: var(--radius-lg);
+	width: 94px;
+	height: 108px;
 	background: var(--img-bg);
+	-webkit-mask: var(--hex-mask) center / 100% 100% no-repeat;
+	mask: var(--hex-mask) center / 100% 100% no-repeat;
 }
 
 .cat-hero__img img {
-	width: 84px;
-	height: 84px;
+	width: 80px;
+	height: 80px;
 	object-fit: contain;
 }
 
@@ -768,14 +770,13 @@ const seriesName = computed(() => serieTitle(modelSeries.value?.title || ''))
 	}
 
 	.cat-hero__img {
-		width: 64px;
-		height: 64px;
-		border-radius: var(--radius);
+		width: 58px;
+		height: 67px;
 	}
 
 	.cat-hero__img img {
-		width: 52px;
-		height: 52px;
+		width: 48px;
+		height: 48px;
 	}
 
 	.cat-hero__titles {
