@@ -2,7 +2,8 @@
 # ============================================================================
 # Здоров'я sotamarket.com.ua після перемикання на рушій (T9) — ЗВІТ, нічого не змінює.
 # Щодня тиждень, далі щотижня місяць; разом із зовнішнім NOTES/nginx/t9-check.sh.
-# Копія SMARKET/NOTES/nginx/smarket-health.sh: процес SOTAMARKET (3011), старий — [3003] SotaMarket.
+# Копія SMARKET/NOTES/nginx/smarket-health.sh: процес SOTAMARKET (3011). Старий [3003] SotaMarket
+# прибрано 06.11 (t9-cleanup.sh, відкату немає) — порт 3003 має бути вільний.
 #
 # Запуск (сервер, bash):
 #   bash /root/nodeapps/SOTAMARKET/NOTES/nginx/sotamarket-health.sh
@@ -31,7 +32,7 @@ export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && nvm use 16 >/dev/null
 pm2 describe SOTAMARKET 2>/dev/null | grep -E "status|restarts|uptime"
 echo -n "помилок у лозі за сьогодні: "; grep -c "^$(date +%Y-%m-%d)" /root/.pm2/logs/SOTAMARKET-error.log 2>/dev/null || echo 0
-echo -n "старий сайт [3003] (відкат) слухає: "; ss -lntp 2>/dev/null | grep -q ':3003\b' && echo так || echo НІ
+echo -n "порт 3003 (старий сайт прибрано 06.11): "; ss -lntp 2>/dev/null | grep -q ':3003\b' && echo "ЗАЙНЯТИЙ — $(ss -lntp | grep ':3003\b')" || echo вільний
 echo -n "кеш nginx: "; du -sh /var/cache/nginx-sotamarket 2>/dev/null | cut -f1
 git -C "$DIR" log --oneline -1
 
@@ -66,6 +67,7 @@ cat <<'HINT'
 процесів           3 — норма; 1 — копії не піднялись (pm2 logs SOTAMARKET)
 rss копій          ~100–300 МБ; росте з кожним днем — витік, сказати в чаті
 /api/settings      200 — fetch живий; 500 — процес на node 16 (DEPLOY.md)
+порт 3003          вільний — норма; зайнятий — ожив старий процес (pm2 list), сказати в чаті
 коди               301 — www/http і старі адреси (норма); 404 — дивитись топ нижче;
                    5xx — біда; 403 — білий список (якщо ввімкнено); 429 — ліміти
 кеш                HIT більше за MISS — ходять люди; MISS у рази більше — обхід ботами
