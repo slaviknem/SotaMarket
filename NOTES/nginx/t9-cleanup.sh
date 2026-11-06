@@ -77,12 +77,14 @@ sec "4. Старий SitemapUtil в адмінці"
 F=$A/app/Actions/Utilities/SitemapUtil.php
 if [ ! -f "$F" ]; then
 	skip "файлу класу вже немає"
-elif grep -q "SitemapUtil" "$A/app/Console/Kernel.php" "$A/app/Http/Controllers/DO/DoController.php"; then
+# Шукаємо ВИКЛИК класу (Utilities\SitemapUtil), а не слово: у нових файлах воно є в коментарях
+# («старий SitemapUtil прибрано…») — 06.11 перша версія скрипта через це пропустила крок
+elif grep -qF 'Utilities\SitemapUtil' "$A/app/Console/Kernel.php" "$A/app/Http/Controllers/DO/DoController.php"; then
 	skip "Kernel.php / DoController.php на сервері ще кличуть SitemapUtil — спершу викласти нові файли FLOY-ADMIN (план §8 «Сервер: T9» п. 5), потім цей скрипт ще раз"
 else
 	rm -f "$F" && ok "SitemapUtil.php видалено (його вже ніхто не кличе)"
 fi
-grep -rln "SitemapUtil" "$A/app" "$A/routes" 2>/dev/null | head -5
+grep -rlnF 'Utilities\SitemapUtil' "$A/app" "$A/routes" 2>/dev/null | head -5
 
 sec "Підсумок"
 free -m | head -2
